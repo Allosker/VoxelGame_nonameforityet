@@ -10,15 +10,15 @@ project (
 	MYPROJECT
 	VERSION 0.0.0
 	LANGUAGES C CXX
-)
-
+) 
+ 
 # Directories
 
 set(SRC_DIR "${PROJECT_SOURCE_DIR}/files/src/")
 set(INCLUDE_DIR "${PROJECT_SOURCE_DIR}/files/src/")
-set(LIB_DIR "${PROJECT_SOURCE_DIR}/files/libs/")
+set(LIB_DIR "${PROJECT_SOURCE_DIR}/files/libs/") 
 
-# Fetch files
+# Fetch files 
 
 file(GLOB_RECURSE CPP_FILES CMAKE_CONFIGURE_DEPENDS
 	"${SRC_DIR}/*.cpp"
@@ -34,8 +34,8 @@ file(GLOB_RECURSE LIB_FILES CMAKE_CONFIGURE_DEPENDS
 	"${LIB_DIR}/*.h"
 	"${LIB_DIR}/*.c"
 ) 
-
-# Create Project
+ 
+# Create Project  
 
 add_executable( MYPROJECT
 	${CPP_FILES}

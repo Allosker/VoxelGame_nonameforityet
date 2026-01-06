@@ -136,7 +136,7 @@ namespace wai
 			Left_alt = 342,
 			Left_super = 343,
 			Right_shift = 344,
-			Right_controL = 345,
+			Right_control = 345,
 			Right_alt = 346,
 			Right_super = 347,
 			Menu = 348,

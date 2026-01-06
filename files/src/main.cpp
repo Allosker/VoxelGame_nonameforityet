@@ -7,12 +7,23 @@
 #include "window_and_inputs/inputs.hpp"
 
 #include "rendering/shader.hpp"
-#include "mpml/matrices/special_overloads/iostream_matrices.hpp"
 
-static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) noexcept;
+#include "utilities/time/clock.hpp"
+
+//static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) noexcept;
 
 static void framebuffersize_callback(GLFWwindow* window, int width, int height) noexcept;
 
+float camSpeed{ 0.5f };
+vec3f camFront{ 0.f, 0.f, -1.f };
+vec3f camUp{ 0.f, 1.f, 0.f };
+vec3f camPos{ 0.f, 0.f, 0.f };
+
+static void mouse_callback(GLFWwindow* window, double xpos, double ypos) noexcept;
+
+static void inputs(const wai::Window& window) noexcept;
+
+game_time::Clock my_clock;
 
 int main()
 {
@@ -25,11 +36,13 @@ int main()
 	wai::Window window{ {640, 480}, "Test", nullptr, nullptr };
 
 	
-	glfwSetKeyCallback(window.get(), key_callback);
+	//glfwSetKeyCallback(window.get(), key_callback);
 
 	glfwSetFramebufferSizeCallback(window.get(), framebuffersize_callback);
 
-	
+	glfwSetCursorPosCallback(window.get(), mouse_callback);
+
+	glfwSetInputMode(window.get(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	
 
 	std::vector<float> vertices
@@ -59,20 +72,25 @@ int main()
 
 	glEnable(GL_DEPTH_TEST);
 
+
 	while (window.isOpen())
 	{
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+		inputs(window);
+
 		shader.use();
 
 		mat4f model{ mpml::Identity4<float> };
-		mat4f view{ mpml::Identity4<float> };
+		mat4f view{ mpml::lookAt<float>(camPos, camFront + camPos, camUp) };
 		mat4f proj{ mpml::perspective(mpml::Angle::fromDegrees(45), window.getSize().x, window.getSize().y, 0.1f, 100.f, true) };
 
-		model = mpml::rotate<float>(mpml::Angle::fromDegrees(std::sin(mpml::constants::PI_F * glfwGetTime())), { 0.f, 1.f, 0.f });
+		model = mpml::rotate(model, mpml::Angle::fromDegrees(glfwGetTime() * 10), { 1, 1, 1 });
 		  
+		
 		model = mpml::translate(model, { 0, 0, -3 });
+
 
 
 		shader.setValue("model", model);
@@ -94,13 +112,65 @@ int main()
 	return 0;
 }
 
-void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) noexcept
+void mouse_callback(GLFWwindow* window, double xpos, double ypos) noexcept
+{
+	static float lastX{ static_cast<float>(xpos) }, lastY{ static_cast<float>(ypos) };
+
+	float xoffset = xpos - lastX;
+	float yoffset = ypos - lastY;
+
+	lastX = xpos;
+	lastY = ypos;
+
+	float sensitivity{ 0.1f };
+
+	xoffset *= sensitivity;
+	yoffset *= sensitivity;
+
+	static float yaw{-90}, pitch{};
+
+	yaw += xoffset;
+	pitch += yoffset;
+
+
+	if (pitch > 89.f)
+		pitch = 89.f;
+	if (pitch < -89.f)
+		pitch = -89.f;
+
+	vec3f direction{};
+
+	float radPitch{ mpml::toRadians(pitch) };
+	float cosPitch{ std::cos(radPitch) };
+	float radYaw{ mpml::toRadians(yaw) };
+
+	direction.x = -(std::cos(radYaw) * cosPitch);
+	direction.y = std::sin(radPitch);
+	direction.z = std::sin(radYaw) * cosPitch;
+
+	camFront = direction.normal();
+}
+
+#include <iostream>
+void inputs(const wai::Window& window) noexcept
 {
 	using namespace wai;
 	using b = Buttons;
 
-	if (key == b::Escape && action == b::Pressed)
-		glfwSetWindowShouldClose(window, true);
+	if (window.keyPressed(b::Escape))
+		window.close();
+
+	if (window.keyPressed(b::Up))
+		std::cout << my_clock.asSeconds();
+
+	if (window.keyPressed(b::Down))
+		my_clock.start();
+
+	/*if (window.keyPressed(b::Right))
+		camPos += camFront.cross(camUp) * camSpeed;
+
+	if (window.keyPressed(b::Left))
+		camPos += -camFront.cross(camUp) * camSpeed;*/
 }
 
 void framebuffersize_callback(GLFWwindow* window, int width, int height) noexcept

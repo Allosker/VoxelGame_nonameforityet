@@ -6,6 +6,7 @@
 // ---------------------------------------
 
 #include "uHeaders/opengl.hpp"
+#include "inputs.hpp"
 #include <string>
 
 namespace wai
@@ -31,17 +32,17 @@ namespace wai
 			return m_size;
 		}
 
-		void close() noexcept
+		void close() const noexcept
 		{
 			glfwSetWindowShouldClose(m_window, true);
 		}
 
-		void display() noexcept
+		void display() const noexcept
 		{
 			glfwSwapBuffers(m_window);
 		}
 
-		void clearEvents() noexcept
+		void clearEvents() const noexcept
 		{
 			glfwPollEvents();
 		}
@@ -57,6 +58,55 @@ namespace wai
 			m_size = new_size;
 		}
 
+		std::uint32_t getMods() const noexcept
+		{
+			using b = Buttons;
+
+			std::uint32_t mask{};
+
+			if (glfwGetKey(m_window, b::Left_shift) || glfwGetKey(m_window, b::Right_shift))
+				mask |= b::Shift;
+
+			if (glfwGetKey(m_window, b::Left_control) || glfwGetKey(m_window, b::Right_control))
+				mask |= b::Control;
+
+			if (glfwGetKey(m_window, b::Left_alt) || glfwGetKey(m_window, b::Right_alt))
+				mask |= b::Alt;
+
+			if (glfwGetKey(m_window, b::Left_super) || glfwGetKey(m_window, b::Right_super))
+				mask |= b::Super;
+
+			return mask;
+		}
+
+		bool modsSet(int mods) const noexcept
+		{
+			return getMods() & mods;
+		}
+
+		std::uint8_t getKey(int key) const noexcept
+		{
+			return glfwGetKey(m_window, key);
+		}
+
+		bool keyPressed(int key) const noexcept
+		{
+			return glfwGetKey(m_window, key) == Buttons::Pressed;
+		}
+
+		bool keyPressedOnce(int key) const noexcept
+		{
+			static int last_key{key};
+
+			if (key == last_key)
+				return false;
+
+		}
+
+		bool keyReleased(int key) const noexcept
+		{
+			return glfwGetKey(m_window, key) == Buttons::Released;
+		}
 
 	private:
 
