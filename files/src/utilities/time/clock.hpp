@@ -6,18 +6,66 @@
 // ---------------------------------------
 
 #include "uHeaders/opengl.hpp"
+#include <chrono>
 
-namespace game_time
+namespace GameTime
 {
+
+	struct Time
+	{
+		Time(std::chrono::time_point<std::chrono::steady_clock> time)
+			: time_start{ time }
+		{ }
+
+		std::uint64_t asMicroseconds() const noexcept
+		{
+			const auto now = std::chrono::steady_clock::now();
+			return std::chrono::duration_cast<std::chrono::microseconds>(now - time_start).count();
+		}
+
+		float asMilliseconds() const noexcept
+		{
+			const auto now = std::chrono::steady_clock::now();
+			return static_cast<float>(std::chrono::duration_cast<std::chrono::milliseconds>(now - time_start).count());
+		}
+
+		float asSeconds() const noexcept
+		{
+			const auto now = std::chrono::steady_clock::now();
+			return static_cast<float>(std::chrono::duration_cast<std::chrono::seconds>(now - time_start).count());
+		}
+
+		float asMinutes() const noexcept
+		{
+			const auto now = std::chrono::steady_clock::now();
+			return static_cast<float>(std::chrono::duration_cast<std::chrono::minutes>(now - time_start).count());
+		}
+
+		float asHours() const noexcept
+		{
+			const auto now = std::chrono::steady_clock::now();
+			return static_cast<float>(std::chrono::duration_cast<std::chrono::hours>(now - time_start).count());
+		}
+
+
+	private:
+
+		std::chrono::time_point<std::chrono::steady_clock> time_start{};
+	};
+
 
 	class Clock
 	{
 	public:
 
-		explicit Clock(bool start_on_creation = true) noexcept;
+	// = Construction/Destruction
 
-		~Clock() noexcept;
+		explicit Clock(bool start_on_creation = false) noexcept;
 
+		~Clock() noexcept = default;
+
+
+	// = Actiors
 
 		void start() noexcept;
 
@@ -26,19 +74,14 @@ namespace game_time
 		void stop() noexcept;
 
 
+	// = Getters
 
-		double asMilliseconds() const noexcept;
-
-		double asSeconds() const noexcept;
-
-		double asMinutes() const noexcept;
-
-		double asHours() const noexcept;
+		Time getTime() const noexcept;
 
 
 	private:
 		
-		double time_start{};
+		std::chrono::time_point<std::chrono::steady_clock> time_start{};
 
 	};
 

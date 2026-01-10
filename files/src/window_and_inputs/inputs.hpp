@@ -7,7 +7,7 @@
 
 #include "uHeaders/opengl.hpp"
 
-namespace wai
+namespace Wai
 {
 
 	struct Buttons

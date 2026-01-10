@@ -5,7 +5,7 @@
 // =====================
 
 
-wai::Window::Window(const mpml::Vector2<int>& size_, const std::string& name, GLFWmonitor* monitor, GLFWwindow* share)
+Wai::Window::Window(const mpml::Vector2<int>& size_, const std::string& name, GLFWmonitor* monitor, GLFWwindow* share)
 {
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
@@ -27,7 +27,7 @@ wai::Window::Window(const mpml::Vector2<int>& size_, const std::string& name, GL
 }
 
 
-wai::Window::~Window() noexcept
+Wai::Window::~Window() noexcept
 {
 	glfwDestroyWindow(m_window);
 }

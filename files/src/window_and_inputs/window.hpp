@@ -3,13 +3,17 @@
 // Allosker ------------------------------
 // =========+
 // Define a Window class for easier management of ressources
+// Defines all keyboard inputs needed and different mods for them
 // ---------------------------------------
 
 #include "uHeaders/opengl.hpp"
 #include "inputs.hpp"
-#include <string>
+#include "utilities/time/clock.hpp"
 
-namespace wai
+#include <string>
+#include <array>
+
+namespace Wai
 {
 	class Window
 	{
@@ -44,6 +48,7 @@ namespace wai
 
 		void clearEvents() const noexcept
 		{
+			updateKeys();
 			glfwPollEvents();
 		}
 
@@ -86,7 +91,12 @@ namespace wai
 
 		std::uint8_t getKey(int key) const noexcept
 		{
-			return glfwGetKey(m_window, key);
+			return glfwGetKey(m_window, key);	
+		}
+
+		void updateKeys() const noexcept
+		{
+			m_lastKeyDowns = m_keyDowns;
 		}
 
 		bool keyPressed(int key) const noexcept
@@ -96,11 +106,9 @@ namespace wai
 
 		bool keyPressedOnce(int key) const noexcept
 		{
-			static int last_key{key};
+			m_keyDowns[key] = glfwGetKey(m_window, key) == Buttons::Pressed;
 
-			if (key == last_key)
-				return false;
-
+			return m_keyDowns[key] && !m_lastKeyDowns[key];
 		}
 
 		bool keyReleased(int key) const noexcept
@@ -110,11 +118,16 @@ namespace wai
 
 	private:
 
+		// Make that better
+		mutable std::array<bool, 348> m_keyDowns{};
+		mutable std::array<bool, 348> m_lastKeyDowns{};
 
+
+
+		mpml::Vector2<int> m_size{};
 
 		GLFWwindow* m_window{ nullptr };
 
-		mpml::Vector2<int> m_size{};
 	};
 
 } // WAI

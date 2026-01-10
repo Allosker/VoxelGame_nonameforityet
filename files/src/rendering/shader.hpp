@@ -26,7 +26,7 @@ namespace render
 		~Shader() noexcept;
 
 
-	// = Actiors
+	// = Actors
 
 		void use() const noexcept;
 

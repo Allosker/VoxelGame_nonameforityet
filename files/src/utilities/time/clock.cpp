@@ -1,37 +1,27 @@
 #include "clock.hpp"
 
 // =====================
-// Construction/Destruction
-// =====================
-
-game_time::Clock::Clock(bool start_on_creation) noexcept
-{
-
-}
-
-game_time::Clock::~Clock() noexcept
-{
-}
-
-
-// =====================
 // Actors
 // =====================
 
-void game_time::Clock::start() noexcept
+GameTime::Clock::Clock(bool start_on_creation) noexcept
 {
-	if(time_start != 0)
-		time_start = glfwGetTime();
+	start();
 }
 
-void game_time::Clock::reset() noexcept
+void GameTime::Clock::start() noexcept
 {
-	time_start = glfwGetTime();
+	time_start = std::chrono::high_resolution_clock::now();
 }
 
-void game_time::Clock::stop() noexcept
+void GameTime::Clock::reset() noexcept
 {
-	time_start = 0;
+	time_start = std::chrono::high_resolution_clock::now();
+}
+
+void GameTime::Clock::stop() noexcept
+{
+	time_start = {};
 }
 
 
@@ -39,25 +29,9 @@ void game_time::Clock::stop() noexcept
 // Getters
 // =====================
 
-double game_time::Clock::asMilliseconds() const noexcept
+GameTime::Time GameTime::Clock::getTime() const noexcept
 {
-	if (time_start == 0)
-		return 0;
-
-	return glfwGetTime() - time_start;
+	return time_start;
 }
 
-double game_time::Clock::asSeconds() const noexcept
-{
-	return (glfwGetTime() - time_start);
-}
 
-double game_time::Clock::asMinutes() const noexcept
-{
-	return (glfwGetTime() - time_start) / 60000;
-}
-
-double game_time::Clock::asHours() const noexcept
-{
-	return (glfwGetTime() - time_start) / 3.6e+6;
-}
