@@ -35,7 +35,7 @@ struct Vertex
 	vec3f normal{};
 };
 
-struct Cube
+struct Faces
 {
 	/*Faces*/
 	std::array<Vertex, 4> front
@@ -119,17 +119,52 @@ struct Cube
 	}
 };
 
+struct Cube
+{
+	enum Type
+		: std::uint8_t
+	{
+		Full,
+		Empty,
+		Transparent,
+	};
+
+	vec3f pos{};
+
+	Type type{};
+};
+
+class Chunk
+{
+public:
+
+
+
+	const Vertex* cubeData() const noexcept
+	{
+		return m_meshes.data();
+	}
+
+private:
+
+	std::array<Cube, 32'768> m_cube_data{};
+	std::vector<Vertex> m_meshes{};
+
+	std::uint32_t m_vbo_id{};
+
+};
+
 int main()
 {
 
 	if (!glfwInit())
 		return -1;
 
-	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, true);
-	
+	glfwWindowHint(GLFW_CONTEXT_DEBUG, true);
+
 	Wai::Window window{ {640, 480}, "Test", nullptr, nullptr };
 
-	
+
 	//glfwSetKeyCallback(window.get(), key_callback);
 
 	glfwSetFramebufferSizeCallback(window.get(), framebuffersize_callback);
@@ -137,7 +172,9 @@ int main()
 	glfwSetCursorPosCallback(window.get(), mouse_callback);
 
 	glfwSetInputMode(window.get(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-	
+
+	Faces faces{};
+
 	Cube cube{};
 
 	std::vector<std::uint32_t> indices
@@ -179,7 +216,7 @@ int main()
 	glBindVertexArray(vao);
 
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(Cube), cube.begin(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(Cube), faces.begin(), GL_STATIC_DRAW);
 
 	std::uint32_t ebo{};
 
@@ -189,19 +226,44 @@ int main()
 
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(*indices.data()), indices.data(), GL_STATIC_DRAW);
 
-	
+
 
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), nullptr);
 	glEnableVertexAttribArray(0);
 
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<void*>(sizeof(vec3f)));
-	glEnableVertexAttribArray(1);   
+	glEnableVertexAttribArray(1);
 
 
 	render::Shader shader{ SHADER_PATH"shader.vert", SHADER_PATH"shader.frag" };
 
 	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_CULL_FACE); 
+	glEnable(GL_CULL_FACE);
+
+
+	std::vector<vec3f> trans{};
+
+	for (int i{}; i < 100; i++)
+	{
+		for (int j{}; j < 100; j++)
+		{
+			for (int k{}; k < 100; k++)
+				trans.push_back({ (float)i, (float)k, (float)j});
+		}
+	}
+
+	std::uint32_t ivbo{};
+	glGenBuffers(1, &ivbo);
+	glBindBuffer(GL_ARRAY_BUFFER, ivbo); 
+
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vec3f) * trans.size(), trans.data(), GL_STATIC_DRAW);
+
+
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(vec3f), nullptr);
+	glEnableVertexAttribArray(2);
+	glVertexAttribDivisor(2, 1);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 
 	float lastFrame{};
@@ -222,19 +284,17 @@ int main()
 		mat4f proj{ mpml::perspective(mpml::Angle::fromDegrees(45), window.getSize().x, window.getSize().y, 0.1f, 100.f) };
 
 		//model = mpml::rotate(model, mpml::Angle::fromDegrees(glfwGetTime() * 10), { 0, 0.5, 0 });
-		    
-		
-		model = mpml::translate(model, { 0, 0, -4 }); 
 
-
+		//model = translate(model, { 2, 3, -4 });
 
 		shader.setValue("model", model);
 		shader.setValue("view", view);
 		shader.setValue("proj", proj);
 
 		
+		
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-		glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, nullptr);
+		glDrawElementsInstanced(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, nullptr, trans.size());
 
 		window.clearEvents();
 		window.display();
