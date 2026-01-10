@@ -3,6 +3,8 @@
 #include <stdexcept>
 #include <cstdint>
 
+#include <array>
+
 #include "window_and_inputs/window.hpp"
 #include "window_and_inputs/inputs.hpp"
 
@@ -33,6 +35,90 @@ struct Vertex
 	vec3f normal{};
 };
 
+struct Cube
+{
+	/*Faces*/
+	std::array<Vertex, 4> front
+	{
+		/*Front*/
+		Vertex
+		{{-0.5, 0, 0},  /*Left-Down*/  {0.1, 0.1, 0.1}},
+		{{-0.5, 1, 0},  /*Left-Up*/    {0.1, 0.1, 0.1}},
+		{{ 0.5, 0, 0},  /*Right-Down*/ {0.1, 0.1, 0.1}},
+		{{ 0.5, 1, 0},  /*Right-Up*/   {0.1, 0.1, 0.1}}
+	};
+
+	std::array<Vertex, 4> back
+	{
+		/*Back*/
+		Vertex
+		{{ 0.5, 0, -1},  /*Left-Down*/  {0.2, 0.2, 0.2}},
+		{{ 0.5, 1, -1},  /*Left-Up*/    {0.2, 0.2, 0.2}},
+		{{-0.5, 0, -1},  /*Right-Down*/ {0.2, 0.2, 0.2}},
+		{{-0.5, 1, -1},  /*Right-Up*/   {0.2, 0.2, 0.2}},
+	};
+
+	std::array<Vertex, 4> up
+	{
+		/*Up*/
+		Vertex
+		{{ 0.5, 1, 0},   /*Left-Down*/  {0.3, 0.3, 0.3}},
+		{{-0.5, 1, 0},   /*Left-Up*/    {0.3, 0.3, 0.3}},
+		{{ 0.5, 1, -1},  /*Right-Down*/ {0.3, 0.3, 0.3}},
+		{{-0.5, 1, -1},  /*Right-Up*/   {0.3, 0.3, 0.3}},
+	};
+
+	std::array<Vertex, 4> down
+	{
+		/*Down*/
+		Vertex
+		{{ 0.5, 0, -1},  /*Right-Down*/ {0.4, 0.4, 0.4}},
+		{{-0.5, 0, -1},  /*Right-Up*/   {0.4, 0.4, 0.4}},
+		{{ 0.5, 0, 0},   /*Left-Down*/  {0.4, 0.4, 0.4}},
+		{{-0.5, 0, 0},   /*Left-Up*/    {0.4, 0.4, 0.4}},
+	};
+
+	std::array<Vertex, 4> left
+	{
+		/*Left*/
+		Vertex
+		{{ 0.5, 0, 0},   /*Right-Down*/ {0.5, 0.5, 0.5}},
+		{{ 0.5, 1, 0},   /*Right-Up*/   {0.5, 0.5, 0.5}},
+		{{ 0.5, 0, -1},  /*Left-Down*/  {0.5, 0.5, 0.5}},
+		{{ 0.5, 1, -1},  /*Left-Up*/    {0.5, 0.5, 0.5}},
+	};
+
+	std::array<Vertex, 4> right
+	{
+		/*Right*/
+		Vertex
+		{{-0.5, 0, -1},  /*Right-Down*/ {0.6, 0.6, 0.6}},
+		{{-0.5, 1, -1},  /*Right-Up*/   {0.6, 0.6, 0.6}},
+		{{-0.5, 0, 0},   /*Left-Down*/  {0.6, 0.6, 0.6}},
+		{{-0.5, 1, 0},   /*Left-Up*/    {0.6, 0.6, 0.6}},
+	};
+
+	const float* begin() const noexcept
+	{
+		return &front[0].pos[0];
+	}
+
+	float* begin() noexcept
+	{
+		return &front[0].pos[0];
+	}
+
+	const float* end() const noexcept
+	{
+		return &right[3].normal[3];
+	}
+
+	float* end() noexcept
+	{
+		return &right[3].normal[3];
+	}
+};
+
 int main()
 {
 
@@ -52,47 +138,7 @@ int main()
 
 	glfwSetInputMode(window.get(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	
-
-	std::vector<Vertex> vertices
-	{	// Positions				// Colors
-
-		/*Front*/
-		{{-0.5, 0, 0},  /*Left-Down*/  {0.1, 0.1, 0.1}, {}},
-		{{-0.5, 1, 0},  /*Left-Up*/    {0.1, 0.1, 0.1}},
-		{{ 0.5, 0, 0},  /*Right-Down*/ {0.1, 0.1, 0.1}},
-		{{ 0.5, 1, 0},  /*Right-Up*/   {0.1, 0.1, 0.1}},
-
-		/*Back*/
-		{{ 0.5, 0, -1},  /*Left-Down*/  {0.2, 0.2, 0.2}},
-		{{ 0.5, 1, -1},  /*Left-Up*/    {0.2, 0.2, 0.2}},
-		{{-0.5, 0, -1},  /*Right-Down*/ {0.2, 0.2, 0.2}},
-		{{-0.5, 1, -1},  /*Right-Up*/   {0.2, 0.2, 0.2}},
-
-		/*Up*/
-		{{ 0.5, 1, 0},   /*Left-Down*/  {0.3, 0.3, 0.3}},
-		{{-0.5, 1, 0},   /*Left-Up*/    {0.3, 0.3, 0.3}},
-		{{ 0.5, 1, -1},  /*Right-Down*/ {0.3, 0.3, 0.3}},
-		{{-0.5, 1, -1},  /*Right-Up*/   {0.3, 0.3, 0.3}},
-
-		/*Down*/
-		{{ 0.5, 0, -1},  /*Right-Down*/ {0.4, 0.4, 0.4}},
-		{{-0.5, 0, -1},  /*Right-Up*/   {0.4, 0.4, 0.4}},
-		{{ 0.5, 0, 0},   /*Left-Down*/  {0.4, 0.4, 0.4}},
-		{{-0.5, 0, 0},   /*Left-Up*/    {0.4, 0.4, 0.4}},
-
-		/*Left*/
-		{{ 0.5, 0, 0},   /*Right-Down*/ {0.5, 0.5, 0.5}},
-		{{ 0.5, 1, 0},   /*Right-Up*/   {0.5, 0.5, 0.5}},
-		{{ 0.5, 0, -1},  /*Left-Down*/  {0.5, 0.5, 0.5}},
-		{{ 0.5, 1, -1},  /*Left-Up*/    {0.5, 0.5, 0.5}},
-
-		/*Right*/
-		{{-0.5, 0, -1},  /*Right-Down*/ {0.6, 0.6, 0.6}},
-		{{-0.5, 1, -1},  /*Right-Up*/   {0.6, 0.6, 0.6}},
-		{{-0.5, 0, 0},   /*Left-Down*/  {0.6, 0.6, 0.6}},
-		{{-0.5, 1, 0},   /*Left-Up*/    {0.6, 0.6, 0.6}},
-
-	};
+	Cube cube{};
 
 	std::vector<std::uint32_t> indices
 	{
@@ -122,6 +168,7 @@ int main()
 
 	};
 
+
 	std::uint32_t vbo{};
 
 	glGenBuffers(1, &vbo);
@@ -132,7 +179,7 @@ int main()
 	glBindVertexArray(vao);
 
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), vertices.data(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(Cube), cube.begin(), GL_STATIC_DRAW);
 
 	std::uint32_t ebo{};
 
@@ -248,7 +295,7 @@ void inputs(const Wai::Window& window) noexcept
 	if (window.keyPressed(b::Escape))
 		window.close();
 
-	if (window.keyPressed(b::Z))
+	if (window.keyPressed(b::W))
 		camera.pos += camera.front_dir * camSpeed;
 
 	if (window.keyPressed(b::S))
