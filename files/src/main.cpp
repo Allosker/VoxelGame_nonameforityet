@@ -31,18 +31,18 @@ float deltaTime{};
 struct Vertex
 {
 
-	Vertex(const vec3f& vec1, const vec3f& vec2, const vec3f& vec3 = {})
-		: m_data{ vec1, vec2, vec3 }
+	Vertex(const vec3f& vec1, const vec3f& vec2)
+		: m_data{ vec1 }
 	{
 	}
 
 	union
 	{
 		vec3f pos;
-		vec3f color;
-		vec3f normal;
+		//vec3f color;
+		//vec3f normal;
 
-		std::array<vec3f, 3> m_data;
+		std::array<vec3f, 1> m_data;
 	};
 
 	const float* data() const noexcept
@@ -253,6 +253,7 @@ public:
 			m_meshes[i][3].pos += m_trans[i];
 		}
 
+
 		//glBufferData(GL_ARRAY_BUFFER, m_trans.size() * sizeof(vec3f), m_trans.data(), GL_STATIC_DRAW);
 
 		//glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(vec3f), nullptr);
@@ -263,9 +264,10 @@ public:
 
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), nullptr);
 		glEnableVertexAttribArray(0);
+		glVertexAttribDivisor(0, 1);
 
-		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<void*>(sizeof(vec3f)));
-		glEnableVertexAttribArray(1);
+		/*glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<void*>(sizeof(vec3f)));
+		glEnableVertexAttribArray(1);*/  
 
 		// Bind Global gEBO
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gebo);
@@ -334,25 +336,25 @@ int main()
 		2, 1, 0, // Left
 		1, 2, 3, // Right
 
-		/*Back*/
-		6, 5, 4, // Left
-		5, 6, 7, // Right
+		///*Back*/
+		//6, 5, 4, // Left
+		//5, 6, 7, // Right
 
-		/*Up*/
-		10, 9, 8, // Left
-		9, 10, 11, // Right
+		///*Up*/
+		//10, 9, 8, // Left
+		//9, 10, 11, // Right
 
-		/*Down*/
-		14, 13, 12, // Left
-		13, 14, 15, // Right
+		///*Down*/
+		//14, 13, 12, // Left
+		//13, 14, 15, // Right
 
-		/*Left*/
-		18, 17, 16, // Left
-		17, 18, 19, // Right
+		///*Left*/
+		//18, 17, 16, // Left
+		//17, 18, 19, // Right
 
-		/*Right*/
-		22, 21, 20, // Left
-		21, 22, 23, // Right
+		///*Right*/
+		//22, 21, 20, // Left
+		//21, 22, 23, // Right
 
 	};
 
@@ -416,7 +418,7 @@ int main()
 		
 
 			chunk.bind();
-			glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, nullptr);
+			glDrawElementsInstanced(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, nullptr, chunk.getNumberTranslations());
 
 			/*chunk2.bind();
 			glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, nullptr);*/
