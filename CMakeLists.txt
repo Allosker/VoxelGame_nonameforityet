@@ -17,13 +17,13 @@ project (
 set(SRC_DIR "${PROJECT_SOURCE_DIR}/files/src/")
 set(INCLUDE_DIR "${PROJECT_SOURCE_DIR}/files/src/")
 set(LIB_DIR "${PROJECT_SOURCE_DIR}/files/libs/") 
-
-# Fetch files 
+ 
+# Fetch files  
 
 file(GLOB_RECURSE CPP_FILES CMAKE_CONFIGURE_DEPENDS
 	"${SRC_DIR}/*.cpp"
 	"${SRC_DIR}/*.c"
-)
+) 
 
 file(GLOB_RECURSE HPP_FILES CMAKE_CONFIGURE_DEPENDS
 	"${INCLUDE_DIR}/*.hpp"
