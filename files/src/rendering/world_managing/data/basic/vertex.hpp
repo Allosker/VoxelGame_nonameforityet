@@ -7,10 +7,10 @@
 
 #include "uHeaders/opengl.hpp"
 
-namespace render
+namespace Render
 {
 
-	namespace data
+	namespace Data
 	{
 
 		struct Vertex

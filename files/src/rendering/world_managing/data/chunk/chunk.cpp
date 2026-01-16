@@ -1,10 +1,10 @@
-#include "rendering/world_managing/data/chunk/chunk.hpp"
+#include "Rendering/world_managing/Data/chunk/chunk.hpp"
 
 // =====================
 // Construction/Destruction
 // =====================
 
-render::data::Chunk::Chunk(const vec3f& pos) noexcept
+Render::Data::Chunk::Chunk(const vec3f& pos) noexcept
 	: m_cubes_chunk(g_dimensions* g_dimensions* g_dimensions, Cube::Filling::Full),
 	m_pos{ pos }
 {
@@ -28,10 +28,12 @@ render::data::Chunk::Chunk(const vec3f& pos) noexcept
 	glEnableVertexAttribArray(1);
 }
 
-render::data::Chunk::~Chunk() noexcept
+#include <iostream>
+Render::Data::Chunk::~Chunk() noexcept
 {
-	glDeleteBuffers(1, &m_vbo);
-	glDeleteVertexArrays(1, &m_vao);
+	/*glDeleteBuffers(1, &m_vbo);
+	glDeleteVertexArrays(1, &m_vao);*/
+	std::cout << "Don't forget to create a move constructor: message from ~Chunk()\n";
 }
 
 
@@ -39,13 +41,13 @@ render::data::Chunk::~Chunk() noexcept
 // Actors
 // =====================
 
-void render::data::Chunk::draw() noexcept
+void Render::Data::Chunk::draw() const noexcept
 {
 	glBindVertexArray(m_vao);
 	glDrawArrays(GL_TRIANGLES, 0, m_nbVertices);
 }
 
-void render::data::Chunk::generateChunkMesh() noexcept
+void Render::Data::Chunk::generateChunkMesh() noexcept
 {
 	glBindVertexArray(m_vao);
 
@@ -107,62 +109,62 @@ void render::data::Chunk::generateChunkMesh() noexcept
 
 				if (CF_block_dirs[0] == F::Empty)
 				{
-					meshes.push_back({ faces[0].pos + vec3f{ x + m_pos.x, y + m_pos.y, z + m_pos.z }, faces[0].color });
-					meshes.push_back({ faces[1].pos + vec3f{ x + m_pos.x, y + m_pos.y, z + m_pos.z }, faces[1].color });
-					meshes.push_back({ faces[2].pos + vec3f{ x + m_pos.x, y + m_pos.y, z + m_pos.z }, faces[2].color });
-					meshes.push_back({ faces[3].pos + vec3f{ x + m_pos.x, y + m_pos.y, z + m_pos.z }, faces[3].color });
-					meshes.push_back({ faces[4].pos + vec3f{ x + m_pos.x, y + m_pos.y, z + m_pos.z }, faces[4].color });
-					meshes.push_back({ faces[5].pos + vec3f{ x + m_pos.x, y + m_pos.y, z + m_pos.z }, faces[5].color });
+					meshes.push_back({ cube_faces[0].pos + vec3f{ x + m_pos.x, y + m_pos.y, z + m_pos.z }, cube_faces[0].color });
+					meshes.push_back({ cube_faces[1].pos + vec3f{ x + m_pos.x, y + m_pos.y, z + m_pos.z }, cube_faces[1].color });
+					meshes.push_back({ cube_faces[2].pos + vec3f{ x + m_pos.x, y + m_pos.y, z + m_pos.z }, cube_faces[2].color });
+					meshes.push_back({ cube_faces[3].pos + vec3f{ x + m_pos.x, y + m_pos.y, z + m_pos.z }, cube_faces[3].color });
+					meshes.push_back({ cube_faces[4].pos + vec3f{ x + m_pos.x, y + m_pos.y, z + m_pos.z }, cube_faces[4].color });
+					meshes.push_back({ cube_faces[5].pos + vec3f{ x + m_pos.x, y + m_pos.y, z + m_pos.z }, cube_faces[5].color });
 				}
 
 				if (CF_block_dirs[1] == F::Empty)
 				{
-					meshes.push_back({ faces[6].pos + vec3f{ x + m_pos.x, y + m_pos.y, z + m_pos.z }, faces[6].color });
-					meshes.push_back({ faces[7].pos + vec3f{ x + m_pos.x, y + m_pos.y, z + m_pos.z }, faces[7].color });
-					meshes.push_back({ faces[8].pos + vec3f{ x + m_pos.x, y + m_pos.y, z + m_pos.z }, faces[8].color });
-					meshes.push_back({ faces[9].pos + vec3f{ x + m_pos.x, y + m_pos.y, z + m_pos.z }, faces[9].color });
-					meshes.push_back({ faces[10].pos + vec3f{ x + m_pos.x, y + m_pos.y, z + m_pos.z }, faces[10].color });
-					meshes.push_back({ faces[11].pos + vec3f{ x + m_pos.x, y + m_pos.y, z + m_pos.z }, faces[11].color });
+					meshes.push_back({ cube_faces[6].pos + vec3f{ x + m_pos.x, y + m_pos.y, z + m_pos.z }, cube_faces[6].color });
+					meshes.push_back({ cube_faces[7].pos + vec3f{ x + m_pos.x, y + m_pos.y, z + m_pos.z }, cube_faces[7].color });
+					meshes.push_back({ cube_faces[8].pos + vec3f{ x + m_pos.x, y + m_pos.y, z + m_pos.z }, cube_faces[8].color });
+					meshes.push_back({ cube_faces[9].pos + vec3f{ x + m_pos.x, y + m_pos.y, z + m_pos.z }, cube_faces[9].color });
+					meshes.push_back({ cube_faces[10].pos + vec3f{ x + m_pos.x, y + m_pos.y, z + m_pos.z }, cube_faces[10].color });
+					meshes.push_back({ cube_faces[11].pos + vec3f{ x + m_pos.x, y + m_pos.y, z + m_pos.z }, cube_faces[11].color });
 				}
 
 				if (CF_block_dirs[2] == F::Empty)
 				{
-					meshes.push_back({ faces[12].pos + vec3f{ x + m_pos.x, y + m_pos.y, z + m_pos.z }, faces[12].color });
-					meshes.push_back({ faces[13].pos + vec3f{ x + m_pos.x, y + m_pos.y, z + m_pos.z }, faces[13].color });
-					meshes.push_back({ faces[14].pos + vec3f{ x + m_pos.x, y + m_pos.y, z + m_pos.z }, faces[14].color });
-					meshes.push_back({ faces[15].pos + vec3f{ x + m_pos.x, y + m_pos.y, z + m_pos.z }, faces[15].color });
-					meshes.push_back({ faces[16].pos + vec3f{ x + m_pos.x, y + m_pos.y, z + m_pos.z }, faces[16].color });
-					meshes.push_back({ faces[17].pos + vec3f{ x + m_pos.x, y + m_pos.y, z + m_pos.z }, faces[17].color });
+					meshes.push_back({ cube_faces[12].pos + vec3f{ x + m_pos.x, y + m_pos.y, z + m_pos.z }, cube_faces[12].color });
+					meshes.push_back({ cube_faces[13].pos + vec3f{ x + m_pos.x, y + m_pos.y, z + m_pos.z }, cube_faces[13].color });
+					meshes.push_back({ cube_faces[14].pos + vec3f{ x + m_pos.x, y + m_pos.y, z + m_pos.z }, cube_faces[14].color });
+					meshes.push_back({ cube_faces[15].pos + vec3f{ x + m_pos.x, y + m_pos.y, z + m_pos.z }, cube_faces[15].color });
+					meshes.push_back({ cube_faces[16].pos + vec3f{ x + m_pos.x, y + m_pos.y, z + m_pos.z }, cube_faces[16].color });
+					meshes.push_back({ cube_faces[17].pos + vec3f{ x + m_pos.x, y + m_pos.y, z + m_pos.z }, cube_faces[17].color });
 				}
 
 				if (CF_block_dirs[3] == F::Empty)
 				{
-					meshes.push_back({ faces[18].pos + vec3f{ x + m_pos.x, y + m_pos.y, z + m_pos.z }, faces[18].color });
-					meshes.push_back({ faces[19].pos + vec3f{ x + m_pos.x, y + m_pos.y, z + m_pos.z }, faces[19].color });
-					meshes.push_back({ faces[20].pos + vec3f{ x + m_pos.x, y + m_pos.y, z + m_pos.z }, faces[20].color });
-					meshes.push_back({ faces[21].pos + vec3f{ x + m_pos.x, y + m_pos.y, z + m_pos.z }, faces[21].color });
-					meshes.push_back({ faces[22].pos + vec3f{ x + m_pos.x, y + m_pos.y, z + m_pos.z }, faces[22].color });
-					meshes.push_back({ faces[23].pos + vec3f{ x + m_pos.x, y + m_pos.y, z + m_pos.z }, faces[23].color });
+					meshes.push_back({ cube_faces[18].pos + vec3f{ x + m_pos.x, y + m_pos.y, z + m_pos.z }, cube_faces[18].color });
+					meshes.push_back({ cube_faces[19].pos + vec3f{ x + m_pos.x, y + m_pos.y, z + m_pos.z }, cube_faces[19].color });
+					meshes.push_back({ cube_faces[20].pos + vec3f{ x + m_pos.x, y + m_pos.y, z + m_pos.z }, cube_faces[20].color });
+					meshes.push_back({ cube_faces[21].pos + vec3f{ x + m_pos.x, y + m_pos.y, z + m_pos.z }, cube_faces[21].color });
+					meshes.push_back({ cube_faces[22].pos + vec3f{ x + m_pos.x, y + m_pos.y, z + m_pos.z }, cube_faces[22].color });
+					meshes.push_back({ cube_faces[23].pos + vec3f{ x + m_pos.x, y + m_pos.y, z + m_pos.z }, cube_faces[23].color });
 				}
 
 				if (CF_block_dirs[4] == F::Empty)
 				{
-					meshes.push_back({ faces[24].pos + vec3f{ x + m_pos.x, y + m_pos.y, z + m_pos.z }, faces[24].color });
-					meshes.push_back({ faces[25].pos + vec3f{ x + m_pos.x, y + m_pos.y, z + m_pos.z }, faces[25].color });
-					meshes.push_back({ faces[26].pos + vec3f{ x + m_pos.x, y + m_pos.y, z + m_pos.z }, faces[26].color });
-					meshes.push_back({ faces[27].pos + vec3f{ x + m_pos.x, y + m_pos.y, z + m_pos.z }, faces[27].color });
-					meshes.push_back({ faces[28].pos + vec3f{ x + m_pos.x, y + m_pos.y, z + m_pos.z }, faces[28].color });
-					meshes.push_back({ faces[29].pos + vec3f{ x + m_pos.x, y + m_pos.y, z + m_pos.z }, faces[29].color });
+					meshes.push_back({ cube_faces[24].pos + vec3f{ x + m_pos.x, y + m_pos.y, z + m_pos.z }, cube_faces[24].color });
+					meshes.push_back({ cube_faces[25].pos + vec3f{ x + m_pos.x, y + m_pos.y, z + m_pos.z }, cube_faces[25].color });
+					meshes.push_back({ cube_faces[26].pos + vec3f{ x + m_pos.x, y + m_pos.y, z + m_pos.z }, cube_faces[26].color });
+					meshes.push_back({ cube_faces[27].pos + vec3f{ x + m_pos.x, y + m_pos.y, z + m_pos.z }, cube_faces[27].color });
+					meshes.push_back({ cube_faces[28].pos + vec3f{ x + m_pos.x, y + m_pos.y, z + m_pos.z }, cube_faces[28].color });
+					meshes.push_back({ cube_faces[29].pos + vec3f{ x + m_pos.x, y + m_pos.y, z + m_pos.z }, cube_faces[29].color });
 				}
 
 				if (CF_block_dirs[5] == F::Empty)
 				{
-					meshes.push_back({ faces[30].pos + vec3f{ x + m_pos.x, y + m_pos.y, z + m_pos.z }, faces[30].color });
-					meshes.push_back({ faces[31].pos + vec3f{ x + m_pos.x, y + m_pos.y, z + m_pos.z }, faces[31].color });
-					meshes.push_back({ faces[32].pos + vec3f{ x + m_pos.x, y + m_pos.y, z + m_pos.z }, faces[32].color });
-					meshes.push_back({ faces[33].pos + vec3f{ x + m_pos.x, y + m_pos.y, z + m_pos.z }, faces[33].color });
-					meshes.push_back({ faces[34].pos + vec3f{ x + m_pos.x, y + m_pos.y, z + m_pos.z }, faces[34].color });
-					meshes.push_back({ faces[35].pos + vec3f{ x + m_pos.x, y + m_pos.y, z + m_pos.z }, faces[35].color });
+					meshes.push_back({ cube_faces[30].pos + vec3f{ x + m_pos.x, y + m_pos.y, z + m_pos.z }, cube_faces[30].color });
+					meshes.push_back({ cube_faces[31].pos + vec3f{ x + m_pos.x, y + m_pos.y, z + m_pos.z }, cube_faces[31].color });
+					meshes.push_back({ cube_faces[32].pos + vec3f{ x + m_pos.x, y + m_pos.y, z + m_pos.z }, cube_faces[32].color });
+					meshes.push_back({ cube_faces[33].pos + vec3f{ x + m_pos.x, y + m_pos.y, z + m_pos.z }, cube_faces[33].color });
+					meshes.push_back({ cube_faces[34].pos + vec3f{ x + m_pos.x, y + m_pos.y, z + m_pos.z }, cube_faces[34].color });
+					meshes.push_back({ cube_faces[35].pos + vec3f{ x + m_pos.x, y + m_pos.y, z + m_pos.z }, cube_faces[35].color });
 				}
 
 			}

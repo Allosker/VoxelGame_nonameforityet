@@ -12,7 +12,7 @@
 #include <string>
 #include <string_view>
 
-namespace render
+namespace Render
 {
 
 	class Shader

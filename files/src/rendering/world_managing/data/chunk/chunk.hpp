@@ -13,10 +13,10 @@
 #include "rendering/world_managing/data/basic/cube.hpp"
 #include "rendering/world_managing/data/basic/vertex.hpp"
 
-namespace render
+namespace Render
 {
 
-	namespace data
+	namespace Data
 	{
 		class Chunk
 		{
@@ -30,9 +30,18 @@ namespace render
 
 		// = Actors
 
-			void draw() noexcept;
+			void draw() const noexcept;
 
 			void generateChunkMesh() noexcept;
+
+
+		// = Getters
+
+			// debug
+			size_t getSize()
+			{
+				return m_cubes_chunk.size();
+			}
 			
 
 		private:

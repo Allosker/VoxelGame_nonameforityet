@@ -7,7 +7,7 @@
 
 #include "mpml/mpml.hpp"
 
-namespace render
+namespace Render
 {
 
 	struct Camera

@@ -1,0 +1,1 @@
+#include "rendering/assets_managing/texturing/texture.hpp"

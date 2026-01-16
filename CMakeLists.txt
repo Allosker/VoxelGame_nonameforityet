@@ -35,7 +35,7 @@ file(GLOB_RECURSE LIB_FILES CMAKE_CONFIGURE_DEPENDS
 	"${LIB_DIR}/*.c"
 )  
  
-# Create Project  
+# Create Project    
 
 add_executable( MYPROJECT
 	${CPP_FILES}
