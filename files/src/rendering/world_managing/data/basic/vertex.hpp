@@ -16,7 +16,7 @@ namespace Render
 		struct Vertex
 		{
 			vec3f pos{};
-			vec3f color{};
+			vec2f color{};
 		};
 
 

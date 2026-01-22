@@ -19,13 +19,13 @@ set(INCLUDE_DIR "${PROJECT_SOURCE_DIR}/files/src/")
 set(LIB_DIR "${PROJECT_SOURCE_DIR}/files/libs/") 
  
 # Fetch files  
-
-file(GLOB_RECURSE CPP_FILES CMAKE_CONFIGURE_DEPENDS
+ 
+file(GLOB_RECURSE CPP_FILES CMAKE_CONFIGURE_DEPENDS 
 	"${SRC_DIR}/*.cpp"
 	"${SRC_DIR}/*.c"
 ) 
 
-file(GLOB_RECURSE HPP_FILES CMAKE_CONFIGURE_DEPENDS
+file(GLOB_RECURSE HPP_FILES CMAKE_CONFIGURE_DEPENDS  
 	"${INCLUDE_DIR}/*.hpp"
 	"${INCLUDE_DIR}/*.h"
 )
@@ -57,7 +57,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(SHADER_DIR "${CMAKE_SOURCE_DIR}/files/shaders/")
 target_compile_definitions(MYPROJECT PRIVATE SHADER_PATH="${SHADER_DIR}")
 
-set(ASSET_DIR "${CMAKE_SOURCE_DIR}/assets/")
+set(ASSET_DIR "${CMAKE_SOURCE_DIR}/files/assets/")
 target_compile_definitions(MYPROJECT PRIVATE ASSET_PATH="${ASSET_DIR}")
 
 
@@ -68,7 +68,7 @@ include(FetchContent)
 
 # GLFW - Windows creation  
 FetchContent_Declare(
-	glfw
+	glfw 
 	GIT_REPOSITORY https://github.com/glfw/glfw.git 
 	GIT_TAG 	7b6aead9fb88b3623e3b3725ebb42670cbe4c579 #refs/tags/3.4
 )

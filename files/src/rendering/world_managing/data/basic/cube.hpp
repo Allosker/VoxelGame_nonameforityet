@@ -7,87 +7,201 @@
 
 #include "uHeaders/opengl.hpp"
 #include "rendering/world_managing/data/basic/vertex.hpp"
+#include <iostream>
 
-namespace Render
+namespace Render::Data
 {
-
-	namespace Data
-
+	struct textureFace
 	{
-		static constexpr std::array<Vertex, 36> cube_faces
-		{
-			/*Front*/
-			Vertex
-			{{-0.5, 0, 0},  /*Left-Down*/  {0.1, 0.1, 0.1}},
-			{{ 0.5, 0, 0},  /*Right-Down*/ {0.1, 0.1, 0.1}},
-			{{-0.5, 1, 0},  /*Left-Up*/    {0.1, 0.1, 0.1}},
+		std::array<vec2f, 6> tex_pos{};
+	};
 
-			{{ 0.5, 0, 0},  /*Right-Down*/ {0.1, 0.1, 0.1}},
-			{{ 0.5, 1, 0},  /*Right-Up*/   {0.1, 0.1, 0.1}},
-			{{-0.5, 1, 0},  /*Left-Up*/    {0.1, 0.1, 0.1}},
+	namespace BlockType
+	{
+
+		constexpr std::array<vec2f, 6> c_dirtGrass{ vec2f{ 0, 1 }, { 0, 1 }, { 0, 0 }, { 0, 2 }, { 0, 1 }, { 0, 1 } };
+
+		constexpr std::array<vec2f, 6> c_dirt{ vec2f{ 0, 2 }, { 0, 2 }, { 0, 2 }, { 0, 2 }, { 0, 2 }, { 0, 2 } };
+
+	}
+	
+	struct Cube
+	{
+		enum Filling
+			: std::uint8_t
+		{
+			//Not_A_Block,
+			Empty,
+			//Transparent,
+			Full
+		};
+
+
+		Cube(Filling _filling)
+			: filling{ _filling }
+		{
+		}
+
+
+		void updateSpritePos(const std::array<vec2f, 6>& spritePos, const vec2f& atlas_size = { 96, 96 })
+		{
+
+			for (size_t i{}; i < sprite_coords.size(); i++)
+			{
+				
+				for (auto& uv : sprite_coords[i])
+				{
+					uv = uv * 32.f + spritePos[i] * 32.f;
+
+					uv.x /= atlas_size.x;
+					uv.y /= atlas_size.y;
+				}
+
+			}
+		}
+
+	
+		Filling filling{};
+
+		std::array<std::array<vec2f, 6>, 6> sprite_coords
+		{
+			std::array<vec2f, 6>
+			{
+				vec2f
+				{ 0, 0 },
+				{ 1, 0 },
+				{ 0, 1 },
+
+				{ 1, 0 },
+				{ 1, 1 },
+				{ 0, 1 },
+			},
+
+			{
+				vec2f
+				{ 0, 0 },
+				{ 1, 0 },
+				{ 0, 1 },
+
+				{ 1, 0 },
+				{ 1, 1 },
+				{ 0, 1 },
+			},
+	
+	
+			{
+				vec2f
+		  		{ 0, 0 },
+		  		{ 1, 0 },
+		  		{ 0, 1 },
+	
+		  		{ 1, 0 },
+		  		{ 1, 1 },
+		  		{ 0, 1 },
+			},
+	
+	
+			{
+				vec2f
+		  		{ 0, 0 },
+		  		{ 1, 0 },
+		  		{ 0, 1 },
+	
+		  		{ 1, 0 },
+		  		{ 1, 1 },
+		  		{ 0, 1 },
+			},
+	
+	
+			{
+				vec2f
+		  		{ 0, 0 },
+		  		{ 1, 0 },
+		  		{ 0, 1 },
+	
+		  		{ 1, 0 },
+		  		{ 1, 1 },
+		  		{ 0, 1 },
+			},
+		
+		
+			{
+				vec2f
+				{ 0, 0 },
+				{ 1, 0 },
+				{ 0, 1 },
+
+				{ 1, 0 },
+				{ 1, 1 },
+				{ 0, 1 },
+			}
+		}; 
+
+
+		static constexpr std::array<vec3f, 36> faces
+		{
+			// Position					   // Colors
+			/*Front*/
+			vec3f
+			{-0.5, 0, 0},  /*Left-Down*/
+			{ 0.5, 0, 0},  /*Right-Down*/
+			{-0.5, 1, 0},  /*Left-Up*/	
+
+			{ 0.5, 0, 0},  /*Right-Down*/
+			{ 0.5, 1, 0},  /*Right-Up*/
+			{-0.5, 1, 0},  /*Left-Up*/	
 
 			/*Back*/
-			{{ 0.5, 0, -1},  /*Left-Down*/  {0.2, 0.2, 0.2}},
-			{{-0.5, 0, -1},  /*Right-Down*/ {0.2, 0.2, 0.2}},
-			{{ 0.5, 1, -1},  /*Left-Up*/    {0.2, 0.2, 0.2}},
+			{ 0.5, 0, -1},  /*Left-Down*/ 
+			{-0.5, 0, -1},  /*Right-Down*/
+			{ 0.5, 1, -1},  /*Left-Up*/   
 
-			{{-0.5, 1, -1},  /*Right-Up*/   {0.2, 0.2, 0.2}},
-			{{ 0.5, 1, -1},  /*Left-Up*/    {0.2, 0.2, 0.2}},
-			{{-0.5, 0, -1},  /*Right-Down*/ {0.2, 0.2, 0.2}},
+			{-0.5, 0, -1},  /*Right-Down*/
+			{-0.5, 1, -1},  /*Right-Up*/  
+			{ 0.5, 1, -1},  /*Left-Up*/   
+			
 
 			/*Up*/
-			{{ 0.5, 1, 0},   /*Left-Down*/  {0.3, 0.3, 0.3}},
-			{{ 0.5, 1, -1},  /*Right-Down*/ {0.3, 0.3, 0.3}},
-			{{-0.5, 1, 0},   /*Left-Up*/    {0.3, 0.3, 0.3}},
+			{ 0.5, 1, 0 },   /*Left-Down*/ 
+			{ 0.5, 1, -1},  /*Right-Down*/
+			{-0.5, 1, 0 },   /*Left-Up*/   
 
-			{{-0.5, 1, -1},  /*Right-Up*/   {0.3, 0.3, 0.3}},
-			{{-0.5, 1, 0},   /*Left-Up*/    {0.3, 0.3, 0.3}},
-			{{ 0.5, 1, -1},  /*Right-Down*/ {0.3, 0.3, 0.3}},
+			{ 0.5, 1, -1},  /*Right-Down*/
+			{-0.5, 1, -1},  /*Right-Up*/  
+			{-0.5, 1, 0 },   /*Left-Up*/   
 
 			/*Down*/
-			{{ 0.5, 0, -1},  /*Right-Down*/ {0.4, 0.4, 0.4}},
-			{{ 0.5, 0, 0},   /*Left-Down*/  {0.4, 0.4, 0.4}},
-			{{-0.5, 0, -1},  /*Right-Up*/   {0.4, 0.4, 0.4}},
+			{ 0.5, 0, -1},  /*Left-Down*/
+			{ 0.5, 0, 0},  /*Right-Down*/
+			{ -0.5, 0, -1},   /*Left-Up*/
+			
+			{ 0.5, 0, 0},  /*Right-Down*/
+			{ -0.5, 0, 0},   /*Right-Up*/
+			{ -0.5, 0, -1},   /*Left-Up*/
 
-			{{-0.5, 0, 0},   /*Left-Up*/    {0.4, 0.4, 0.4}},
-			{{-0.5, 0, -1},  /*Right-Up*/   {0.4, 0.4, 0.4}},
-			{{ 0.5, 0, 0},   /*Left-Down*/  {0.4, 0.4, 0.4}},
 
 			/*Left*/
-			{{ 0.5, 0, 0},   /*Right-Down*/ {0.5, 0.5, 0.5}},
-			{{ 0.5, 0, -1},  /*Left-Down*/  {0.5, 0.5, 0.5}},
-			{{ 0.5, 1, 0},   /*Right-Up*/   {0.5, 0.5, 0.5}},
+			{ 0.5, 0, 0},  /*Left-Down*/
+			{ 0.5, 0, -1},   /*Right-Down*/
+			{ 0.5, 1, 0},  /*Left-Up*/
 
-			{{ 0.5, 1, -1},  /*Left-Up*/    {0.5, 0.5, 0.5}},
-			{{ 0.5, 1, 0},   /*Right-Up*/   {0.5, 0.5, 0.5}},
-			{{ 0.5, 0, -1},  /*Left-Down*/  {0.5, 0.5, 0.5}},
+			{ 0.5, 0, -1},   /*Right-Down*/
+			{ 0.5, 1, -1},   /*Right-Up*/
+			{ 0.5, 1, 0},  /*Left-Up*/
+			
 
 			/*Right*/
-			{{-0.5, 0, -1},  /*Right-Down*/ {0.6, 0.6, 0.6}},
-			{{-0.5, 0, 0},   /*Left-Down*/  {0.6, 0.6, 0.6}},
-			{{-0.5, 1, -1},  /*Right-Up*/   {0.6, 0.6, 0.6}},
+			{-0.5, 0, -1},  /*Right-Down*/
+			{-0.5, 0, 0},   /*Left-Down*/
+			{-0.5, 1, -1},  /*Right-Up*/  
 
-			{{-0.5, 1, 0},   /*Left-Up*/    {0.6, 0.6, 0.6}},
-			{{-0.5, 1, -1},  /*Right-Up*/   {0.6, 0.6, 0.6}},
-			{{-0.5, 0, 0},   /*Left-Down*/  {0.6, 0.6, 0.6}},
-		};
-
-
-		class Cube
-		{
-		public:
-
-			enum Filling
-				: std::uint8_t
-			{
-				//Not_A_Block,
-				Empty,
-				//Transparent,
-				Full
-			};
+			{-0.5, 0, 0},   /*Left-Up*/   
+			{-0.5, 1, 0},  /*Right-Up*/  
+			{-0.5, 1, -1},   /*Left-Down*/
 
 		};
 
-	} // data
+	};
 
-} // render
+} // Render::Data
+

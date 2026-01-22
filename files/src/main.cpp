@@ -12,6 +12,8 @@
 #include "rendering/utilities/camera.hpp"
 #include "rendering/world_managing/data/chunk/chunk.hpp"
 
+#include "rendering/assets_managing/texturing/texture.hpp"
+
 //static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) noexcept;
 
 static void framebuffersize_callback(GLFWwindow* window, int width, int height) noexcept;
@@ -54,19 +56,21 @@ int main()
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
 
+	Render::Texturing::Texture texture{ ASSET_PATH"atlas.png"};
 
-	std::vector<Render::Data::Chunk> chunks;
+	texture.bind();
 
-	for (size_t i{}; i < 10; i++)
+	/*std::vector<Render::Data::Chunk> chunks;
+
+	for (size_t i{}; i < 1; i++)
 	{
-		for (size_t j{}; j < 10; j++)
-			for (size_t k{}; k < 10; k++)
+		for (size_t j{}; j < 1; j++)
+			for (size_t k{}; k < 1; k++)
 				chunks.push_back(Render::Data::Chunk{ {(float)i * 32.f, (float)j * 32.f, (float)k * 32.f} });
-	}
+	}*/
 
 	Render::Data::Chunk chunk{ {0, 0, 0} };
 
-	std::cout << sizeof(chunk) + chunk.getSize() * sizeof(Render::Data::Cube::Filling);
 
 	float lastFrame{};
 
