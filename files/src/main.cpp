@@ -10,7 +10,9 @@
 
 #include "rendering/shader.hpp"
 #include "rendering/utilities/camera.hpp"
-#include "rendering/world_managing/data/chunk/chunk.hpp"
+
+#include "gameplay/world/chunk.hpp"
+#include "rendering/world_managing/data/chunk/chunkMesh.hpp"
 
 #include "rendering/assets_managing/texturing/texture.hpp"
 
@@ -31,6 +33,7 @@ float deltaTime{};
 
 
 int main()
+try
 {
 
 	if (!glfwInit())
@@ -60,16 +63,15 @@ int main()
 
 	texture.bind();
 
-	/*std::vector<Render::Data::Chunk> chunks;
+	std::vector<Gameplay::World::Chunk> chunks;
+	std::vector<Render::Data::ChunkMesh> chunkms;
 
-	for (size_t i{}; i < 1; i++)
-	{
-		for (size_t j{}; j < 1; j++)
-			for (size_t k{}; k < 1; k++)
-				chunks.push_back(Render::Data::Chunk{ {(float)i * 32.f, (float)j * 32.f, (float)k * 32.f} });
-	}*/
+	chunks.resize(32 * 32 * 32);
+	//chunkms.resize(32 * 32 * 32);
 
-	Render::Data::Chunk chunk{ {0, 0, 0} };
+	chunks.at(0) = Gameplay::World::Chunk{ {0,0,0} };
+	chunkms.push_back(Render::Data::ChunkMesh{ chunks.at(0) });
+
 
 
 	float lastFrame{};
@@ -99,10 +101,38 @@ int main()
 		shader.setValue("proj", proj);
 
 		//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-		for (const auto& c : chunks)
+
+		const static float size_grid{ 32.f };
+		const static float origin_grid{ size_grid / -2.f };
+
+		vec3i point_grid{ (int)std::floor(camera.pos.x / size_grid), (int)std::floor(camera.pos.y / size_grid) , (int)std::floor(camera.pos.z / size_grid) };
+		point_grid -= origin_grid;
+
+		
+
+		for(int i{0}; i < 3; i++)
+		{
+			int index_grid{ (int)(point_grid.z * size_grid * size_grid) + (int)(point_grid.y * size_grid) + (int)(point_grid.x) };
+
+			if (!(index_grid < 0) && !(index_grid > chunks.size()))
+			{
+
+				if (!chunks.at(index_grid).isInit())
+				{
+					point_grid += origin_grid;
+
+					chunks.at(index_grid) = Gameplay::World::Chunk{ {(float)point_grid.x * size_grid, (float)point_grid.y * size_grid, (float)point_grid.z * size_grid} };
+					chunkms.push_back(Render::Data::ChunkMesh{ chunks.at(index_grid) });
+				}
+
+			}
+			else
+				std::cout << "Not within bounds: " << index_grid << std::endl;
+		}
+
+		for (const auto& c : chunkms)
 			c.draw();
 			
-		chunk.draw();
 
 		window.clearEvents();
 		window.display();
@@ -112,6 +142,12 @@ int main()
 	glfwTerminate();
 
 	return 0;
+}
+catch (const std::runtime_error& e)
+{
+	std::cout << e.what() << '`n';
+
+	return -1;
 }
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos) noexcept

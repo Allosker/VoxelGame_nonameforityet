@@ -24,7 +24,7 @@ namespace Render::Data
 
 	// = Construction/Destruction
 
-		ChunkMesh(const vec3f& pos) noexcept;
+		explicit ChunkMesh(Gameplay::World::Chunk& chunk) noexcept;
 
 		~ChunkMesh() noexcept;
 
@@ -32,7 +32,7 @@ namespace Render::Data
 
 		void draw() const noexcept;
 
-		std::vector<Vertex> buildMesh(const Gameplay::World::Chunk& chunk) noexcept;
+		std::vector<Vertex> buildMesh(Gameplay::World::Chunk& chunk) noexcept;
 
 		void updateBuffer(const std::vector<Vertex>& meshes) noexcept;
 
@@ -42,8 +42,6 @@ namespace Render::Data
 			
 
 	private:
-
-		vec3f m_pos{};
 
 		std::uint32_t m_nbVertices{};
 

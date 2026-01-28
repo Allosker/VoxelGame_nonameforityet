@@ -4,7 +4,7 @@
 // Construction/Destruction
 // =====================
 
-Render::Data::ChunkMesh::ChunkMesh(const vec3f& pos) noexcept
+Render::Data::ChunkMesh::ChunkMesh(Gameplay::World::Chunk& chunk) noexcept
 {
 	glGenVertexArrays(1, &m_vao);
 	glCreateBuffers(1, &m_vbo);
@@ -12,9 +12,7 @@ Render::Data::ChunkMesh::ChunkMesh(const vec3f& pos) noexcept
 	glBindVertexArray(m_vao);
 	glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
 
-	updateBuffer(generateChunkMesh());
-
-	
+	updateBuffer(buildMesh(chunk));
 
 	glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeVertex, std::bit_cast<void*>(offsetof(Vertex, pos)));
 	glEnableVertexAttribArray(0);
@@ -28,7 +26,7 @@ Render::Data::ChunkMesh::~ChunkMesh() noexcept
 {
 	/*glDeleteBuffers(1, &m_vbo);
 	glDeleteVertexArrays(1, &m_vao);*/
-	std::cout << "Don't forget to create a move constructor: message from ~Chunk()\n";
+	std::cout << "Don't forget to create a move constructor: message from ~ChunkMesh()\n";
 }
 
 
@@ -42,7 +40,7 @@ void Render::Data::ChunkMesh::draw() const noexcept
 	glDrawArrays(GL_TRIANGLES, 0, m_nbVertices);
 }
 
-std::vector<Render::Data::Vertex> Render::Data::ChunkMesh::buildMesh(const Gameplay::World::Chunk& chunk) noexcept
+std::vector<Render::Data::Vertex> Render::Data::ChunkMesh::buildMesh(Gameplay::World::Chunk& chunk) noexcept
 {
 	std::vector<Vertex> meshes{};
 
@@ -59,7 +57,7 @@ std::vector<Render::Data::Vertex> Render::Data::ChunkMesh::buildMesh(const Gamep
 
 				std::int32_t block_index{ static_cast<std::int32_t>((z * z_stride) + (y * Gameplay::World::Chunk::g_size) + x) };
 
-				auto& current_block{ chunk.getCubeData()[block_index] };
+				auto& current_block{ chunk.getVoxelData()[block_index] };
 
 				if (current_block.filling == F::Empty)
 					continue;
@@ -69,38 +67,38 @@ std::vector<Render::Data::Vertex> Render::Data::ChunkMesh::buildMesh(const Gamep
 
 
 				if (z + 1 < 32)
-					CF_block_dirs[0] = chunk.getCubeData()[block_index + z_stride].filling;
+					CF_block_dirs[0] = chunk.getVoxelData()[block_index + z_stride].filling;
 				else
 					CF_block_dirs[0] = F::Empty;
 
 				if (z - 1 >= 0)
-					CF_block_dirs[1] = chunk.getCubeData()[block_index - z_stride].filling;
+					CF_block_dirs[1] = chunk.getVoxelData()[block_index - z_stride].filling;
 				else
 					CF_block_dirs[1] = F::Empty;
 
 
 				if (y + 1 < 32)
-					CF_block_dirs[2] = chunk.getCubeData()[block_index + Gameplay::World::Chunk::g_size].filling;
+					CF_block_dirs[2] = chunk.getVoxelData()[block_index + Gameplay::World::Chunk::g_size].filling;
 				else
 					CF_block_dirs[2] = F::Empty;
 
 				if (y - 1 >= 0)
-					CF_block_dirs[3] = chunk.getCubeData()[block_index - Gameplay::World::Chunk::g_size].filling;
+					CF_block_dirs[3] = chunk.getVoxelData()[block_index - Gameplay::World::Chunk::g_size].filling;
 				else
 					CF_block_dirs[3] = F::Empty;
 
 
 				if (x + 1 < 32)
-					CF_block_dirs[4] = chunk.getCubeData()[block_index + 1].filling;
+					CF_block_dirs[4] = chunk.getVoxelData()[block_index + 1].filling;
 				else
 					CF_block_dirs[4] = F::Empty;
 
 				if (x - 1 >= 0)
-					CF_block_dirs[5] = chunk.getCubeData()[block_index - 1].filling;
+					CF_block_dirs[5] = chunk.getVoxelData()[block_index - 1].filling;
 				else
 					CF_block_dirs[5] = F::Empty;
 
-				vec3f translation{ x + m_pos.x, y + m_pos.y, z + m_pos.z };
+				vec3f translation{ x + chunk.getPos().x, y + chunk.getPos().y, z + chunk.getPos().z};
 
 				if(y == 31)
 					current_block.updateSpritePos(BlockType::c_dirtGrass);

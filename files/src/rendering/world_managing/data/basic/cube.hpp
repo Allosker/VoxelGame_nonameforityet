@@ -37,7 +37,7 @@ namespace Render::Data
 		};
 
 
-		Cube(Filling _filling)
+		Cube(Filling _filling = Full)
 			: filling{ _filling }
 		{
 		}

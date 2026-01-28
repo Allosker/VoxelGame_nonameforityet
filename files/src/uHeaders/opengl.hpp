@@ -21,6 +21,8 @@ using vec2f = mpml::Vector2<float>;
 using vec3f = mpml::Vector3<float>;
 using vec4f = mpml::Vector4<float>;
 
+using vec3i = mpml::Vector3<int>;
+
 using mat2f = mpml::Matrix2<float>;
 using mat3f = mpml::Matrix3<float>;
 using mat4f = mpml::Matrix4<float>;
