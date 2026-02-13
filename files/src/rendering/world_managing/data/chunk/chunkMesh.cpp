@@ -21,12 +21,28 @@ Render::Data::ChunkMesh::ChunkMesh(Gameplay::World::Chunk& chunk) noexcept
 	glEnableVertexAttribArray(1);
 }
 
-#include <iostream>
+Render::Data::ChunkMesh::ChunkMesh(ChunkMesh&& other) noexcept
+{
+	*this = std::move(other);
+}
+
+Render::Data::ChunkMesh& Render::Data::ChunkMesh::operator=(ChunkMesh&& other) noexcept
+{
+	if (this == &other)
+		return *this;
+
+	m_nbVertices = other.m_nbVertices;
+	m_vao = other.m_vao;
+	m_vbo = other.m_vbo;
+
+	other.m_nbVertices = 0;
+	other.m_vao = 0;
+	other.m_vbo = 0;
+}
+
 Render::Data::ChunkMesh::~ChunkMesh() noexcept
 {
-	/*glDeleteBuffers(1, &m_vbo);
-	glDeleteVertexArrays(1, &m_vao);*/
-	std::cout << "Don't forget to create a move constructor: message from ~ChunkMesh()\n";
+	destroy();
 }
 
 
@@ -46,7 +62,7 @@ std::vector<Render::Data::Vertex> Render::Data::ChunkMesh::buildMesh(Gameplay::W
 
 	std::uint32_t z_stride{ Gameplay::World::Chunk::g_size * Gameplay::World::Chunk::g_size };
 
-	// Put translation in a translation later on
+	   
 	for (std::int32_t x{}; x < Gameplay::World::Chunk::g_size; x++)
 	{
 		for (std::int32_t y{}; y < Gameplay::World::Chunk::g_size; y++)
@@ -98,7 +114,7 @@ std::vector<Render::Data::Vertex> Render::Data::ChunkMesh::buildMesh(Gameplay::W
 				else
 					CF_block_dirs[5] = F::Empty;
 
-				vec3f translation{ x + chunk.getPos().x, y + chunk.getPos().y, z + chunk.getPos().z};
+				vec3f translation{ static_cast<float>(x + chunk.getPos().x), static_cast<float>(y + chunk.getPos().y), static_cast<float>(z + chunk.getPos().z)};
 
 				if(y == 31)
 					current_block.updateSpritePos(BlockType::c_dirtGrass);
@@ -182,4 +198,10 @@ void Render::Data::ChunkMesh::updateBuffer(const std::vector<Vertex>& meshes) no
 
 	glBufferData(GL_ARRAY_BUFFER, meshes.size() * sizeof(Vertex), meshes.data(), GL_STATIC_DRAW);
 	m_nbVertices = meshes.size();
+}
+
+void Render::Data::ChunkMesh::destroy() const noexcept
+{
+	glDeleteBuffers(1, &m_vbo);
+	glDeleteVertexArrays(1, &m_vao);
 }

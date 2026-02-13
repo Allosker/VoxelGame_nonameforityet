@@ -1,7 +1,7 @@
 #include "gameplay/world/chunk.hpp"
 
 Gameplay::World::Chunk::Chunk(const vec3f& pos) noexcept
-	: m_pos(pos), m_voxels(32'768), m_init{true}
+	: m_pos(pos), m_voxels(32'768)
 {
 
 	for (size_t x{}; x < 32; x++)

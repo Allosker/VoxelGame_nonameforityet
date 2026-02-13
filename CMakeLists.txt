@@ -28,7 +28,7 @@ file(GLOB_RECURSE CPP_FILES CMAKE_CONFIGURE_DEPENDS
 file(GLOB_RECURSE HPP_FILES CMAKE_CONFIGURE_DEPENDS  
 	"${INCLUDE_DIR}/*.hpp"
 	"${INCLUDE_DIR}/*.h"
-)
+) 
 
 file(GLOB_RECURSE LIB_FILES CMAKE_CONFIGURE_DEPENDS
 	"${LIB_DIR}/*.h"
@@ -41,13 +41,13 @@ add_executable( MYPROJECT
 	${CPP_FILES}
 	${HPP_FILES}
 	${LIB_FILES}
-)
+)  
 
 target_include_directories(MYPROJECT PUBLIC ${INCLUDE_DIR})
 target_include_directories(MYPROJECT PUBLIC ${LIB_DIR})
 
 # Other Settings
-
+ 
 set_property(TARGET MYPROJECT PROPERTY CXX_STANDARD 20)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
@@ -62,18 +62,18 @@ target_compile_definitions(MYPROJECT PRIVATE ASSET_PATH="${ASSET_DIR}")
 
 
 # Include Libraries
-
  
-include(FetchContent)
+ 
+include(FetchContent) 
 
 # GLFW - Windows creation  
-FetchContent_Declare(
+FetchContent_Declare(  
 	glfw 
 	GIT_REPOSITORY https://github.com/glfw/glfw.git 
 	GIT_TAG 	7b6aead9fb88b3623e3b3725ebb42670cbe4c579 #refs/tags/3.4
 )
 
-FetchContent_MakeAvailable(glfw)
+FetchContent_MakeAvailable(glfw) 
 
 target_link_libraries(MYPROJECT PRIVATE glfw)
 

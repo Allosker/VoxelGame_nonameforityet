@@ -1,9 +1,8 @@
 #include <iostream>
-#include <string>
 #include <stdexcept>
-#include <cstdint>
+#include <map>
 
-#include <array>
+#include "mpml/vectors/special_overloads/iostream_vectors.hpp"
 
 #include "window_and_inputs/window.hpp"
 #include "window_and_inputs/inputs.hpp"
@@ -13,8 +12,11 @@
 
 #include "gameplay/world/chunk.hpp"
 #include "rendering/world_managing/data/chunk/chunkMesh.hpp"
+#include "gameplay/world/chunkGrid.hpp"
 
 #include "rendering/assets_managing/texturing/texture.hpp"
+
+#include "mpml/vectors/special_overloads/iostream_vectors.hpp"
 
 //static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) noexcept;
 
@@ -27,8 +29,6 @@ static void inputs(const Wai::Window& window) noexcept;
 Render::Camera camera{};
 
 float deltaTime{};
-
-
 
 
 
@@ -63,16 +63,12 @@ try
 
 	texture.bind();
 
-	std::vector<Gameplay::World::Chunk> chunks;
 	std::vector<Render::Data::ChunkMesh> chunkms;
 
-	chunks.resize(32 * 32 * 32);
-	//chunkms.resize(32 * 32 * 32);
+	Gameplay::World::Chunk chunk{ {0,0,0} };
+	Render::Data::ChunkMesh chunkm{ chunk };
 
-	chunks.at(0) = Gameplay::World::Chunk{ {0,0,0} };
-	chunkms.push_back(Render::Data::ChunkMesh{ chunks.at(0) });
-
-
+	Gameplay::World::ChunkGrid grid{};
 
 	float lastFrame{};
 
@@ -90,7 +86,7 @@ try
 
 		mat4f model{ mpml::Identity4<float> };
 		mat4f view{ mpml::lookAt(camera.pos, camera.front_dir + camera.pos, camera.up_dir) };
-		mat4f proj{ mpml::perspective(mpml::Angle::fromDegrees(45), window.getSize().x, window.getSize().y, 0.1f, 100.f, true) };
+			mat4f proj{ mpml::perspective(mpml::Angle::fromDegrees(45), window.getSize().x, window.getSize().y, 0.1f, 100.f, true) };
 
 		//model = mpml::rotate(model, mpml::Angle::fromDegrees(glfwGetTime() * 10), { 0, 0.5, 0 });
 
@@ -102,37 +98,11 @@ try
 
 		//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-		const static float size_grid{ 32.f };
-		const static float origin_grid{ size_grid / -2.f };
+		grid.update(camera.pos);
 
-		vec3i point_grid{ (int)std::floor(camera.pos.x / size_grid), (int)std::floor(camera.pos.y / size_grid) , (int)std::floor(camera.pos.z / size_grid) };
-		point_grid -= origin_grid;
-
-		
-
-		for(int i{0}; i < 3; i++)
-		{
-			int index_grid{ (int)(point_grid.z * size_grid * size_grid) + (int)(point_grid.y * size_grid) + (int)(point_grid.x) };
-
-			if (!(index_grid < 0) && !(index_grid > chunks.size()))
-			{
-
-				if (!chunks.at(index_grid).isInit())
-				{
-					point_grid += origin_grid;
-
-					chunks.at(index_grid) = Gameplay::World::Chunk{ {(float)point_grid.x * size_grid, (float)point_grid.y * size_grid, (float)point_grid.z * size_grid} };
-					chunkms.push_back(Render::Data::ChunkMesh{ chunks.at(index_grid) });
-				}
-
-			}
-			else
-				std::cout << "Not within bounds: " << index_grid << std::endl;
-		}
-
-		for (const auto& c : chunkms)
-			c.draw();
+		grid.draw_all();
 			
+		chunkm.draw();
 
 		window.clearEvents();
 		window.display();

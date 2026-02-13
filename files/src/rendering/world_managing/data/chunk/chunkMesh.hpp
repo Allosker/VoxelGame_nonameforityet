@@ -24,9 +24,18 @@ namespace Render::Data
 
 	// = Construction/Destruction
 
+		ChunkMesh() = delete;
+
 		explicit ChunkMesh(Gameplay::World::Chunk& chunk) noexcept;
 
+		ChunkMesh(ChunkMesh&& other) noexcept;
+		ChunkMesh& operator=(ChunkMesh&& other) noexcept;
+
+		ChunkMesh(const ChunkMesh&) noexcept = delete;
+		ChunkMesh& operator=(const ChunkMesh&) noexcept = delete;
+
 		~ChunkMesh() noexcept;
+		
 
 	// = Actors
 
@@ -35,6 +44,8 @@ namespace Render::Data
 		std::vector<Vertex> buildMesh(Gameplay::World::Chunk& chunk) noexcept;
 
 		void updateBuffer(const std::vector<Vertex>& meshes) noexcept;
+
+		void destroy() const noexcept;
 
 
 	// = Getters

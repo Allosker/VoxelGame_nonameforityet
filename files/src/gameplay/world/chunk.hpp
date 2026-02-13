@@ -5,12 +5,11 @@
 // Basic chunk class responsible for everything related to gameplay that happens within it.
 // ---------------------------------------
 
-#include "uHeaders/opengl.hpp"
+#include "uHeaders/types.hpp"
 #include "rendering/world_managing/data/basic/cube.hpp"
 
 namespace Gameplay::World
 {
-	using WorldPos = vec3f;
 
 	class Chunk
 	{
@@ -19,6 +18,12 @@ namespace Gameplay::World
 		explicit Chunk(const vec3f& pos) noexcept;
 
 		explicit Chunk() noexcept = default;
+
+		Chunk(Chunk&&) noexcept = default;
+		Chunk& operator=(Chunk&&) noexcept = default;
+
+		Chunk(const Chunk&) = delete;
+		Chunk& operator=(const Chunk&) = delete;
 
 
 		const std::vector<Render::Data::Cube>& getVoxelData() const noexcept
@@ -31,24 +36,19 @@ namespace Gameplay::World
 			return m_voxels;
 		}
 
-		const WorldPos getPos() const noexcept
+		const types::loc getPos() const noexcept
 		{
 			return m_pos;
 		}
 
-		const WorldPos getOppositeCorner() const noexcept
+		const types::loc getOppositeCorner() const noexcept
 		{
-			return m_pos + 32.f;
+			return m_pos + 32;
 		}
 
-		const bool isInit() const noexcept
+		const bool isWithinChunk(const types::loc& point) const noexcept
 		{
-			return m_init;
-		}
-
-		const bool isWithinChunk(const WorldPos& point) const noexcept
-		{
-			const WorldPos corner{ getOppositeCorner() };
+			const types::loc corner{ getOppositeCorner() };
 
 			if (
 			(point.x > m_pos.x && point.y > m_pos.y && point.z > m_pos.z) &&
@@ -66,10 +66,10 @@ namespace Gameplay::World
 
 		std::vector<Render::Data::Cube> m_voxels;
 
-		WorldPos m_pos{};
+		
+		types::loc m_pos{};
 
-		bool m_init{ false };
-
+		
 
 	public:
 
