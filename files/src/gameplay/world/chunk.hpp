@@ -46,7 +46,7 @@ namespace Gameplay::World
 			return m_pos + 32;
 		}
 
-		const bool isWithinChunk(const types::loc& point) const noexcept
+		const bool isWithinChunk(const types::pos& point) const noexcept
 		{
 			const types::loc corner{ getOppositeCorner() };
 
@@ -56,6 +56,20 @@ namespace Gameplay::World
 				return true;
 
 			return false;
+		}
+
+		const uint32 getLocWithinChunk(const types::pos& point)
+		{
+			vec3f pos{ (float)point.x /*/ (float)g_size*/, (float)point.y /*/ (float)g_size*/, (float)point.z /*/ (float)g_size*/ };
+
+			uint32 index = pos.z + pos.y * g_size + pos.x * g_size * g_size;
+
+			return index;
+		}
+
+		void break_at(const uint32 index)
+		{
+			m_voxels.at(index).filling = Render::Data::Cube::Empty;
 		}
 
 

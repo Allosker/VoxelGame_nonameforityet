@@ -17,8 +17,9 @@ Render::Data::ChunkMesh::ChunkMesh(Gameplay::World::Chunk& chunk) noexcept
 	glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeVertex, std::bit_cast<void*>(offsetof(Vertex, pos)));
 	glEnableVertexAttribArray(0);
 
-	glVertexAttribPointer(1, 3, GL_FLOAT, false, sizeVertex, std::bit_cast<void*>(offsetof(Vertex, color)));
+	glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeVertex, std::bit_cast<void*>(offsetof(Vertex, uv)));
 	glEnableVertexAttribArray(1);
+
 }
 
 Render::Data::ChunkMesh::ChunkMesh(ChunkMesh&& other) noexcept
@@ -196,7 +197,7 @@ void Render::Data::ChunkMesh::updateBuffer(const std::vector<Vertex>& meshes) no
 	glBindVertexArray(m_vao);
 	glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
 
-	glBufferData(GL_ARRAY_BUFFER, meshes.size() * sizeof(Vertex), meshes.data(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, meshes.size() * sizeof(Vertex), meshes.data(), GL_DYNAMIC_DRAW);
 	m_nbVertices = meshes.size();
 }
 

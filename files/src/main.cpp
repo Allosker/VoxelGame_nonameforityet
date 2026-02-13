@@ -98,10 +98,19 @@ try
 
 		//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-		grid.update(camera.pos);
+		//grid.update(camera.pos);
 
-		grid.draw_all();
-			
+		//grid.draw_all();
+
+		if(chunk.isWithinChunk(camera.pos))
+			std::cout << "Block: " << chunk.getLocWithinChunk({ camera.pos.x, camera.pos.y, camera.pos.z }) << std::endl;
+
+		if (window.keyPressed(Wai::Buttons::F))
+		{
+			//chunk.break_at(chunk.getLocWithinChunk(camera.pos));
+			chunkm.updateBuffer(chunkm.buildMesh(chunk));
+		}
+			  
 		chunkm.draw();
 
 		window.clearEvents();
@@ -164,7 +173,7 @@ void inputs(const Wai::Window& window) noexcept
 	using namespace Wai;
 	using b = Buttons;
 
-	float camSpeed{ 25.f * deltaTime };
+	float camSpeed{ 5.F * deltaTime };
 
 	if (window.keyPressed(b::Escape))
 		window.close();

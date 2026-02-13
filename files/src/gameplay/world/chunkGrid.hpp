@@ -48,7 +48,6 @@ namespace Gameplay::World
 			return m_generated_new_chunks;
 		}
 
-
 	private:
 
 
