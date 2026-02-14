@@ -57,7 +57,7 @@ void Render::Data::ChunkMesh::draw() const noexcept
 	glDrawArrays(GL_TRIANGLES, 0, m_nbVertices);
 }
 
-std::vector<Render::Data::Vertex> Render::Data::ChunkMesh::buildMesh(Gameplay::World::Chunk& chunk) noexcept
+std::vector<Render::Data::Vertex> Render::Data::ChunkMesh::buildMesh(const Gameplay::World::Chunk& chunk) noexcept
 {
 	std::vector<Vertex> meshes{};
 
@@ -116,11 +116,6 @@ std::vector<Render::Data::Vertex> Render::Data::ChunkMesh::buildMesh(Gameplay::W
 					CF_block_dirs[5] = F::Empty;
 
 				vec3f translation{ static_cast<float>(x + chunk.getPos().x), static_cast<float>(y + chunk.getPos().y), static_cast<float>(z + chunk.getPos().z)};
-
-				if(y == 31)
-					current_block.updateSpritePos(BlockType::c_dirtGrass);
-				else
-					current_block.updateSpritePos(BlockType::c_dirt);
 
 
 																																

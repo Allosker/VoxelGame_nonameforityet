@@ -19,6 +19,12 @@ namespace Render
 			vec2f uv{};
 		};
 
+		struct ColorVertex
+		{
+			vec3f pos{};
+			vec3f color{};
+		};
+
 
 	} // data 
 

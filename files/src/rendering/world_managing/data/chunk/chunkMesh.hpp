@@ -41,7 +41,7 @@ namespace Render::Data
 
 		void draw() const noexcept;
 
-		std::vector<Vertex> buildMesh(Gameplay::World::Chunk& chunk) noexcept;
+		std::vector<Vertex> buildMesh(const Gameplay::World::Chunk& chunk) noexcept;
 
 		void updateBuffer(const std::vector<Vertex>& meshes) noexcept;
 

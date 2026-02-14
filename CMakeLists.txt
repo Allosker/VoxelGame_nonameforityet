@@ -45,7 +45,7 @@ add_executable( MYPROJECT
 
 target_include_directories(MYPROJECT PUBLIC ${INCLUDE_DIR})
 target_include_directories(MYPROJECT PUBLIC ${LIB_DIR})
-
+ 
 # Other Settings
  
 set_property(TARGET MYPROJECT PROPERTY CXX_STANDARD 20)

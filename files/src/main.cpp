@@ -16,7 +16,6 @@
 
 #include "rendering/assets_managing/texturing/texture.hpp"
 
-#include "mpml/vectors/special_overloads/iostream_vectors.hpp"
 
 //static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) noexcept;
 
@@ -68,10 +67,38 @@ try
 	Gameplay::World::Chunk chunk{ {0,0,0} };
 	Render::Data::ChunkMesh chunkm{ chunk };
 
-	Gameplay::World::ChunkGrid grid{};
+	//Gameplay::World::ChunkGrid grid{};
+
+	std::vector<vec3f> cubeHighlight
+	{
+		{
+			0, 0.5, 0,
+			-0.5, 0, 0,
+			0.5, 0, 0
+		}
+	};
+
+	GLuint vao{};
+	glGenVertexArrays(1, &vao);
+	GLuint vbo{};
+	glGenBuffers(1, &vbo);
+
+	glBindVertexArray(vao);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+
+	glBufferData(GL_ARRAY_BUFFER, cubeHighlight.size() * sizeof(vec3f), cubeHighlight.data(), GL_STATIC_DRAW);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(vec3f), nullptr);
+	glEnableVertexAttribArray(0);
+	//glVertexAttribPointer(1, 3, GL_FLOAT, false, 2 * sizeof(vec3f), reinterpret_cast<void*>(sizeof(vec3f)));
+	//glEnableVertexAttribArray(1);
+
+	Render::Shader cubehigh_shader{ SHADER_PATH"color.vert", SHADER_PATH"color.frag" };
+
+
+
 
 	float lastFrame{};
-
 	while (window.isOpen())
 	{
 		deltaTime = glfwGetTime() - lastFrame;
@@ -86,7 +113,7 @@ try
 
 		mat4f model{ mpml::Identity4<float> };
 		mat4f view{ mpml::lookAt(camera.pos, camera.front_dir + camera.pos, camera.up_dir) };
-			mat4f proj{ mpml::perspective(mpml::Angle::fromDegrees(45), window.getSize().x, window.getSize().y, 0.1f, 100.f, true) };
+		mat4f proj{ mpml::perspective(mpml::Angle::fromDegrees(45), window.getSize().x, window.getSize().y, 0.1f, 100.f, true) };
 
 		//model = mpml::rotate(model, mpml::Angle::fromDegrees(glfwGetTime() * 10), { 0, 0.5, 0 });
 
@@ -96,22 +123,36 @@ try
 		shader.setValue("view", view);
 		shader.setValue("proj", proj);
 
+		cubehigh_shader.use();
+		cubehigh_shader.setValue("model", model);
+		cubehigh_shader.setValue("view", view);
+		cubehigh_shader.setValue("proj", proj);
+
 		//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 		//grid.update(camera.pos);
 
 		//grid.draw_all();
 
-		if(chunk.isWithinChunk(camera.pos))
-			std::cout << "Block: " << chunk.getLocWithinChunk({ camera.pos.x, camera.pos.y, camera.pos.z }) << std::endl;
+		static vec3f ray{};
+		static vec3f camDir{};
 
-		if (window.keyPressed(Wai::Buttons::F))
-		{
-			//chunk.break_at(chunk.getLocWithinChunk(camera.pos));
-			chunkm.updateBuffer(chunkm.buildMesh(chunk));
-		}
-			  
-		chunkm.draw();
+		/*ray = camera.pos;
+		camDir = camera.front_dir;
+
+		if (chunk.isWithinChunk(ray))
+			if (window.keyPressed(Wai::Buttons::F))
+				if (chunk.break_at(chunk.getLocWithinChunk(ray)))
+					chunkm.updateBuffer(chunkm.buildMesh(chunk));
+
+		ray += camDir;
+			  */
+
+		glDisable(GL_CULL_FACE);
+		glBindVertexArray(vao);
+		glDrawArrays(GL_TRIANGLES, 0, cubeHighlight.size());
+
+		//chunkm.draw();
 
 		window.clearEvents();
 		window.display();

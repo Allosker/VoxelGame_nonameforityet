@@ -60,16 +60,25 @@ namespace Gameplay::World
 
 		const uint32 getLocWithinChunk(const types::pos& point)
 		{
-			vec3f pos{ (float)point.x /*/ (float)g_size*/, (float)point.y /*/ (float)g_size*/, (float)point.z /*/ (float)g_size*/ };
+			vec3i pos{ point - static_cast<types::pos>(m_pos) };
 
-			uint32 index = pos.z + pos.y * g_size + pos.x * g_size * g_size;
+			const auto z_stride{ g_size * g_size };
+			uint32 index = (uint32)(pos.z * z_stride) + (uint32)(pos.y * g_size) + (uint32)pos.x;
 
 			return index;
 		}
 
-		void break_at(const uint32 index)
+		bool break_at(const uint32 index)
 		{
-			m_voxels.at(index).filling = Render::Data::Cube::Empty;
+			auto& current_block{ m_voxels.at(index) };
+
+			if(current_block.filling != Render::Data::Cube::Empty)
+			{
+				current_block.filling = Render::Data::Cube::Empty;
+				return true;
+			}
+
+			return false;
 		}
 
 
