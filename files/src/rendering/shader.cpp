@@ -186,11 +186,11 @@ void Render::Shader::link(std::uint32_t s_id)
 	std::int32_t success;
 	char infoLog[512];
 
-	glGetShaderiv(s_id, GL_LINK_STATUS, &success);
+	glGetProgramiv(s_id, GL_LINK_STATUS, &success);
 
 	if (!success)
 	{
-		glGetShaderInfoLog(s_id, 512, nullptr, infoLog);
+		glGetProgramInfoLog(s_id, 512, nullptr, infoLog);
 
 		throw std::runtime_error(std::string{"ERROR::SHADER::LINKAGE_FAILED::Shader_Program::"} + infoLog + '\n');
 	}

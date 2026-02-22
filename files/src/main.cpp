@@ -1,6 +1,6 @@
 #include <iostream>
 #include <stdexcept>
-#include <map>
+#include <limits>
 
 #include "mpml/vectors/special_overloads/iostream_vectors.hpp"
 
@@ -15,6 +15,7 @@
 #include "gameplay/world/chunkGrid.hpp"
 
 #include "rendering/assets_managing/texturing/texture.hpp"
+#include "window_and_inputs/inputs.hpp"
 
 
 //static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) noexcept;
@@ -28,7 +29,6 @@ static void inputs(const Wai::Window& window) noexcept;
 Render::Camera camera{};
 
 float deltaTime{};
-
 
 
 int main()
@@ -51,8 +51,6 @@ try
 
 	glfwSetInputMode(window.get(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-
-
 	Render::Shader shader{ SHADER_PATH"shader.vert", SHADER_PATH"shader.frag" };
 
 	glEnable(GL_DEPTH_TEST);
@@ -69,12 +67,16 @@ try
 
 	//Gameplay::World::ChunkGrid grid{};
 
-	std::vector<vec3f> cubeHighlight
+	std::vector<Render::Data::VertexColor> cubeHighlight
 	{
 		{
-			0, 0.5, 0,
-			-0.5, 0, 0,
-			0.5, 0, 0
+			{0, 0, 0,},
+			{0.5, 0.2, 0.5}
+		},
+
+		{
+				{0, 0, 0,},
+				{0.5, 0.2, 0.5}
 		}
 	};
 
@@ -86,15 +88,15 @@ try
 	glBindVertexArray(vao);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 
-	glBufferData(GL_ARRAY_BUFFER, cubeHighlight.size() * sizeof(vec3f), cubeHighlight.data(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, cubeHighlight.size() * sizeof(Render::Data::VertexColor), cubeHighlight.data(), GL_STATIC_DRAW);
 
-	glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(vec3f), nullptr);
+	glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(Render::Data::VertexColor), std::bit_cast<void*>(offsetof(Render::Data::VertexColor, pos)));
 	glEnableVertexAttribArray(0);
-	//glVertexAttribPointer(1, 3, GL_FLOAT, false, 2 * sizeof(vec3f), reinterpret_cast<void*>(sizeof(vec3f)));
-	//glEnableVertexAttribArray(1);
 
-	Render::Shader cubehigh_shader{ SHADER_PATH"color.vert", SHADER_PATH"color.frag" };
+	glVertexAttribPointer(1, 3, GL_FLOAT, false, sizeof(Render::Data::VertexColor), std::bit_cast<void*>(offsetof(Render::Data::VertexColor, color)));
+	glEnableVertexAttribArray(1);
 
+	Render::Shader r1{ SHADER_PATH"color.vert", SHADER_PATH"color.frag" };
 
 
 
@@ -117,42 +119,134 @@ try
 
 		//model = mpml::rotate(model, mpml::Angle::fromDegrees(glfwGetTime() * 10), { 0, 0.5, 0 });
 
-		//model = translate(model, { 2, 3, -4 });
+		//model = mpml::translate(model, { 2, 3, -4 });
 
 		shader.setValue("model", model);
 		shader.setValue("view", view);
 		shader.setValue("proj", proj);
 
-		cubehigh_shader.use();
-		cubehigh_shader.setValue("model", model);
-		cubehigh_shader.setValue("view", view);
-		cubehigh_shader.setValue("proj", proj);
+
+
+
+		r1.use();
+		r1.setValue("model", model);
+		r1.setValue("view", view);
+		r1.setValue("proj", proj);
 
 		//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-		//grid.update(camera.pos);
+		// grid.update(camera.pos);
+		//
+		// grid.draw_all();
 
-		//grid.draw_all();
 
-		static vec3f ray{};
-		static vec3f camDir{};
 
-		/*ray = camera.pos;
-		camDir = camera.front_dir;
+		static vec3f
+		ray{},
+		step{1},
+		nextBound{},
+		tMax{},
+		tDelta{};
 
-		if (chunk.isWithinChunk(ray))
-			if (window.keyPressed(Wai::Buttons::F))
-				if (chunk.break_at(chunk.getLocWithinChunk(ray)))
-					chunkm.updateBuffer(chunkm.buildMesh(chunk));
+		static float t{};
 
-		ray += camDir;
-			  */
+		if (window.keyPressedOnce(Wai::Buttons::F))
+		{
+			const auto dir{camera.front_dir};
+			ray = camera.pos;
+			cubeHighlight.at(0).pos = ray; // DEBUG
+
+			step = vec3f{1,1,1};
+
+			if (dir.x < 0)
+				step.x = -1;
+			if (dir.y < 0)
+				step.y = -1;
+			if (dir.z < 0)
+				step.z = -1;
+
+			nextBound = vec3f{std::floor(ray.x), std::floor(ray.y), std::floor(ray.z)};
+
+			if (dir.x > 0)
+				nextBound.x++;
+			if (dir.y > 0)
+				nextBound.y++;
+			if (dir.z > 0)
+				nextBound.z++;
+
+
+			tMax.x = (nextBound.x - ray.x) / dir.x;
+			tMax.y = (nextBound.y - ray.y) / dir.y;
+			tMax.z = (nextBound.z - ray.z) / dir.z;
+
+			t = std::min(std::min(tMax.x, tMax.y), tMax.z);
+
+			tDelta.x = 1 / std::abs(dir.x);
+			tDelta.y = 1 / std::abs(dir.y);
+			tDelta.z = 1 / std::abs(dir.z);
+
+			while (true)
+			{
+				if (tMax.x < tMax.y)
+				{
+					if (tMax.x < tMax.z)
+					{
+						ray.x += step.x;
+						tMax.x += tDelta.x;
+					}
+					else
+					{
+						ray.z += step.z;
+						tMax.z += tDelta.z;
+					}
+				}
+				else
+				{
+					if (tMax.y < tMax.z)
+					{
+						ray.y += step.y;
+						tMax.y += tDelta.y;
+					}
+					else
+					{
+						ray.z += step.z;
+						tMax.z += tDelta.z;
+					}
+				}
+
+				if ((camera.pos - ray).length() >= 50)
+					break;
+
+				if (chunk.isWithinChunk(ray))
+				{
+					if (chunk.break_at(chunk.getLocWithinChunk(ray)))
+					{
+						chunkm.updateBuffer(chunkm.buildMesh(chunk));
+						break;
+					}
+
+				}
+
+				cubeHighlight.at(1).pos = ray; // DEBUG
+			}
+		}
+
+
+
+
+		glBindVertexArray(vao);
+		glBindBuffer(GL_ARRAY_BUFFER, vbo);
+		glBufferData(GL_ARRAY_BUFFER, cubeHighlight.size() * sizeof(Render::Data::VertexColor), cubeHighlight.data(), GL_STATIC_DRAW);
+
 
 		glDisable(GL_CULL_FACE);
 		glBindVertexArray(vao);
-		glDrawArrays(GL_TRIANGLES, 0, cubeHighlight.size());
+		glDrawArrays(GL_LINES, 0, cubeHighlight.size());
+		//glEnable(GL_CULL_FACE);
 
-		//chunkm.draw();
+		shader.use();
+		//
+		chunkm.draw();
 
 		window.clearEvents();
 		window.display();
@@ -214,6 +308,8 @@ void inputs(const Wai::Window& window) noexcept
 	using namespace Wai;
 	using b = Buttons;
 
+	const auto campos = camera.pos;
+
 	float camSpeed{ 5.F * deltaTime };
 
 	if (window.keyPressed(b::Escape))
@@ -236,7 +332,9 @@ void inputs(const Wai::Window& window) noexcept
 
 	if (window.keyPressed(b::Space))
 		camera.pos += camera.up_dir * camSpeed;
-	
+
+	// if (campos != camera.pos)
+	// 	std::cout << "CamPos: " << camera.pos << std::endl;
 }
 
 void framebuffersize_callback(GLFWwindow* window, int width, int height) noexcept
