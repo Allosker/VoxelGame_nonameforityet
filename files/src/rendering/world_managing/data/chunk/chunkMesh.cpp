@@ -1,4 +1,4 @@
-#include "Rendering/world_managing/Data/chunk/chunkMesh.hpp"
+#include "rendering/world_managing/data/chunk/chunkMesh.hpp"
 
 // =====================
 // Construction/Destruction
@@ -39,6 +39,8 @@ Render::Data::ChunkMesh& Render::Data::ChunkMesh::operator=(ChunkMesh&& other) n
 	other.m_nbVertices = 0;
 	other.m_vao = 0;
 	other.m_vbo = 0;
+
+	return *this;
 }
 
 Render::Data::ChunkMesh::~ChunkMesh() noexcept

@@ -8,6 +8,9 @@
 #include "uHeaders/types.hpp"
 #include "rendering/world_managing/data/basic/cube.hpp"
 
+#include <vector>
+
+#include "mpml/vectors/special_overloads/iostream_vectors.hpp"
 namespace Gameplay::World
 {
 
@@ -60,10 +63,10 @@ namespace Gameplay::World
 
 		const uint32 getLocWithinChunk(const types::pos& point)
 		{
-			vec3i pos{ point - static_cast<types::pos>(m_pos) };
+			auto fpos = point - static_cast<types::pos>(m_pos);
 
 			const auto z_stride{ g_size * g_size };
-			uint32 index = (uint32)(pos.z * z_stride) + (uint32)(pos.y * g_size) + (uint32)pos.x;
+			auto index = (uint32)(std::abs(std::floor(fpos.z) * z_stride + std::floor(fpos.y) * g_size + std::floor(fpos.x)));
 
 			return index;
 		}

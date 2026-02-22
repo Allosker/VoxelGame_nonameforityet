@@ -11,12 +11,12 @@ GameTime::Clock::Clock(bool start_on_creation) noexcept
 
 void GameTime::Clock::start() noexcept
 {
-	time_start = std::chrono::high_resolution_clock::now();
+	//time_start = std::chrono::high_resolution_clock::now();
 }
 
 void GameTime::Clock::reset() noexcept
 {
-	time_start = std::chrono::high_resolution_clock::now();
+	//time_start = std::chrono::high_resolution_clock::now();
 }
 
 void GameTime::Clock::stop() noexcept
