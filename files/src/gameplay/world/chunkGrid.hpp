@@ -17,7 +17,7 @@ namespace Gameplay::World
 
 	namespace ChunkSettings
 	{
-		inline int32 world_render_distance{ 0 };
+		inline int32 world_render_distance{ 1 };
 
 	} // ChunkSettings
 	
@@ -25,6 +25,7 @@ namespace Gameplay::World
 	{
 	public:
 
+		// Initialization
 
 		explicit ChunkGrid() noexcept = default;
 
@@ -47,6 +48,37 @@ namespace Gameplay::World
 		{
 			return m_generated_new_chunks;
 		}
+		
+		std::map<types::loc, Gameplay::World::Chunk>& getChunks() noexcept
+		{
+			return m_chunks;
+		}
+
+		const std::map<types::loc, Gameplay::World::Chunk>& getChunks() const noexcept
+		{
+			return m_chunks;
+		}
+
+		Gameplay::World::Chunk& chunk_at(const types::loc& key)
+		{
+			return m_chunks.at(key);
+		}
+
+		Render::Data::ChunkMesh& chunkmesh_at(const types::loc& key)
+		{
+			return m_chunk_meshes.at(key);
+		}
+
+		std::optional<types::loc> getLoc(const types::pos& camPos)
+		{
+			const types::loc camLoc{
+			static_cast<int>(std::floor(camPos.x / Chunk::g_size)),
+			static_cast<int>(std::floor(camPos.y / Chunk::g_size)),
+			static_cast<int>(std::floor(camPos.z / Chunk::g_size)) };
+
+			return m_chunks.contains(camLoc) ? std::make_optional(camLoc) : std::nullopt;
+		}
+
 
 	private:
 

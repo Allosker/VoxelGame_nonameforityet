@@ -61,7 +61,7 @@ namespace Gameplay::World
 			return false;
 		}
 
-		const uint32 getLocWithinChunk(const types::pos& point)
+		const types::chunk_index getLocWithinChunk(const types::pos& point) const noexcept
 		{
 			auto fpos = point - static_cast<types::pos>(m_pos);
 
@@ -71,7 +71,7 @@ namespace Gameplay::World
 			return index;
 		}
 
-		bool break_at(const uint32 index)
+		bool break_at(const types::chunk_index& index)
 		{
 			auto& current_block{ m_voxels.at(index) };
 
@@ -82,6 +82,11 @@ namespace Gameplay::World
 			}
 
 			return false;
+		}
+
+		const bool is_empty_at(const types::chunk_index& index) const noexcept
+		{
+			return m_voxels.at(index).filling == Render::Data::Cube::Empty;
 		}
 
 

@@ -24,7 +24,7 @@ file(GLOB_RECURSE CPP_FILES CMAKE_CONFIGURE_DEPENDS
 	"${SRC_DIR}/*.cpp"
 	"${SRC_DIR}/*.c"  
 ) 
-
+ 
 file(GLOB_RECURSE HPP_FILES CMAKE_CONFIGURE_DEPENDS  
 	"${INCLUDE_DIR}/*.hpp"
 	"${INCLUDE_DIR}/*.h"
@@ -51,7 +51,7 @@ target_include_directories(MYPROJECT PUBLIC ${LIB_DIR})
 set_property(TARGET MYPROJECT PROPERTY CXX_STANDARD 20)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-
+ 
 # Other Paths
 
 set(SHADER_DIR "${CMAKE_SOURCE_DIR}/files/shaders/")
@@ -80,7 +80,7 @@ if(UNIX AND NOT APPLE OR NOT WIN32 OR NOT MINGW OR NOT MSYS OR NOT CYGWIN)
 endif()
 
 
-FetchContent_MakeAvailable(glfw) 
+FetchContent_MakeAvailable(glfw)   
 
 target_link_libraries(MYPROJECT PRIVATE glfw)
 

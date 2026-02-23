@@ -2,12 +2,12 @@
 // MIT
 // Allosker ------------------------------
 // =========+
-// Define a basic Camera struct with three most basic positions. Note: this is subject to changes.
+// Define a basic Camera struct with three basic positions. Note: this is subject to changes.
 // ---------------------------------------
 
 #include "mpml/mpml.hpp"
 
-namespace Render
+namespace Render::Utils
 {
 
 	struct Camera
