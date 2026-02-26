@@ -6,7 +6,7 @@
 // ---------------------------------------
 
 #include "uHeaders/types.hpp"
-#include "rendering/world_managing/data/basic/cube.hpp"
+#include "rendering/world_managing/data/basic/voxel.hpp"
 
 #include <vector>
 
@@ -17,6 +17,8 @@ namespace Gameplay::World
 	class Chunk
 	{
 	public: 
+
+		// Initialization
 
 		explicit Chunk(const vec3f& pos) noexcept;
 
@@ -29,73 +31,56 @@ namespace Gameplay::World
 		Chunk& operator=(const Chunk&) = delete;
 
 
-		const std::vector<Render::Data::Cube>& getVoxelData() const noexcept
-		{
-			return m_voxels;
-		}
+		// Getters
+			
+		const std::vector<Render::Data::Voxel>& getVoxelData() const noexcept { return m_voxels; };
 
-		std::vector<Render::Data::Cube>& getVoxelData() noexcept
-		{
-			return m_voxels;
-		}
+		std::vector<Render::Data::Voxel>& getVoxelData() noexcept { return m_voxels; }
 
-		const types::loc getPos() const noexcept
-		{
-			return m_pos;
-		}
+		const types::loc getPos() const noexcept { return m_pos; }
 
-		const types::loc getOppositeCorner() const noexcept
-		{
-			return m_pos + 32;
-		}
+		const types::loc getOppositeCorner() const noexcept { return m_pos + static_cast<int64>(32); }
+
+
+		// Predicates
 
 		const bool isWithinChunk(const types::pos& point) const noexcept
 		{
 			const types::loc corner{ getOppositeCorner() };
 
 			if (
-			(point.x > m_pos.x && point.y > m_pos.y && point.z > m_pos.z) &&
-			(point.x < corner.x && point.y < corner.y && point.z < corner.z))
+				(point.x > m_pos.x && point.y > m_pos.y && point.z > m_pos.z) &&
+				(point.x < corner.x && point.y < corner.y && point.z < corner.z))
 				return true;
-
-			return false;
-		}
-
-		const types::chunk_index getLocWithinChunk(const types::pos& point) const noexcept
-		{
-			auto fpos = point - static_cast<types::pos>(m_pos);
-
-			const auto z_stride{ g_size * g_size };
-			auto index = (uint32)(std::abs(std::floor(fpos.z) * z_stride + std::floor(fpos.y) * g_size + std::floor(fpos.x)));
-
-			return index;
-		}
-
-		bool break_at(const types::chunk_index& index)
-		{
-			auto& current_block{ m_voxels.at(index) };
-
-			if(current_block.filling != Render::Data::Cube::Empty)
-			{
-				current_block.filling = Render::Data::Cube::Empty;
-				return true;
-			}
 
 			return false;
 		}
 
 		const bool is_empty_at(const types::chunk_index& index) const noexcept
 		{
-			return m_voxels.at(index).filling == Render::Data::Cube::Empty;
+			return m_voxels.at(index).filling == Render::Data::Voxel::Empty;
 		}
+
+
+		// Mutators
+
+		Render::Data::Voxel& block_at(const types::chunk_index& index)
+		{
+			return m_voxels.at(index);
+		}
+
+		const Render::Data::Voxel& block_at(const types::chunk_index& index) const
+		{
+			return m_voxels.at(index);
+		}
+
+		
 
 
 	private:
 
 
-
-
-		std::vector<Render::Data::Cube> m_voxels;
+		std::vector<Render::Data::Voxel> m_voxels;
 
 		
 		types::loc m_pos{};

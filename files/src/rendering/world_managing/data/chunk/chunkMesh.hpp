@@ -10,7 +10,7 @@
 #include <bit>
 
 #include "uHeaders/opengl.hpp"
-#include "rendering/world_managing/data/basic/cube.hpp"
+#include "rendering/world_managing/data/basic/voxel.hpp"
 #include "rendering/world_managing/data/basic/vertex.hpp"
 
 #include "gameplay/world/chunk.hpp"

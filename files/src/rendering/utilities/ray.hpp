@@ -13,6 +13,13 @@
 namespace Render::Utils
 {
 
+	struct RayCastResult
+	{
+		vec3f origin{};
+		vec3f pos{};
+		vec3f normal{};
+	};
+
 	class Ray
 	{
 	public:
@@ -21,84 +28,42 @@ namespace Render::Utils
 
 		Ray() noexcept = default;
 
-		Ray(const vec3f& origin, const vec3f& dir) noexcept
-			: m_origin{ origin }, m_ray{ origin }, m_step{1}, m_nextBound{ std::floor(m_ray.x), std::floor(m_ray.y), std::floor(m_ray.z) }
+		Ray(const vec3f& origin_, const vec3f& dir) noexcept
+			: pos{ origin_ }, step{1}, nextBound{ std::floor(pos.x), std::floor(pos.y), std::floor(pos.z) }
 		{
 			if (dir.x < 0)
-				m_step.x = -1;
+				step.x = -1;
 			if (dir.y < 0)
-				m_step.y = -1;
+				step.y = -1;
 			if (dir.z < 0)
-				m_step.z = -1;
+				step.z = -1;
 
 			// Next Bound
 			if (dir.x > 0)
-				m_nextBound.x++;
+				nextBound.x++;
 			if (dir.y > 0)
-				m_nextBound.y++;
+				nextBound.y++;
 			if (dir.z > 0)
-				m_nextBound.z++;
+				nextBound.z++;
 
 
-			m_tMax.x = (m_nextBound.x - m_ray.x) / dir.x;
-			m_tMax.y = (m_nextBound.y - m_ray.y) / dir.y;
-			m_tMax.z = (m_nextBound.z - m_ray.z) / dir.z;
+			tMax.x = (nextBound.x - pos.x) / dir.x;
+			tMax.y = (nextBound.y - pos.y) / dir.y;
+			tMax.z = (nextBound.z - pos.z) / dir.z;
 
-			m_tDelta.x = 1 / std::abs(dir.x);
-			m_tDelta.y = 1 / std::abs(dir.y);
-			m_tDelta.z = 1 / std::abs(dir.z);
+			tDelta.x = 1 / std::abs(dir.x);
+			tDelta.y = 1 / std::abs(dir.y);
+			tDelta.z = 1 / std::abs(dir.z);
 		}
 
 
-		// Actors
+	public:
 
-		void update() noexcept
-		{
-			if (m_tMax.x < m_tMax.y)
-			{
-				if (m_tMax.x < m_tMax.z)
-				{
-					m_ray.x += m_step.x;
-					m_tMax.x += m_tDelta.x;
-				}
-				else
-				{
-					m_ray.z += m_step.z;
-					m_tMax.z += m_tDelta.z;
-				}
-			}
-			else
-			{
-				if (m_tMax.y < m_tMax.z)
-				{
-					m_ray.y += m_step.y;
-					m_tMax.y += m_tDelta.y;
-				}
-				else
-				{
-					m_ray.z += m_step.z;
-					m_tMax.z += m_tDelta.z;
-				}
-			}
-		}
-		
-
-		// Getters
-
-		const types::pos& getPos() const noexcept { return m_ray; }
-
-		const types::pos& getOrigin() const noexcept { return m_origin; }
-
-
-	protected:
-
-		vec3f	m_ray{};
-		vec3f	m_origin{};
-		vec3f	m_step{};
-		vec3f	m_nextBound{};
-		vec3f	m_tMax{};
-		vec3f	m_tDelta{};
-
+		vec3f	pos{};
+		vec3f	step{};
+		vec3f	nextBound{};
+		vec3f	tMax{};
+		vec3f	tDelta{};
 
 	};
 

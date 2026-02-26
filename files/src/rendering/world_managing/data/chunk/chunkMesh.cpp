@@ -72,7 +72,7 @@ std::vector<Render::Data::Vertex> Render::Data::ChunkMesh::buildMesh(const Gamep
 		{
 			for (std::int32_t z{}; z < Gameplay::World::Chunk::g_size; z++)
 			{
-				using F = Cube::Filling;
+				using F = Voxel::Filling;
 
 				std::int32_t block_index{ static_cast<std::int32_t>((z * z_stride) + (y * Gameplay::World::Chunk::g_size) + x) };
 
@@ -123,62 +123,62 @@ std::vector<Render::Data::Vertex> Render::Data::ChunkMesh::buildMesh(const Gamep
 																																
 				if (CF_block_dirs[0] == F::Empty)
 				{
-					meshes.push_back({ Cube::faces[0 ] + translation, current_block.sprite_coords[0][0] });
-					meshes.push_back({ Cube::faces[1 ] + translation, current_block.sprite_coords[0][1] });
-					meshes.push_back({ Cube::faces[2 ] + translation, current_block.sprite_coords[0][2] });
-					meshes.push_back({ Cube::faces[3 ] + translation, current_block.sprite_coords[0][3] });
-					meshes.push_back({ Cube::faces[4 ] + translation, current_block.sprite_coords[0][4] });
-					meshes.push_back({ Cube::faces[5 ] + translation, current_block.sprite_coords[0][5] });
+					meshes.push_back({ Voxel::faces[0 ] + translation, current_block.sprite_coords[0][0] });
+					meshes.push_back({ Voxel::faces[1 ] + translation, current_block.sprite_coords[0][1] });
+					meshes.push_back({ Voxel::faces[2 ] + translation, current_block.sprite_coords[0][2] });
+					meshes.push_back({ Voxel::faces[3 ] + translation, current_block.sprite_coords[0][3] });
+					meshes.push_back({ Voxel::faces[4 ] + translation, current_block.sprite_coords[0][4] });
+					meshes.push_back({ Voxel::faces[5 ] + translation, current_block.sprite_coords[0][5] });
 				}																					 					   
 																									 					   
 				if (CF_block_dirs[1] == F::Empty)													 					   
 				{																					 					   
-					meshes.push_back({ Cube::faces[6 ] + translation, current_block.sprite_coords[1][0] });
-					meshes.push_back({ Cube::faces[7 ] + translation, current_block.sprite_coords[1][1] });
-					meshes.push_back({ Cube::faces[8 ] + translation, current_block.sprite_coords[1][2] });
-					meshes.push_back({ Cube::faces[9 ] + translation, current_block.sprite_coords[1][3] });
-					meshes.push_back({ Cube::faces[10] + translation, current_block.sprite_coords[1][4] });
-					meshes.push_back({ Cube::faces[11] + translation, current_block.sprite_coords[1][5] });
+					meshes.push_back({ Voxel::faces[6 ] + translation, current_block.sprite_coords[1][0] });
+					meshes.push_back({ Voxel::faces[7 ] + translation, current_block.sprite_coords[1][1] });
+					meshes.push_back({ Voxel::faces[8 ] + translation, current_block.sprite_coords[1][2] });
+					meshes.push_back({ Voxel::faces[9 ] + translation, current_block.sprite_coords[1][3] });
+					meshes.push_back({ Voxel::faces[10] + translation, current_block.sprite_coords[1][4] });
+					meshes.push_back({ Voxel::faces[11] + translation, current_block.sprite_coords[1][5] });
 				}																					 					   
 																									 					   
 				if (CF_block_dirs[2] == F::Empty)													 					   
 				{																					 					   
-					meshes.push_back({ Cube::faces[12] + translation, current_block.sprite_coords[2][0] });
-					meshes.push_back({ Cube::faces[13] + translation, current_block.sprite_coords[2][1] });
-					meshes.push_back({ Cube::faces[14] + translation, current_block.sprite_coords[2][2] });
-					meshes.push_back({ Cube::faces[15] + translation, current_block.sprite_coords[2][3] });
-					meshes.push_back({ Cube::faces[16] + translation, current_block.sprite_coords[2][4] });
-					meshes.push_back({ Cube::faces[17] + translation, current_block.sprite_coords[2][5] });
+					meshes.push_back({ Voxel::faces[12] + translation, current_block.sprite_coords[2][0] });
+					meshes.push_back({ Voxel::faces[13] + translation, current_block.sprite_coords[2][1] });
+					meshes.push_back({ Voxel::faces[14] + translation, current_block.sprite_coords[2][2] });
+					meshes.push_back({ Voxel::faces[15] + translation, current_block.sprite_coords[2][3] });
+					meshes.push_back({ Voxel::faces[16] + translation, current_block.sprite_coords[2][4] });
+					meshes.push_back({ Voxel::faces[17] + translation, current_block.sprite_coords[2][5] });
 				}																					 					   
 																									 					   
 				if (CF_block_dirs[3] == F::Empty)													 					   
 				{																					 					   
-					meshes.push_back({ Cube::faces[18] + translation, current_block.sprite_coords[3][0] });
-					meshes.push_back({ Cube::faces[19] + translation, current_block.sprite_coords[3][1] });
-					meshes.push_back({ Cube::faces[20] + translation, current_block.sprite_coords[3][2] });
-					meshes.push_back({ Cube::faces[21] + translation, current_block.sprite_coords[3][3] });
-					meshes.push_back({ Cube::faces[22] + translation, current_block.sprite_coords[3][4] });
-					meshes.push_back({ Cube::faces[23] + translation, current_block.sprite_coords[3][5] });
+					meshes.push_back({ Voxel::faces[18] + translation, current_block.sprite_coords[3][0] });
+					meshes.push_back({ Voxel::faces[19] + translation, current_block.sprite_coords[3][1] });
+					meshes.push_back({ Voxel::faces[20] + translation, current_block.sprite_coords[3][2] });
+					meshes.push_back({ Voxel::faces[21] + translation, current_block.sprite_coords[3][3] });
+					meshes.push_back({ Voxel::faces[22] + translation, current_block.sprite_coords[3][4] });
+					meshes.push_back({ Voxel::faces[23] + translation, current_block.sprite_coords[3][5] });
 				}																					 					   
 																									 					   
 				if (CF_block_dirs[4] == F::Empty)													 					   
 				{																					 					   
-					meshes.push_back({ Cube::faces[24] + translation, current_block.sprite_coords[4][0] });
-					meshes.push_back({ Cube::faces[25] + translation, current_block.sprite_coords[4][1] });
-					meshes.push_back({ Cube::faces[26] + translation, current_block.sprite_coords[4][2] });
-					meshes.push_back({ Cube::faces[27] + translation, current_block.sprite_coords[4][3] });
-					meshes.push_back({ Cube::faces[28] + translation, current_block.sprite_coords[4][4] });
-					meshes.push_back({ Cube::faces[29] + translation, current_block.sprite_coords[4][5] });
+					meshes.push_back({ Voxel::faces[24] + translation, current_block.sprite_coords[4][0] });
+					meshes.push_back({ Voxel::faces[25] + translation, current_block.sprite_coords[4][1] });
+					meshes.push_back({ Voxel::faces[26] + translation, current_block.sprite_coords[4][2] });
+					meshes.push_back({ Voxel::faces[27] + translation, current_block.sprite_coords[4][3] });
+					meshes.push_back({ Voxel::faces[28] + translation, current_block.sprite_coords[4][4] });
+					meshes.push_back({ Voxel::faces[29] + translation, current_block.sprite_coords[4][5] });
 				}																					 					   
 																									 					   
 				if (CF_block_dirs[5] == F::Empty)													 					   
 				{																					 					   
-					meshes.push_back({ Cube::faces[30] + translation, current_block.sprite_coords[5][0] });
-					meshes.push_back({ Cube::faces[31] + translation, current_block.sprite_coords[5][1] });
-					meshes.push_back({ Cube::faces[32] + translation, current_block.sprite_coords[5][2] });
-					meshes.push_back({ Cube::faces[33] + translation, current_block.sprite_coords[5][3] });
-					meshes.push_back({ Cube::faces[34] + translation, current_block.sprite_coords[5][4] });
-					meshes.push_back({ Cube::faces[35] + translation, current_block.sprite_coords[5][5] });
+					meshes.push_back({ Voxel::faces[30] + translation, current_block.sprite_coords[5][0] });
+					meshes.push_back({ Voxel::faces[31] + translation, current_block.sprite_coords[5][1] });
+					meshes.push_back({ Voxel::faces[32] + translation, current_block.sprite_coords[5][2] });
+					meshes.push_back({ Voxel::faces[33] + translation, current_block.sprite_coords[5][3] });
+					meshes.push_back({ Voxel::faces[34] + translation, current_block.sprite_coords[5][4] });
+					meshes.push_back({ Voxel::faces[35] + translation, current_block.sprite_coords[5][5] });
 				}
 
 			}

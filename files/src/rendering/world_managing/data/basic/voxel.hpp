@@ -11,12 +11,12 @@
 
 namespace Render::Data
 {
-	struct textureFace
+	struct TextureFace
 	{
 		std::array<vec2f, 6> tex_pos{};
 	};
 
-	namespace BlockType
+	namespace VoxelType
 	{
 
 		constexpr std::array<vec2f, 6> c_dirtGrass{ vec2f{ 0, 1 }, { 0, 1 }, { 0, 0 }, { 0, 2 }, { 0, 1 }, { 0, 1 } };
@@ -25,7 +25,7 @@ namespace Render::Data
 
 	}
 	
-	struct Cube
+	struct Voxel
 	{
 		enum Filling
 			: std::uint8_t
@@ -37,7 +37,7 @@ namespace Render::Data
 		};
 
 
-		Cube(Filling _filling = Full)
+		Voxel(Filling _filling = Full)
 			: filling{ _filling }
 		{
 		}
@@ -55,6 +55,8 @@ namespace Render::Data
 
 					uv.x /= atlas_size.x;
 					uv.y /= atlas_size.y;
+
+					uv -= 0.0000001f;
 				}
 
 			}

@@ -17,7 +17,7 @@ namespace Gameplay::World
 
 	namespace ChunkSettings
 	{
-		inline int32 world_render_distance{ 1 };
+		inline int64 world_render_distance{ 1 };
 
 	} // ChunkSettings
 	
@@ -42,7 +42,7 @@ namespace Gameplay::World
 		void draw_all() const noexcept;
 
 
-		// Getters
+		// = Getters
 
 		const bool generatedNewChunks() const noexcept
 		{
@@ -59,17 +59,101 @@ namespace Gameplay::World
 			return m_chunks;
 		}
 
-		Gameplay::World::Chunk& chunk_at(const types::loc& key)
+
+		// = Predicates
+
+		bool is_empty(const types::pos& block_pos) const
 		{
-			return m_chunks.at(key);
+			auto* c{ chunk_at(block_pos) };
+
+			if (c == nullptr)
+				return true;
+
+			return c->block_at(getBlockIndex(block_pos)).filling == Render::Data::Voxel::Empty;
 		}
 
-		Render::Data::ChunkMesh& chunkmesh_at(const types::loc& key)
+
+		// = Mutators
+
+		Gameplay::World::Chunk* chunk_at(const types::pos& pos) noexcept
 		{
-			return m_chunk_meshes.at(key);
+			if(const auto& loc = to_loc(pos); loc)
+				return &m_chunks.at(*loc);
+			
+			return nullptr;
 		}
 
-		std::optional<types::loc> getLoc(const types::pos& camPos)
+		const Gameplay::World::Chunk* chunk_at(const types::pos& pos) const
+		{
+			if (const auto& loc = to_loc(pos); loc)
+				return &m_chunks.at(*loc);
+
+			return nullptr;
+		}
+
+		Render::Data::ChunkMesh* chunkmesh_at(const types::pos& pos)
+		{
+			if (const auto& loc = to_loc(pos); loc)
+				return &m_chunk_meshes.at(*loc);
+
+			return nullptr;
+		}
+
+		const Render::Data::ChunkMesh const* chunkmesh_at(const types::pos& pos) const
+		{
+			if (const auto& loc = to_loc(pos); loc)
+				return &m_chunk_meshes.at(*loc);
+
+			return nullptr;
+		}
+
+
+		bool place_block_at(const types::pos& block_pos, const types::pos& offset = {}) noexcept
+		{
+			auto* c{ chunk_at(block_pos + offset) };
+
+			if (c == nullptr)
+				return false;
+
+			auto& current_block{ c->block_at(getBlockIndex(block_pos + offset)) };
+
+			if (current_block.filling == Render::Data::Voxel::Empty) 
+			{
+				auto* cm{ chunkmesh_at(block_pos + offset) };
+
+				current_block.filling = Render::Data::Voxel::Full;
+				cm->updateBuffer(cm->buildMesh(*c));
+				return true;
+			}
+
+			return false;
+		}
+
+		bool break_block_at(const types::pos& block_pos) noexcept
+		{
+			auto* c{ chunk_at(block_pos) };
+
+			if (c == nullptr)
+				return false;
+
+			auto& current_block{ c->block_at(getBlockIndex(block_pos)) };
+
+			if (current_block.filling != Render::Data::Voxel::Empty)
+			{
+				auto* cm{ chunkmesh_at(block_pos) };
+
+				current_block.filling = Render::Data::Voxel::Empty;
+				cm->updateBuffer(cm->buildMesh(*c));
+				return true;
+			}
+
+			return false;
+		}
+
+
+	private: // = Predicates
+
+		std::optional<types::loc> to_loc(const types::pos& camPos) const noexcept
 		{
 			const types::loc camLoc{
 			static_cast<int>(std::floor(camPos.x / Chunk::g_size)),
@@ -77,6 +161,19 @@ namespace Gameplay::World
 			static_cast<int>(std::floor(camPos.z / Chunk::g_size)) };
 
 			return m_chunks.contains(camLoc) ? std::make_optional(camLoc) : std::nullopt;
+		}
+
+
+	private: // = Getters
+
+		types::chunk_index getBlockIndex(const types::pos& pos) const
+		{
+			auto fpos = pos - static_cast<types::pos>(chunk_at(pos)->getPos());
+
+			const auto z_stride{ Chunk::g_size * Chunk::g_size };
+			auto index = (uint32)(std::abs(std::floor(fpos.z) * z_stride + std::floor(fpos.y) * Chunk::g_size + std::floor(fpos.x)));
+
+			return index;
 		}
 
 

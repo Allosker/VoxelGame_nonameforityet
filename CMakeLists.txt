@@ -45,7 +45,7 @@ add_executable( MYPROJECT
 
 target_include_directories(MYPROJECT PUBLIC ${INCLUDE_DIR})
 target_include_directories(MYPROJECT PUBLIC ${LIB_DIR})
- 
+  
 # Other Settings
  
 set_property(TARGET MYPROJECT PROPERTY CXX_STANDARD 20)
@@ -72,7 +72,7 @@ FetchContent_Declare(
 	GIT_REPOSITORY https://github.com/glfw/glfw.git 
 	GIT_TAG 	7b6aead9fb88b3623e3b3725ebb42670cbe4c579 #refs/tags/3.4
 )
-
+ 
 # Disable Wayland and force X11 on Linux
 if(UNIX AND NOT APPLE OR NOT WIN32 OR NOT MINGW OR NOT MSYS OR NOT CYGWIN)
 	set(GLFW_BUILD_WAYLAND OFF CACHE BOOL "" FORCE)
@@ -90,7 +90,7 @@ FetchContent_Declare(
 	GIT_REPOSITORY https://github.com/Allosker/MPML.git 
 )
  
-FetchContent_MakeAvailable(MPML)
+FetchContent_MakeAvailable(MPML) 
 
 target_link_libraries(MYPROJECT PRIVATE MPML::MPML)
 

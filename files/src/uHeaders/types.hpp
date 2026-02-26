@@ -22,8 +22,8 @@ using uint64 = std::uint64_t;
 namespace types
 {
 	using pos = mpml::Vector3<float>;
-	using loc = mpml::Vector3<int32>;
-	using chunk_loc = mpml::Vector3<uint32>;
+	using loc = mpml::Vector3<int64>;
+	using chunk_loc = mpml::Vector3<uint64>;
 
 	using chunk_index = uint16;
 }

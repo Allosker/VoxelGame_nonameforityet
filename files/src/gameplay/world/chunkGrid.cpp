@@ -47,9 +47,9 @@ void Gameplay::World::ChunkGrid::discard_outside_chunks(const types::loc& camLoc
 
 void Gameplay::World::ChunkGrid::generate_new_chunks(const types::loc& camLoc) noexcept
 {
-	for (int x{ camLoc.x - ChunkSettings::world_render_distance }; x <= camLoc.x + ChunkSettings::world_render_distance; x++)
-		for (int y{ camLoc.y }; y < camLoc.y + 1; y++) // <= for symetry
-			for (int z{ camLoc.z - ChunkSettings::world_render_distance }; z <= camLoc.z + ChunkSettings::world_render_distance; z++)
+	for (int64 x{ camLoc.x - ChunkSettings::world_render_distance }; x <= camLoc.x + ChunkSettings::world_render_distance; x++)
+		for (int64 y{ camLoc.y }; y < camLoc.y + 1; y++) // <= for symetry
+			for (int64 z{ camLoc.z - ChunkSettings::world_render_distance }; z <= camLoc.z + ChunkSettings::world_render_distance; z++)
 			{
 
 				if (types::loc location{ x,y,z }; !m_chunks.contains(location))
