@@ -68,7 +68,7 @@ include(FetchContent)
 
 # GLFW - Windows creation
 FetchContent_Declare(  
-	glfw 
+	glfw   
 	GIT_REPOSITORY https://github.com/glfw/glfw.git 
 	GIT_TAG 	7b6aead9fb88b3623e3b3725ebb42670cbe4c579 #refs/tags/3.4
 )

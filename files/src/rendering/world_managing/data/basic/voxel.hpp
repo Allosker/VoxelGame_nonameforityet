@@ -33,7 +33,8 @@ namespace Render::Data
 			//Not_A_Block,
 			Empty,
 			//Transparent,
-			Full
+			Full,
+			NotEmpty = Full,
 		};
 
 
@@ -51,12 +52,14 @@ namespace Render::Data
 				
 				for (auto& uv : sprite_coords[i])
 				{
+					
 					uv = uv * 32.f + spritePos[i] * 32.f;
+
+					//if (uv.x > 1) uv.x -= 1; else uv.x += 1;
+					//if (uv.y < 1) uv.y -= 1; else uv.y += 1;
 
 					uv.x /= atlas_size.x;
 					uv.y /= atlas_size.y;
-
-					uv -= 0.0000001f;
 				}
 
 			}

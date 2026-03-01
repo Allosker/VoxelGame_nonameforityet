@@ -7,29 +7,23 @@
 
 #include <optional>
 
-#include "GamePlay/World/chunk.hpp"
+#include "GamePlay/World/chunkGrid.hpp"
 #include "uHeaders/types.hpp"
+
 
 namespace Render::Utils
 {
 
-	struct RayCastResult
-	{
-		vec3f origin{};
-		vec3f pos{};
-		vec3f normal{};
-	};
-
-	class Ray
+	struct Ray
 	{
 	public:
 
-		// Initialization
+		// = Initialization
 
 		Ray() noexcept = default;
 
 		Ray(const vec3f& origin_, const vec3f& dir) noexcept
-			: pos{ origin_ }, step{1}, nextBound{ std::floor(pos.x), std::floor(pos.y), std::floor(pos.z) }
+			: pos{ origin_ }, step{ 1 }, nextBound{ std::floor(pos.x), std::floor(pos.y), std::floor(pos.z) }
 		{
 			if (dir.x < 0)
 				step.x = -1;
@@ -56,8 +50,7 @@ namespace Render::Utils
 			tDelta.z = 1 / std::abs(dir.z);
 		}
 
-
-	public:
+		// = Members
 
 		vec3f	pos{};
 		vec3f	step{};
@@ -66,5 +59,63 @@ namespace Render::Utils
 		vec3f	tDelta{};
 
 	};
+
+	struct RayCastResult
+	{
+		vec3f origin{};
+		vec3f pos{};
+		vec3f normal{};
+	};
+
+	// Returns the location of the block that was hit by the ray alongside its corresponding chunk, if no block was hit, std::nullopt is returned
+	static inline std::optional<Render::Utils::RayCastResult> raycast(const types::pos& origin, const types::pos& dir, const Gameplay::World::ChunkGrid& grid, uint64 maxLength) noexcept
+	{
+		Ray ray{ origin, dir };
+		vec3f normal{};
+
+		while ((origin - ray.pos).length() < maxLength)
+		{
+			if (!grid.is_empty(ray.pos))
+			{
+				return std::make_optional<Render::Utils::RayCastResult>({ origin, ray.pos, normal });
+			}
+
+
+			if (ray.tMax.x < ray.tMax.y)
+			{
+				if (ray.tMax.x < ray.tMax.z)
+				{
+					ray.pos.x += ray.step.x;
+					ray.tMax.x += ray.tDelta.x;
+					normal = { -ray.step.x, 0.f, 0.f };
+				}
+				else
+				{
+					ray.pos.z += ray.step.z;
+					ray.tMax.z += ray.tDelta.z;
+					normal = { 0.f, 0.f, -ray.step.z };
+				}
+			}
+			else
+			{
+				if (ray.tMax.y < ray.tMax.z)
+				{
+					ray.pos.y += ray.step.y;
+					ray.tMax.y += ray.tDelta.y;
+					normal = { 0.f, -ray.step.y, 0.f };
+				}
+				else
+				{
+					ray.pos.z += ray.step.z;
+					ray.tMax.z += ray.tDelta.z;
+					normal = { 0.f, 0.f, -ray.step.z };
+				}
+			}
+
+		}
+
+		return std::nullopt;
+	}
+
 
 } // Render::Utils
