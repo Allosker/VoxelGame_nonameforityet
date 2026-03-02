@@ -11,13 +11,11 @@
 #include "rendering/utilities/camera.hpp"
 
 // Block Hitting
-#include "rendering/utilities/ray.hpp"
+#include "world/voxels/utilities/ray.hpp"
 #include <utility>
 //
 
-#include "gameplay/world/chunk.hpp"
-#include "rendering/world_managing/data/chunk/chunkMesh.hpp"
-#include "gameplay/world/chunkGrid.hpp"
+#include "world/world.hpp"
 
 #include "rendering/assets_managing/texturing/texture.hpp"
 #include "window_and_inputs/inputs.hpp"
@@ -26,7 +24,6 @@
 
 /* TODOLIST
 * 
-*	== Go through all files (especially cubeHighlight) and reorganize things a little bit
 *	== Look through world managing to set the height of cubes (do that at first with sine function) and then you're gonne go through perlin noise mate
 *
 */
@@ -79,15 +76,14 @@ try
 
 	std::vector<Render::Data::ChunkMesh> chunkms;
 
-	Gameplay::World::Chunk chunk{ {0,0,0} };
+	World::Voxels::Chunk chunk{ {0,0,0} };
 	Render::Data::ChunkMesh chunkm{ chunk };
 
 
 
 	Render::Utils::CubeHighlight ch;
 
-
-	Gameplay::World::ChunkGrid grid{};
+	World::World world{};
 
 	float lastFrame{};
 	while (window.isOpen())
@@ -116,22 +112,20 @@ try
 
 		//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		   
-		grid.update(camera.pos);
-		
-		grid.draw_all();
-		
+	
+		world.update(camera.pos);
 
-		const auto& ray_result{ Render::Utils::raycast(camera.pos, camera.front_dir, grid, 2000) };
+		const auto& ray_result{ World::Voxels::Utils::raycast(camera.pos, camera.front_dir, world.grid, 2000) };
 
 		if (ray_result)
 		{
 			ch.update(model, view, proj, ray_result->pos);
 
-			if (window.keyPressedOnce(Wai::Buttons::F))
-				grid.set_voxel_at(ray_result->pos, Render::Data::Voxel::Empty);
+			if (window.isMouseButtonPressedOnce(Wai::Buttons::Mouse::Left))
+					world.grid.set_voxel_at(ray_result->pos, Render::Data::Voxel::Empty);
 
-			if (window.keyPressedOnce(Wai::Buttons::R))
-				grid.set_voxel_at(ray_result->pos + ray_result->normal, Render::Data::Voxel::Full);
+			if (window.isMouseButtonPressedOnce(Wai::Buttons::Mouse::Right))
+				world.grid.set_voxel_at(ray_result->pos + ray_result->normal, Render::Data::Voxel::Full);
 
 			ch.draw();
 		}
@@ -203,25 +197,25 @@ void inputs(const Wai::Window& window) noexcept
 
 	float camSpeed{ 5.F * deltaTime };
 
-	if (window.keyPressed(b::Escape))
+	if (window.isKeyPressed(b::Escape))
 		window.close();
 
-	if (window.keyPressed(b::W))
+	if (window.isKeyPressed(b::W))
 		camera.pos += camera.front_dir * camSpeed;
 
-	if (window.keyPressed(b::S))
+	if (window.isKeyPressed(b::S))
 		camera.pos -= camera.front_dir * camSpeed;
 
-	if (window.keyPressed(b::D))
+	if (window.isKeyPressed(b::D))
 		camera.pos += camera.front_dir.cross(camera.up_dir).normal() * camSpeed;
 
-	if (window.keyPressed(b::A))
+	if (window.isKeyPressed(b::A))
 		camera.pos -= camera.front_dir.cross(camera.up_dir).normal() * camSpeed;
 
-	if (window.keyPressed(b::Left_shift))
+	if (window.isKeyPressed(b::Left_shift))
 		camera.pos -= camera.up_dir * camSpeed;
 
-	if (window.keyPressed(b::Space))
+	if (window.isKeyPressed(b::Space))
 		camera.pos += camera.up_dir * camSpeed;
 
 	// if (campos != camera.pos)

@@ -6,13 +6,14 @@
 // ---------------------------------------
 
 #include "uHeaders/types.hpp"
-#include "gameplay/world/chunk.hpp"
+#include "world/voxels/chunk.hpp"
 #include "rendering/world_managing/data/chunk/chunkMesh.hpp"
 #include <optional>
-#include<map>
+#include <map>
+#include <vector>
 
 
-namespace Gameplay::World
+namespace World::Voxels
 {
 
 	namespace ChunkSettings
@@ -36,7 +37,7 @@ namespace Gameplay::World
 
 		void discard_outside_chunks(const types::loc& camPos) noexcept;
 
-		void generate_new_chunks(const types::loc& camPos) noexcept;
+		std::vector<types::loc> generate_new_chunks(const types::loc& camPos) noexcept;
 
 
 		void draw_all() const noexcept;
@@ -46,8 +47,15 @@ namespace Gameplay::World
 
 		const bool generatedNewChunks() const noexcept { return m_generated_new_chunks; }
 		
-		std::map<types::loc, Gameplay::World::Chunk>& getChunks() noexcept { return m_chunks; }
-		const std::map<types::loc, Gameplay::World::Chunk>& getChunks() const noexcept { return m_chunks; }
+		std::map<types::loc, World::Voxels::Chunk>& getChunks() noexcept { return m_chunks; }
+		const std::map<types::loc, World::Voxels::Chunk>& getChunks() const noexcept { return m_chunks; }
+
+
+		World::Voxels::Chunk* chunk_at(const types::pos& pos) noexcept;
+		const World::Voxels::Chunk* chunk_at(const types::pos& pos) const noexcept;
+
+		Render::Data::ChunkMesh* chunkmesh_at(const types::pos& pos) noexcept;
+		const Render::Data::ChunkMesh const* chunkmesh_at(const types::pos& pos) const noexcept;
 
 
 		// = Predicates
@@ -57,12 +65,7 @@ namespace Gameplay::World
 
 		// = Mutators
 
-		Gameplay::World::Chunk* chunk_at(const types::pos& pos) noexcept;
-		const Gameplay::World::Chunk* chunk_at(const types::pos& pos) const noexcept;
-
-		Render::Data::ChunkMesh* chunkmesh_at(const types::pos& pos) noexcept;
-		const Render::Data::ChunkMesh const* chunkmesh_at(const types::pos& pos) const noexcept;
-
+		void create_chunkMesh_for_chunk_at(const types::loc& key);
 
 		bool set_voxel_at(const types::pos& block_pos, Render::Data::Voxel::Filling fill_with) noexcept;
 
@@ -80,7 +83,7 @@ namespace Gameplay::World
 	private:
 
 
-		std::map<types::loc, Gameplay::World::Chunk> m_chunks{};
+		std::map<types::loc, World::Voxels::Chunk> m_chunks{};
 		std::map<types::loc, Render::Data::ChunkMesh> m_chunk_meshes{};
 
 

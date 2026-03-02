@@ -73,7 +73,7 @@ FetchContent_Declare(
 	GIT_TAG 	7b6aead9fb88b3623e3b3725ebb42670cbe4c579 #refs/tags/3.4
 )
  
-# Disable Wayland and force X11 on Linux
+# Disable Wayland and force X11 on Linux 
 if(UNIX AND NOT APPLE OR NOT WIN32 OR NOT MINGW OR NOT MSYS OR NOT CYGWIN)
 	set(GLFW_BUILD_WAYLAND OFF CACHE BOOL "" FORCE)
 	set(GLFW_BUILD_X11 ON CACHE BOOL "" FORCE)

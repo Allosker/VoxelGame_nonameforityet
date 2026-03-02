@@ -11,14 +11,14 @@
 #include <vector>
 
 #include "mpml/vectors/special_overloads/iostream_vectors.hpp"
-namespace Gameplay::World
+namespace World::Voxels
 {
 
 	class Chunk
 	{
 	public: 
 
-		// Initialization
+		// = Destruction/Initialization
 
 		explicit Chunk(const vec3f& pos) noexcept;
 
@@ -31,7 +31,7 @@ namespace Gameplay::World
 		Chunk& operator=(const Chunk&) = delete;
 
 
-		// Getters
+		// = Getters
 			
 		const std::vector<Render::Data::Voxel>& getVoxelData() const noexcept { return m_voxels; };
 
@@ -42,47 +42,25 @@ namespace Gameplay::World
 		const types::loc getOppositeCorner() const noexcept { return m_pos + static_cast<int64>(32); }
 
 
-		// Predicates
+		// = Predicates
 
-		const bool isWithinChunk(const types::pos& point) const noexcept
-		{
-			const types::loc corner{ getOppositeCorner() };
+		const bool isWithinChunk(const types::pos& point) const noexcept;
 
-			if (
-				(point.x > m_pos.x && point.y > m_pos.y && point.z > m_pos.z) &&
-				(point.x < corner.x && point.y < corner.y && point.z < corner.z))
-				return true;
-
-			return false;
-		}
-
-		const bool is_empty_at(const types::chunk_index& index) const noexcept
-		{
-			return m_voxels.at(index).filling == Render::Data::Voxel::Empty;
-		}
+		const bool is_empty_at(const types::chunk_index& index) const noexcept { return m_voxels.at(index).filling == Render::Data::Voxel::Empty; }
 
 
-		// Mutators
+		// = Mutators
 
-		Render::Data::Voxel& block_at(const types::chunk_index& index)
-		{
-			return m_voxels.at(index);
-		}
+		Render::Data::Voxel& block_at(const types::chunk_index& index) { return m_voxels.at(index); }
 
-		const Render::Data::Voxel& block_at(const types::chunk_index& index) const
-		{
-			return m_voxels.at(index);
-		}
+		const Render::Data::Voxel& block_at(const types::chunk_index& index) const { return m_voxels.at(index); }
 
 		
-
-
 	private:
 
 
 		std::vector<Render::Data::Voxel> m_voxels;
 
-		
 		types::loc m_pos{};
 
 		

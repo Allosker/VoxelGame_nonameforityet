@@ -7,11 +7,11 @@
 
 #include <optional>
 
-#include "GamePlay/World/chunkGrid.hpp"
+#include "world/voxels/chunkGrid.hpp"
 #include "uHeaders/types.hpp"
 
 
-namespace Render::Utils
+namespace World::Voxels::Utils
 {
 
 	struct Ray
@@ -68,7 +68,7 @@ namespace Render::Utils
 	};
 
 	// Returns the location of the block that was hit by the ray alongside its corresponding chunk, if no block was hit, std::nullopt is returned
-	static inline std::optional<Render::Utils::RayCastResult> raycast(const types::pos& origin, const types::pos& dir, const Gameplay::World::ChunkGrid& grid, uint64 maxLength) noexcept
+	static inline std::optional<World::Voxels::Utils::RayCastResult> raycast(const types::pos& origin, const types::pos& dir, const World::Voxels::ChunkGrid& grid, uint64 maxLength) noexcept
 	{
 		Ray ray{ origin, dir };
 		vec3f normal{};
@@ -77,7 +77,7 @@ namespace Render::Utils
 		{
 			if (!grid.is_empty(ray.pos))
 			{
-				return std::make_optional<Render::Utils::RayCastResult>({ origin, ray.pos, normal });
+				return std::make_optional<World::Voxels::Utils::RayCastResult>({ origin, ray.pos, normal });
 			}
 
 

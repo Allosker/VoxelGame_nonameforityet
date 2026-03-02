@@ -5,6 +5,7 @@
 // =====================
 
 Render::Shader::Shader(const std::filesystem::path& vertShader, const std::filesystem::path& fragShader, const std::filesystem::path& geomShader)
+try
 {
 	std::string vertCode{}, fragCode{}, geomCode{};
 
@@ -14,87 +15,78 @@ Render::Shader::Shader(const std::filesystem::path& vertShader, const std::files
 	fSFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
 	gSFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
 
-	// Read Content from Files
-	try
-	{
-		// Open Files
-		vSFile.open(vertShader);
-		fSFile.open(fragShader);
-		if (!geomShader.empty())
-			gSFile.open(geomShader);
+	// - Read Content from Files
+	
+	// Open Files
+	vSFile.open(vertShader);
+	fSFile.open(fragShader);
+	if (!geomShader.empty())
+		gSFile.open(geomShader);
 
-		// Move Streams
-		std::stringstream vSStream{}, fSStream{}, gSStream{};
+	// Move Streams
+	std::stringstream vSStream{}, fSStream{}, gSStream{};
 
-		vSStream << vSFile.rdbuf();
-		fSStream << fSFile.rdbuf();
-		if (!geomShader.empty())
-			gSStream << gSFile.rdbuf();
+	vSStream << vSFile.rdbuf();
+	fSStream << fSFile.rdbuf();
+	if (!geomShader.empty())
+		gSStream << gSFile.rdbuf();
 
-		// CLose Files
-		vSFile.close();
-		fSFile.close();
-		if (!geomShader.empty())
-			gSFile.close();
+	// CLose Files
+	vSFile.close();
+	fSFile.close();
+	if (!geomShader.empty())
+		gSFile.close();
 
-		// Get Actual Code
-		vertCode = vSStream.str();
-		fragCode = fSStream.str();
-		if (!geomShader.empty())
-			geomCode = gSStream.str();
+	// Get Actual Code
+	vertCode = vSStream.str();
+	fragCode = fSStream.str();
+	if (!geomShader.empty())
+		geomCode = gSStream.str();
 
-	}
-	catch (...)
-	{
-		throw;
-	}
+	// Compile/LInk shaders
 
-	try
-	{
+	const char* vCode{ vertCode.c_str() };
+	const char* fCode{ fragCode.c_str() };
+	const char* gCode{ geomCode.c_str() };
 
-		const char* vCode{ vertCode.c_str() };
-		const char* fCode{ fragCode.c_str() };
-		const char* gCode{ geomCode.c_str() };
+	// Create
+	std::uint32_t v_ID{ glCreateShader(GL_VERTEX_SHADER) }, f_ID{ glCreateShader(GL_FRAGMENT_SHADER) }, g_ID{};
+	if (!geomShader.empty())
+		g_ID = glCreateShader(GL_GEOMETRY_SHADER);
 
-		// Create
-		std::uint32_t v_ID{ glCreateShader(GL_VERTEX_SHADER) }, f_ID{ glCreateShader(GL_FRAGMENT_SHADER) }, g_ID{};
-		if (!geomShader.empty())
-			g_ID = glCreateShader(GL_GEOMETRY_SHADER);
-
-		glShaderSource(v_ID, 1, &vCode, nullptr);
-		glShaderSource(f_ID, 1, &fCode, nullptr);
-		if (!geomShader.empty())
-			glShaderSource(g_ID, 1, &gCode, nullptr);
+	glShaderSource(v_ID, 1, &vCode, nullptr);
+	glShaderSource(f_ID, 1, &fCode, nullptr);
+	if (!geomShader.empty())
+		glShaderSource(g_ID, 1, &gCode, nullptr);
 
 
-		// Compile
-		compile(v_ID, "vertex");
-		compile(f_ID, "fragment");
-		if (!geomShader.empty())
-			compile(g_ID, "geometry");
+	// Compile
+	compile(v_ID, "vertex");
+	compile(f_ID, "fragment");
+	if (!geomShader.empty())
+		compile(g_ID, "geometry");
 
 
-		// Link Shaders 
-		m_id = glCreateProgram();
+	// Link Shaders 
+	m_id = glCreateProgram();
 
-		glAttachShader(m_id, v_ID);
-		glAttachShader(m_id, f_ID);
-		if (!geomShader.empty())
-			glAttachShader(m_id, g_ID);
+	glAttachShader(m_id, v_ID);
+	glAttachShader(m_id, f_ID);
+	if (!geomShader.empty())
+		glAttachShader(m_id, g_ID);
 
-		link(m_id);
+	link(m_id);
 
 
-		// Delete
-		glDeleteShader(v_ID);
-		glDeleteShader(f_ID);
-		if (!geomShader.empty())
-			glDeleteShader(g_ID);
-	}
-	catch (...)
-	{
-		throw;
-	}
+	// Delete
+	glDeleteShader(v_ID);
+	glDeleteShader(f_ID);
+	if (!geomShader.empty())
+		glDeleteShader(g_ID);
+}
+catch (...)
+{
+	throw;
 }
 
 Render::Shader::~Shader() noexcept
@@ -166,8 +158,8 @@ void Render::Shader::compile(std::uint32_t s_id, const std::string& name)
 {
 	glCompileShader(s_id);
 
-	std::int32_t success;
-	char infoLog[512];
+	GLint success;
+	GLchar infoLog[512];
 
 	glGetShaderiv(s_id, GL_COMPILE_STATUS, &success); 
 
@@ -183,8 +175,8 @@ void Render::Shader::link(std::uint32_t s_id)
 {
 	glLinkProgram(s_id);
 
-	std::int32_t success;
-	char infoLog[512];
+	GLint success;
+	GLchar infoLog[512];
 
 	glGetProgramiv(s_id, GL_LINK_STATUS, &success);
 

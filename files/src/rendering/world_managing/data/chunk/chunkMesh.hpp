@@ -13,7 +13,7 @@
 #include "rendering/world_managing/data/basic/voxel.hpp"
 #include "rendering/world_managing/data/basic/vertex.hpp"
 
-#include "gameplay/world/chunk.hpp"
+#include "world/voxels/chunk.hpp"
 
 
 namespace Render::Data
@@ -26,7 +26,7 @@ namespace Render::Data
 
 		ChunkMesh() = delete;
 
-		explicit ChunkMesh(Gameplay::World::Chunk& chunk) noexcept;
+		explicit ChunkMesh(World::Voxels::Chunk& chunk) noexcept;
 
 		ChunkMesh(ChunkMesh&& other) noexcept;
 		ChunkMesh& operator=(ChunkMesh&& other) noexcept;
@@ -41,7 +41,7 @@ namespace Render::Data
 
 		void draw() const noexcept;
 
-		std::vector<Vertex> buildMesh(const Gameplay::World::Chunk& chunk) noexcept;
+		std::vector<Vertex> buildMesh(const World::Voxels::Chunk& chunk) noexcept;
 
 		void updateBuffer(const std::vector<Vertex>& meshes) noexcept;
 

@@ -4,7 +4,7 @@
 // Construction/Destruction
 // =====================
 
-Render::Data::ChunkMesh::ChunkMesh(Gameplay::World::Chunk& chunk) noexcept
+Render::Data::ChunkMesh::ChunkMesh(World::Voxels::Chunk& chunk) noexcept
 {
 	glGenVertexArrays(1, &m_vao);
 	glCreateBuffers(1, &m_vbo);
@@ -59,22 +59,22 @@ void Render::Data::ChunkMesh::draw() const noexcept
 	glDrawArrays(GL_TRIANGLES, 0, m_nbVertices);
 }
 
-std::vector<Render::Data::Vertex> Render::Data::ChunkMesh::buildMesh(const Gameplay::World::Chunk& chunk) noexcept
+std::vector<Render::Data::Vertex> Render::Data::ChunkMesh::buildMesh(const World::Voxels::Chunk& chunk) noexcept
 {
 	std::vector<Vertex> meshes{};
 
-	std::uint32_t z_stride{ Gameplay::World::Chunk::g_size * Gameplay::World::Chunk::g_size };
+	std::uint32_t z_stride{ World::Voxels::Chunk::g_size * World::Voxels::Chunk::g_size };
 
 	   
-	for (std::int32_t x{}; x < Gameplay::World::Chunk::g_size; x++)
+	for (std::int32_t x{}; x < World::Voxels::Chunk::g_size; x++)
 	{
-		for (std::int32_t y{}; y < Gameplay::World::Chunk::g_size; y++)
+		for (std::int32_t y{}; y < World::Voxels::Chunk::g_size; y++)
 		{
-			for (std::int32_t z{}; z < Gameplay::World::Chunk::g_size; z++)
+			for (std::int32_t z{}; z < World::Voxels::Chunk::g_size; z++)
 			{
 				using F = Voxel::Filling;
 
-				std::int32_t block_index{ static_cast<std::int32_t>((z * z_stride) + (y * Gameplay::World::Chunk::g_size) + x) };
+				std::int32_t block_index{ static_cast<std::int32_t>((z * z_stride) + (y * World::Voxels::Chunk::g_size) + x) };
 
 				auto& current_block{ chunk.getVoxelData()[block_index] };
 
@@ -97,12 +97,12 @@ std::vector<Render::Data::Vertex> Render::Data::ChunkMesh::buildMesh(const Gamep
 
 
 				if (y + 1 < 32)
-					CF_block_dirs[2] = chunk.getVoxelData()[block_index + Gameplay::World::Chunk::g_size].filling;
+					CF_block_dirs[2] = chunk.getVoxelData()[block_index + World::Voxels::Chunk::g_size].filling;
 				else
 					CF_block_dirs[2] = F::Empty;
 
 				if (y - 1 >= 0)
-					CF_block_dirs[3] = chunk.getVoxelData()[block_index - Gameplay::World::Chunk::g_size].filling;
+					CF_block_dirs[3] = chunk.getVoxelData()[block_index - World::Voxels::Chunk::g_size].filling;
 				else
 					CF_block_dirs[3] = F::Empty;
 

@@ -10,6 +10,9 @@ namespace Render::Utils
 { 
 	struct CubeHighlight
 	{
+
+		// = Destruction/Initialization
+
 		CubeHighlight()
 			: CHshader{ SHADER_PATH"color.vert", SHADER_PATH"color.frag" }
 		{
@@ -28,18 +31,14 @@ namespace Render::Utils
 			glEnableVertexAttribArray(1);
 		}
 
+
+		// = Actors
+
 		void update(const mat4f& model, const mat4f& view, const mat4f& proj, const vec3f& pos)
 		{
 			setPos(model, pos);
 			CHshader.setValue("view", view);
 			CHshader.setValue("proj", proj);
-		}
-
-		void setPos(const mat4f& model, const vec3f& pos)
-		{
-			CHshader.use();
-
-			CHshader.setValue("model", mpml::translate(mpml::scale(model, scale), { std::floor(pos.x), std::floor(pos.y), std::floor(pos.z) }));
 		}
 
 		void draw()
@@ -51,6 +50,19 @@ namespace Render::Utils
 		}
 
 
+		// = Setters 
+
+		void setPos(const mat4f& model, const vec3f& pos)
+		{
+			CHshader.use();
+
+			CHshader.setValue("model", mpml::translate(mpml::scale(model, scale), { std::floor(pos.x), std::floor(pos.y), std::floor(pos.z) }));
+		}
+
+		void setScale(float newScale) noexcept { scale = newScale; }
+		
+	private:
+
 		Render::Shader CHshader;
 
 		float scale{ 1.008f };
@@ -60,212 +72,212 @@ namespace Render::Utils
 
 		const std::vector<Render::Data::VertexColor> data
 		{
-	Render::Data::VertexColor
-	{
-		vec3f
-		{
-			0, 0, 0
-		},
-		vec3f {0}
-	},
+			Render::Data::VertexColor
+			{
+				vec3f
+				{
+					0, 0, 0
+				},
+				vec3f {0}
+			},
 
-	{
-		vec3f
-		{
-			1, 0, 0
-		},
-		vec3f {0}
-	},
-
-
-	{
-		vec3f
-		{
-			0, 1, 0
-		},
-		vec3f {0}
-	},
-
-	{
-		vec3f
-		{
-			1, 1, 0
-		},
-		vec3f {0}
-	},
+			{
+				vec3f
+				{
+					1, 0, 0
+				},
+				vec3f {0}
+			},
 
 
-	{
-		vec3f
-		{
-			0, 0, 1
-		},
-		vec3f {0}
-	},
+			{
+				vec3f
+				{
+					0, 1, 0
+				},
+				vec3f {0}
+			},
 
-	{
-		vec3f
-		{
-			1, 0, 1
-		},
-		vec3f {0}
-	},
-
-
-	{
-		vec3f
-		{
-			0, 1, 1
-		},
-		vec3f {0}
-	},
-
-	{
-		vec3f
-		{
-			1, 1, 1
-		},
-		vec3f {0}
-	},
+			{
+				vec3f
+				{
+					1, 1, 0
+				},
+				vec3f {0}
+			},
 
 
-	Render::Data::VertexColor
-	{
-		vec3f
-		{
-			0, 0, 1
-		},
-		vec3f {0}
-	},
+			{
+				vec3f
+				{
+					0, 0, 1
+				},
+				vec3f {0}
+			},
 
-	{
-		vec3f
-		{
-			0, 0, 0
-		},
-		vec3f {0}
-	},
-
-
-	{
-		vec3f
-		{
-			1, 0, 1
-		},
-		vec3f {0}
-	},
-
-	{
-		vec3f
-		{
-			1, 0, 0
-		},
-		vec3f {0}
-	},
+			{
+				vec3f
+				{
+					1, 0, 1
+				},
+				vec3f {0}
+			},
 
 
-	{
-		vec3f
-		{
-			0, 1, 1
-		},
-		vec3f {0}
-	},
+			{
+				vec3f
+				{
+					0, 1, 1
+				},
+				vec3f {0}
+			},
 
-	{
-		vec3f
-		{
-			0, 1, 0
-		},
-		vec3f {0}
-	},
-
-
-	{
-		vec3f
-		{
-			1, 1, 1
-		},
-		vec3f {0}
-	},
-
-	{
-		vec3f
-		{
-			1, 1, 0
-		},
-		vec3f {0}
-	},
+			{
+				vec3f
+				{
+					1, 1, 1
+				},
+				vec3f {0}
+			},
 
 
+			Render::Data::VertexColor
+			{
+				vec3f
+				{
+					0, 0, 1
+				},
+				vec3f {0}
+			},
 
-	Render::Data::VertexColor
-	{
-		vec3f
-		{
-			0, 1, 0
-		},
-		vec3f {0}
-	},
-
-	{
-		vec3f
-		{
-			0, 0, 0
-		},
-		vec3f {0}
-	},
-
-
-	{
-		vec3f
-		{
-			1, 1, 0
-		},
-		vec3f {0}
-	},
-
-	{
-		vec3f
-		{
-			1, 0, 0
-		},
-		vec3f {0}
-	},
+			{
+				vec3f
+				{
+					0, 0, 0
+				},
+				vec3f {0}
+			},
 
 
-	{
-		vec3f
-		{
-			0, 1, 1
-		},
-		vec3f {0}
-	},
+			{
+				vec3f
+				{
+					1, 0, 1
+				},
+				vec3f {0}
+			},
 
-	{
-		vec3f
-		{
-			0, 0, 1
-		},
-		vec3f {0}
-	},
+			{
+				vec3f
+				{
+					1, 0, 0
+				},
+				vec3f {0}
+			},
 
 
-	{
-		vec3f
-		{
-			1, 1, 1
-		},
-		vec3f {0}
-	},
+			{
+				vec3f
+				{
+					0, 1, 1
+				},
+				vec3f {0}
+			},
 
-	{
-		vec3f
-		{
-			1, 0, 1
-		},
-		vec3f {0}
-	},
+			{
+				vec3f
+				{
+					0, 1, 0
+				},
+				vec3f {0}
+			},
+
+
+			{
+				vec3f
+				{
+					1, 1, 1
+				},
+				vec3f {0}
+			},
+
+			{
+				vec3f
+				{
+					1, 1, 0
+				},
+				vec3f {0}
+			},
+
+
+
+			Render::Data::VertexColor
+			{
+				vec3f
+				{
+					0, 1, 0
+				},
+				vec3f {0}
+			},
+
+			{
+				vec3f
+				{
+					0, 0, 0
+				},
+				vec3f {0}
+			},
+
+
+			{
+				vec3f
+				{
+					1, 1, 0
+				},
+				vec3f {0}
+			},
+
+			{
+				vec3f
+				{
+					1, 0, 0
+				},
+				vec3f {0}
+			},
+
+
+			{
+				vec3f
+				{
+					0, 1, 1
+				},
+				vec3f {0}
+			},
+
+			{
+				vec3f
+				{
+					0, 0, 1
+				},
+				vec3f {0}
+			},
+
+
+			{
+				vec3f
+				{
+					1, 1, 1
+				},
+				vec3f {0}
+			},
+
+			{
+				vec3f
+				{
+					1, 0, 1
+				},
+				vec3f {0}
+			},
 		};
 
 	};

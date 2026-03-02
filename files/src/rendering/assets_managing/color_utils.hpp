@@ -34,12 +34,12 @@ namespace Color
 
 		float m{ v - c };
 
-		return { rgb.r + m, rgb.g + m, rgb.b + m };
+		return { rgb.x + m, rgb.y + m, rgb.z + m };
 	}
 
 	inline constexpr vec3f to_rgb(const vec3f& hsv) noexcept
 	{
-		return to_rgb(hsv.h, hsv.s, hsv.v);
+		return to_rgb(hsv.x, hsv.y, hsv.z);
 	}
 
 
@@ -57,25 +57,25 @@ namespace Color
 		vec3f hsv{};
 
 		if (cmax < rp + 0.1 && cmax > rp - 0.1)
-			hsv.h = 60.f * (std::fmod((gp - bp) / delta, 6.f));
+			hsv.x = 60.f * (std::fmod((gp - bp) / delta, 6.f));
 		else if(cmax < gp + 0.1 && cmax > gp - 0.1)
-			hsv.h = 60.f * ((bp - rp) / delta + 2.f);
+			hsv.x = 60.f * ((bp - rp) / delta + 2.f);
 		else if (cmax < bp + 0.1 && cmax > bp - 0.1)
-			hsv.h = 60.f * ((bp - rp) / delta + 2.f);
+			hsv.x = 60.f * ((bp - rp) / delta + 2.f);
 
 		if (cmax < 0.1f && cmax > -0.1f)
-			hsv.s = 0.f;
+			hsv.y = 0.f;
 		else
-			hsv.s = delta / cmax;
+			hsv.y = delta / cmax;
 
-		hsv.v = cmax;
+		hsv.z = cmax;
 
 		return hsv;
 	}
 
 	inline constexpr vec3f to_hsv(const vec3f& rgb) noexcept
 	{
-		return to_hsv(rgb.r, rgb.g, rgb.b);
+		return to_hsv(rgb.x, rgb.y, rgb.z);
 	}
 
 }

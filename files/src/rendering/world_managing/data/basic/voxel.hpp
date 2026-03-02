@@ -7,7 +7,8 @@
 
 #include "uHeaders/opengl.hpp"
 #include "rendering/world_managing/data/basic/vertex.hpp"
-#include <iostream>
+
+// STILL ONGOING WORK -- Implement IDs
 
 namespace Render::Data
 {

@@ -20,107 +20,70 @@ namespace Wai
 	public:
 
 
+		// = Construction/Initialization
 
 		explicit Window(const mpml::Vector2<int>& size_, const std::string& name, GLFWmonitor* monitor, GLFWwindow* share);
 
-
 		~Window() noexcept;
 
-		bool isOpen() const noexcept
-		{
-			return !glfwWindowShouldClose(m_window);
-		}
+	
+		// = Actors
 
-		const mpml::Vector2<int>& getSize() const noexcept
-		{
-			return m_size;
-		}
+		void close() const noexcept { glfwSetWindowShouldClose(m_window, true); }
 
-		void close() const noexcept
-		{
-			glfwSetWindowShouldClose(m_window, true);
-		}
+		void display() const noexcept { glfwSwapBuffers(m_window); }
 
-		void display() const noexcept
-		{
-			glfwSwapBuffers(m_window);
-		}
+		void clearEvents() const noexcept;
 
-		void clearEvents() const noexcept
-		{
-			updateKeys();
-			glfwPollEvents();
-		}
+		void updateKeys() const noexcept { m_lastKeyDowns = m_keyDowns; }
 
-		GLFWwindow* get() noexcept
-		{
-			return m_window;
-		}
+		void updateMouseButtons() const noexcept { m_lastMouseButtonsDown = m_mouseButtonsDown; }
 
-		void resize(const mpml::Vector2<int>& new_size) noexcept
-		{
-			glfwSetWindowSize(m_window, new_size.x, new_size.y);
-			m_size = new_size;
-		}
 
-		std::uint32_t getMods() const noexcept
-		{
-			using b = Buttons;
+		// = Getters
 
-			std::uint32_t mask{};
+		GLFWwindow* get() noexcept { return m_window; }
+		const GLFWwindow* const get() const noexcept { return m_window; }
 
-			if (glfwGetKey(m_window, b::Left_shift) || glfwGetKey(m_window, b::Right_shift))
-				mask |= b::Shift;
+		const mpml::Vector2<int>& getSize() const noexcept { return m_size; }
 
-			if (glfwGetKey(m_window, b::Left_control) || glfwGetKey(m_window, b::Right_control))
-				mask |= b::Control;
+		std::uint8_t getKeyState(int key) const noexcept { return glfwGetKey(m_window, key); }
 
-			if (glfwGetKey(m_window, b::Left_alt) || glfwGetKey(m_window, b::Right_alt))
-				mask |= b::Alt;
+		std::uint32_t getMods() const noexcept;
 
-			if (glfwGetKey(m_window, b::Left_super) || glfwGetKey(m_window, b::Right_super))
-				mask |= b::Super;
 
-			return mask;
-		}
+		// = Predicates
 
-		bool modsSet(int mods) const noexcept
-		{
-			return getMods() & mods;
-		}
+		bool isOpen() const noexcept { return !glfwWindowShouldClose(m_window); }
 
-		std::uint8_t getKey(int key) const noexcept
-		{
-			return glfwGetKey(m_window, key);	
-		}
+		bool are_mods_set(int mods) const noexcept { return getMods() & mods; }
 
-		void updateKeys() const noexcept
-		{
-			m_lastKeyDowns = m_keyDowns;
-		}
 
-		bool keyPressed(int key) const noexcept
-		{
-			return glfwGetKey(m_window, key) == Buttons::Pressed;
-		}
+		bool isKeyPressedOnce(int key) const noexcept;
 
-		bool keyPressedOnce(int key) const noexcept
-		{
-			m_keyDowns[key] = glfwGetKey(m_window, key) == Buttons::Pressed;
+		bool isKeyPressed(int key) const noexcept { return glfwGetKey(m_window, key) == Buttons::Pressed; }
+		bool isKeyReleased(int key) const noexcept { return glfwGetKey(m_window, key) == Buttons::Released; }
 
-			return m_keyDowns[key] && !m_lastKeyDowns[key];
-		}
 
-		bool keyReleased(int key) const noexcept
-		{
-			return glfwGetKey(m_window, key) == Buttons::Released;
-		}
+		bool isMouseButtonPressedOnce(int key) const noexcept;
+
+		bool isMouseButtonPressed(int button) const noexcept { return glfwGetMouseButton(m_window, button) == Buttons::Pressed; }
+		bool isMouseButtonReleased(int button) const noexcept { return glfwGetMouseButton(m_window, button) == Buttons::Released; }
+
+
+		// = Setters
+
+		void resize(const mpml::Vector2<int>& new_size) noexcept;
+
 
 	private:
 
 		// Make that better
 		mutable std::array<bool, 348> m_keyDowns{};
 		mutable std::array<bool, 348> m_lastKeyDowns{};
+
+		mutable std::array<bool, 8> m_mouseButtonsDown{};
+		mutable std::array<bool, 8> m_lastMouseButtonsDown{};
 
 
 
