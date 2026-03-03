@@ -10,6 +10,8 @@
 #include <GLFW/glfw3.h>
 #include <mpml/mpml.hpp>
 
+#include "uHeaders/types.hpp"
+
 #include <cstdint>
 #include <stdexcept>
 
@@ -21,7 +23,14 @@ using vec2f = mpml::Vector2<float>;
 using vec3f = mpml::Vector3<float>;
 using vec4f = mpml::Vector4<float>;
 
-using vec3i = mpml::Vector3<int>;
+using vec2d = mpml::Vector2<double>;
+using vec3d = mpml::Vector3<double>;
+
+using vec2i = mpml::Vector2<int32>;
+using vec3i = mpml::Vector3<int32>;
+using vec2l = mpml::Vector2<int64>;
+using vec3l = mpml::Vector3<int64>;
+
 
 using mat2f = mpml::Matrix2<float>;
 using mat3f = mpml::Matrix3<float>;

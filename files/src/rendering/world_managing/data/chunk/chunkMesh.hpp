@@ -13,6 +13,8 @@
 #include "rendering/world_managing/data/basic/voxel.hpp"
 #include "rendering/world_managing/data/basic/vertex.hpp"
 
+#include "rendering/world_managing/data/TypeManagement/voxelTypeManager.hpp"
+
 #include "world/voxels/chunk.hpp"
 
 
@@ -26,7 +28,7 @@ namespace Render::Data
 
 		ChunkMesh() = delete;
 
-		explicit ChunkMesh(World::Voxels::Chunk& chunk) noexcept;
+		explicit ChunkMesh(GameWorld::Voxels::Chunk& chunk, const Render::Data::Types::VoxelTypeManager& type_manager) noexcept;
 
 		ChunkMesh(ChunkMesh&& other) noexcept;
 		ChunkMesh& operator=(ChunkMesh&& other) noexcept;
@@ -41,7 +43,7 @@ namespace Render::Data
 
 		void draw() const noexcept;
 
-		std::vector<Vertex> buildMesh(const World::Voxels::Chunk& chunk) noexcept;
+		std::vector<Vertex> buildMesh(const GameWorld::Voxels::Chunk& chunk, const Render::Data::Types::VoxelTypeManager& type_manager) noexcept;
 
 		void updateBuffer(const std::vector<Vertex>& meshes) noexcept;
 

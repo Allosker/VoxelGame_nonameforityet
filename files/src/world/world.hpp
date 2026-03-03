@@ -6,8 +6,9 @@
 // ---------------------------------------
 
 #include "world/voxels/chunkGrid.hpp"
+#include "rendering/world_managing/data/typeManagement/voxelTypeManager.hpp"
 
-namespace World
+namespace GameWorld
 {
 
 	class World
@@ -16,9 +17,17 @@ namespace World
 
 
 
-		void update(const types::pos& camLoc);
+		void update(const types::pos& camPos);
+
+		void draw_chunkGrid() const noexcept;
 
 
+		bool set_voxel_at(const types::pos& block_pos, types::type_id id) noexcept;
+
+		const Render::Data::Types::VoxelTypeManager& getTypeManager() const noexcept { return type_manager; }
+
+
+		Render::Data::Types::VoxelTypeManager type_manager{};
 		Voxels::ChunkGrid grid{};
 	};
 

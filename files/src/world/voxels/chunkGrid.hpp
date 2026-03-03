@@ -8,17 +8,18 @@
 #include "uHeaders/types.hpp"
 #include "world/voxels/chunk.hpp"
 #include "rendering/world_managing/data/chunk/chunkMesh.hpp"
+#include "rendering/world_managing/data/typeManagement/voxelTypeManager.hpp"
 #include <optional>
 #include <map>
 #include <vector>
 
 
-namespace World::Voxels
+namespace GameWorld::Voxels
 {
 
 	namespace ChunkSettings
 	{
-		inline int64 world_render_distance{ 1 };
+		inline int64 world_render_distance{ 2 };
 
 	} // ChunkSettings
 	
@@ -33,7 +34,7 @@ namespace World::Voxels
 
 		// Actors
 
-		void update(const types::pos& camPos) noexcept;
+		void update(const types::pos& camPos, const Render::Data::Types::VoxelTypeManager& type_manager) noexcept;
 
 		void discard_outside_chunks(const types::loc& camPos) noexcept;
 
@@ -47,12 +48,21 @@ namespace World::Voxels
 
 		const bool generatedNewChunks() const noexcept { return m_generated_new_chunks; }
 		
-		std::map<types::loc, World::Voxels::Chunk>& getChunks() noexcept { return m_chunks; }
-		const std::map<types::loc, World::Voxels::Chunk>& getChunks() const noexcept { return m_chunks; }
+		std::map<types::loc, GameWorld::Voxels::Chunk>& getChunks() noexcept { return m_chunks; }
+		const std::map<types::loc, GameWorld::Voxels::Chunk>& getChunks() const noexcept { return m_chunks; }
 
+		// No guards against invalid loc
+		GameWorld::Voxels::Chunk& chunk_at_loc(const types::loc& loc) noexcept;
+		// No guard against invalid loc
+		const GameWorld::Voxels::Chunk& const chunk_at_loc(const types::loc& loc) const noexcept;
 
-		World::Voxels::Chunk* chunk_at(const types::pos& pos) noexcept;
-		const World::Voxels::Chunk* chunk_at(const types::pos& pos) const noexcept;
+		// No guards against invalid loc
+		Render::Data::ChunkMesh& chunkmesh_at_loc(const types::loc& loc) noexcept;
+		// No guards against invalid loc
+		const Render::Data::ChunkMesh& chunkmesh_at_loc(const types::loc& loc) const noexcept;
+
+		GameWorld::Voxels::Chunk* chunk_at(const types::pos& pos) noexcept;
+		const GameWorld::Voxels::Chunk const* chunk_at(const types::pos& pos) const noexcept;
 
 		Render::Data::ChunkMesh* chunkmesh_at(const types::pos& pos) noexcept;
 		const Render::Data::ChunkMesh const* chunkmesh_at(const types::pos& pos) const noexcept;
@@ -65,9 +75,12 @@ namespace World::Voxels
 
 		// = Mutators
 
-		void create_chunkMesh_for_chunk_at(const types::loc& key);
+		void create_chunkMesh_for_chunk_at(const types::loc& key, const Render::Data::Types::VoxelTypeManager& type_manager);
 
-		bool set_voxel_at(const types::pos& block_pos, Render::Data::Voxel::Filling fill_with) noexcept;
+
+		// = Getters
+
+		types::chunk_index getVoxelIndex(const types::pos& pos) const;
 
 
 	private: // = Predicates
@@ -75,15 +88,10 @@ namespace World::Voxels
 		std::optional<types::loc> to_loc(const types::pos& camPos) const noexcept;
 
 
-	private: // = Getters
-
-		types::chunk_index getVoxelIndex(const types::pos& pos) const;
-
-
 	private:
 
 
-		std::map<types::loc, World::Voxels::Chunk> m_chunks{};
+		std::map<types::loc, GameWorld::Voxels::Chunk> m_chunks{};
 		std::map<types::loc, Render::Data::ChunkMesh> m_chunk_meshes{};
 
 

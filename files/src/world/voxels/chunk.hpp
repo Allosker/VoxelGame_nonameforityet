@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "mpml/vectors/special_overloads/iostream_vectors.hpp"
-namespace World::Voxels
+namespace GameWorld::Voxels
 {
 
 	class Chunk
@@ -20,7 +20,7 @@ namespace World::Voxels
 
 		// = Destruction/Initialization
 
-		explicit Chunk(const vec3f& pos) noexcept;
+		explicit Chunk(const types::loc& pos) noexcept;
 
 		explicit Chunk() noexcept = default;
 
@@ -37,16 +37,16 @@ namespace World::Voxels
 
 		std::vector<Render::Data::Voxel>& getVoxelData() noexcept { return m_voxels; }
 
-		const types::loc getPos() const noexcept { return m_pos; }
+		types::loc getPos() const noexcept { return m_pos; }
 
-		const types::loc getOppositeCorner() const noexcept { return m_pos + static_cast<int64>(32); }
+		types::loc getOppositeCorner() const noexcept { return m_pos + static_cast<int64>(32); }
 
 
 		// = Predicates
 
 		const bool isWithinChunk(const types::pos& point) const noexcept;
 
-		const bool is_empty_at(const types::chunk_index& index) const noexcept { return m_voxels.at(index).filling == Render::Data::Voxel::Empty; }
+		const bool is_empty_at(const types::chunk_index& index) const noexcept { return m_voxels.at(index).id == 0; }
 
 
 		// = Mutators

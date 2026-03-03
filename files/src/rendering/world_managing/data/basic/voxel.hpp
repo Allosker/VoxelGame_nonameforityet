@@ -8,7 +8,7 @@
 #include "uHeaders/opengl.hpp"
 #include "rendering/world_managing/data/basic/vertex.hpp"
 
-// STILL ONGOING WORK -- Implement IDs
+// STILL ONGOING WORK
 
 namespace Render::Data
 {
@@ -17,132 +17,11 @@ namespace Render::Data
 		std::array<vec2f, 6> tex_pos{};
 	};
 
-	namespace VoxelType
-	{
-
-		constexpr std::array<vec2f, 6> c_dirtGrass{ vec2f{ 0, 1 }, { 0, 1 }, { 0, 0 }, { 0, 2 }, { 0, 1 }, { 0, 1 } };
-
-		constexpr std::array<vec2f, 6> c_dirt{ vec2f{ 0, 2 }, { 0, 2 }, { 0, 2 }, { 0, 2 }, { 0, 2 }, { 0, 2 } };
-
-	}
+	
 	
 	struct Voxel
 	{
-		enum Filling
-			: std::uint8_t
-		{
-			//Not_A_Block,
-			Empty,
-			//Transparent,
-			Full,
-			NotEmpty = Full,
-		};
-
-
-		Voxel(Filling _filling = Full)
-			: filling{ _filling }
-		{
-		}
-
-
-		void updateSpritePos(const std::array<vec2f, 6>& spritePos, const vec2f& atlas_size = { 96, 96 })
-		{
-
-			for (size_t i{}; i < sprite_coords.size(); i++)
-			{
-				
-				for (auto& uv : sprite_coords[i])
-				{
-					
-					uv = uv * 32.f + spritePos[i] * 32.f;
-
-					//if (uv.x > 1) uv.x -= 1; else uv.x += 1;
-					//if (uv.y < 1) uv.y -= 1; else uv.y += 1;
-
-					uv.x /= atlas_size.x;
-					uv.y /= atlas_size.y;
-				}
-
-			}
-		}
-
-	
-		Filling filling{};
-
-		std::array<std::array<vec2f, 6>, 6> sprite_coords
-		{
-			std::array<vec2f, 6>
-			{
-				vec2f
-				{ 0, 0 },
-				{ 1, 0 },
-				{ 0, 1 },
-
-				{ 1, 0 },
-				{ 1, 1 },
-				{ 0, 1 },
-			},
-
-			{
-				vec2f
-				{ 0, 0 },
-				{ 1, 0 },
-				{ 0, 1 },
-
-				{ 1, 0 },
-				{ 1, 1 },
-				{ 0, 1 },
-			},
-	
-	
-			{
-				vec2f
-		  		{ 0, 0 },
-		  		{ 1, 0 },
-		  		{ 0, 1 },
-	
-		  		{ 1, 0 },
-		  		{ 1, 1 },
-		  		{ 0, 1 },
-			},
-	
-	
-			{
-				vec2f
-		  		{ 0, 0 },
-		  		{ 1, 0 },
-		  		{ 0, 1 },
-	
-		  		{ 1, 0 },
-		  		{ 1, 1 },
-		  		{ 0, 1 },
-			},
-	
-	
-			{
-				vec2f
-		  		{ 0, 0 },
-		  		{ 1, 0 },
-		  		{ 0, 1 },
-	
-		  		{ 1, 0 },
-		  		{ 1, 1 },
-		  		{ 0, 1 },
-			},
-		
-		
-			{
-				vec2f
-				{ 0, 0 },
-				{ 1, 0 },
-				{ 0, 1 },
-
-				{ 1, 0 },
-				{ 1, 1 },
-				{ 0, 1 },
-			}
-		}; 
-
+		types::type_id id{};
 
 		static constexpr std::array<vec3f, 36> faces
 		{

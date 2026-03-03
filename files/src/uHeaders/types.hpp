@@ -26,4 +26,6 @@ namespace types
 	using chunk_loc = mpml::Vector3<uint64>;
 
 	using chunk_index = uint16;
+
+	using type_id = std::size_t;
 }

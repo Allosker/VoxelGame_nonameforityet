@@ -14,10 +14,10 @@ project (
  
 # Directories
 
-set(SRC_DIR "${PROJECT_SOURCE_DIR}/files/src/")
+set(SRC_DIR "${PROJECT_SOURCE_DIR}/files/src/") 
 set(INCLUDE_DIR "${PROJECT_SOURCE_DIR}/files/src/")
 set(LIB_DIR "${PROJECT_SOURCE_DIR}/files/libs/") 
- 
+  
 # Fetch files  
  
 file(GLOB_RECURSE CPP_FILES CMAKE_CONFIGURE_DEPENDS 

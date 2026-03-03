@@ -74,16 +74,11 @@ try
 
 	texture.bind();
 
-	std::vector<Render::Data::ChunkMesh> chunkms;
-
-	World::Voxels::Chunk chunk{ {0,0,0} };
-	Render::Data::ChunkMesh chunkm{ chunk };
-
 
 
 	Render::Utils::CubeHighlight ch;
 
-	World::World world{};
+	GameWorld::World world{};
 
 	float lastFrame{};
 	while (window.isOpen())
@@ -100,7 +95,7 @@ try
 
 		mat4f model{ mpml::Identity4<float> };
 		mat4f view{ mpml::lookAt(camera.pos, camera.front_dir + camera.pos, camera.up_dir) };
-		mat4f proj{ mpml::perspective(mpml::Angle::fromDegrees(90), window.getSize().x, window.getSize().y, 0.1f, 100.f) };
+		mat4f proj{ mpml::perspective(mpml::Angle::fromDegrees(90), window.getSize().x, window.getSize().y, 0.1f, 200.f) };
 
 
 
@@ -115,17 +110,20 @@ try
 	
 		world.update(camera.pos);
 
-		const auto& ray_result{ World::Voxels::Utils::raycast(camera.pos, camera.front_dir, world.grid, 2000) };
+		world.draw_chunkGrid();
+
+		const auto& ray_result{ GameWorld::Voxels::Utils::raycast(camera.pos, camera.front_dir, world.grid, 2000) };
+
 
 		if (ray_result)
 		{
 			ch.update(model, view, proj, ray_result->pos);
 
 			if (window.isMouseButtonPressedOnce(Wai::Buttons::Mouse::Left))
-					world.grid.set_voxel_at(ray_result->pos, Render::Data::Voxel::Empty);
+				world.set_voxel_at(ray_result->pos, 0);
 
 			if (window.isMouseButtonPressedOnce(Wai::Buttons::Mouse::Right))
-				world.grid.set_voxel_at(ray_result->pos + ray_result->normal, Render::Data::Voxel::Full);
+				world.set_voxel_at(ray_result->pos + ray_result->normal, 2);
 
 			ch.draw();
 		}
@@ -195,7 +193,7 @@ void inputs(const Wai::Window& window) noexcept
 
 	const auto campos = camera.pos;
 
-	float camSpeed{ 5.F * deltaTime };
+	float camSpeed{ 25.F * deltaTime };
 
 	if (window.isKeyPressed(b::Escape))
 		window.close();
