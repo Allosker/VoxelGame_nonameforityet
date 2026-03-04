@@ -54,7 +54,14 @@ void GameWorld::World::update(const types::pos& camPos)
 
 					if (block_pos.y > y_min && block_pos.y <= y_max)
 					{
-						current_block.id = 1;
+						if(block_pos.y < y_max - 4)
+							current_block.id = 3;
+
+						if (block_pos.y > y_max - 1)
+							current_block.id = 1;
+
+						if (block_pos.y < y_max - 1 && block_pos.y > y_max - 4)
+							current_block.id = 2;
 					}
 				}
 			}

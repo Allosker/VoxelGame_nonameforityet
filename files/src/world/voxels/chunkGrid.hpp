@@ -19,7 +19,7 @@ namespace GameWorld::Voxels
 
 	namespace ChunkSettings
 	{
-		inline int64 world_render_distance{ 2 };
+		inline int64 world_render_distance{ 1 };
 
 	} // ChunkSettings
 	

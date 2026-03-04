@@ -29,6 +29,11 @@
 */
 
 
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h"
+
+
 //static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) noexcept;
 
 static void framebuffersize_callback(GLFWwindow* window, int width, int height) noexcept;
@@ -54,6 +59,18 @@ try
 	//glfwWindowHint(GLFW_SAMPLES, 4);
 
 	Wai::Window window{ {640, 480}, "Test", nullptr, nullptr };
+
+	// Example from gettingn started
+		// Setup Dear ImGui context
+		IMGUI_CHECKVERSION();
+		ImGui::CreateContext();
+		ImGuiIO& io = ImGui::GetIO();
+		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+		io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+
+		// Setup Platform/Renderer backends
+		ImGui_ImplGlfw_InitForOpenGL(window.get(), true);          // Second param install_callback=true will install GLFW callbacks and chain to existing ones.
+		ImGui_ImplOpenGL3_Init();
 
 
 	//glfwSetKeyCallback(window.get(), key_callback);
@@ -95,7 +112,7 @@ try
 
 		mat4f model{ mpml::Identity4<float> };
 		mat4f view{ mpml::lookAt(camera.pos, camera.front_dir + camera.pos, camera.up_dir) };
-		mat4f proj{ mpml::perspective(mpml::Angle::fromDegrees(90), window.getSize().x, window.getSize().y, 0.1f, 200.f) };
+		mat4f proj{ mpml::perspective(mpml::Angle::fromDegrees(90), window.getSize().x, window.getSize().y, 0.1f, 1000.f) };
 
 
 
@@ -123,7 +140,7 @@ try
 				world.set_voxel_at(ray_result->pos, 0);
 
 			if (window.isMouseButtonPressedOnce(Wai::Buttons::Mouse::Right))
-				world.set_voxel_at(ray_result->pos + ray_result->normal, 2);
+				world.set_voxel_at(ray_result->pos + ray_result->normal, 3);
 
 			ch.draw();
 		}
@@ -132,9 +149,27 @@ try
 		
 
 		window.clearEvents();
+			// (Your code calls glfwPollEvents())
+			// ...
+			// Start the Dear ImGui frame
+			ImGui_ImplOpenGL3_NewFrame();
+			ImGui_ImplGlfw_NewFrame();
+			ImGui::NewFrame();
+			ImGui::ShowDemoWindow(); // Show demo window! :)
+
 		window.display();
+
+			// Rendering
+			// (Your code clears your framebuffer, renders your other stuff etc.)
+			ImGui::Render();
+			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+			// (Your code calls glfwSwapBuffers() etc.)
 	}
 
+
+	ImGui_ImplOpenGL3_Shutdown();
+	ImGui_ImplGlfw_Shutdown();
+	ImGui::DestroyContext();
 
 	glfwTerminate();
 
@@ -193,7 +228,7 @@ void inputs(const Wai::Window& window) noexcept
 
 	const auto campos = camera.pos;
 
-	float camSpeed{ 25.F * deltaTime };
+	float camSpeed{ camera.speed * deltaTime };
 
 	if (window.isKeyPressed(b::Escape))
 		window.close();

@@ -23,6 +23,7 @@ namespace Render::Utils
 		vec3f up_dir{ vec3f{0.f, 1.f, 0.f}.normal() };
 		vec3f front_dir{ 0.f, 0.f, 0.f };
 
+		float speed{ 5.f };
 	};
 
 }

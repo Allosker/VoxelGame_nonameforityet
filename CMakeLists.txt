@@ -17,8 +17,12 @@ project (
 set(SRC_DIR "${PROJECT_SOURCE_DIR}/files/src/") 
 set(INCLUDE_DIR "${PROJECT_SOURCE_DIR}/files/src/")
 set(LIB_DIR "${PROJECT_SOURCE_DIR}/files/libs/") 
+
+set(IMGUI_DIR "${PROJECT_SOURCE_DIR}/files/libs/imgui")
+set(IMGUI_BACKENDS_DIR "${PROJECT_SOURCE_DIR}/files/libs/imgui/backends")
+set(IMGUI_MISC_DIR "${PROJECT_SOURCE_DIR}/files/libs/imgui/misc")
   
-# Fetch files  
+# Fetch files   
  
 file(GLOB_RECURSE CPP_FILES CMAKE_CONFIGURE_DEPENDS 
 	"${SRC_DIR}/*.cpp"
@@ -34,6 +38,17 @@ file(GLOB_RECURSE LIB_FILES CMAKE_CONFIGURE_DEPENDS
 	"${LIB_DIR}/*.h"
 	"${LIB_DIR}/*.c"
 )  
+
+file(GLOB IMGUI_FILES CMAKE_CONFIGURE_DEPENDS
+	"${IMGUI_DIR}/*.cpp"
+	"${IMGUI_DIR}/*.h"
+	"${IMGUI_BACKENDS_DIR}/imgui_impl_glfw.cpp"
+	"${IMGUI_BACKENDS_DIR}/imgui_impl_glfw.h"
+	"${IMGUI_BACKENDS_DIR}/imgui_impl_opengl3.cpp"
+	"${IMGUI_BACKENDS_DIR}/imgui_impl_opengl3.h"
+	"${IMGUI_BACKENDS_DIR}/imgui_impl_opengl3_loader.h"
+	"${IMGUI_MISC_DIR}/imgui_stdlib.cpp"
+)  
  
 # Create Project    
 
@@ -41,10 +56,13 @@ add_executable( MYPROJECT
 	${CPP_FILES}
 	${HPP_FILES}
 	${LIB_FILES}
+	${IMGUI_FILES}
 )  
 
 target_include_directories(MYPROJECT PUBLIC ${INCLUDE_DIR})
 target_include_directories(MYPROJECT PUBLIC ${LIB_DIR})
+target_include_directories(MYPROJECT PUBLIC ${IMGUI_DIR})
+target_include_directories(MYPROJECT PUBLIC ${IMGUI_BACKENDS_DIR})
   
 # Other Settings
  
