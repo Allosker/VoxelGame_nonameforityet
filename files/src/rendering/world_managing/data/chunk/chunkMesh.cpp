@@ -57,6 +57,7 @@ void Render::Data::ChunkMesh::draw() const noexcept
 {
 	glBindVertexArray(m_vao);
 	glDrawArrays(GL_TRIANGLES, 0, m_nbVertices);
+	glBindVertexArray(0);
 }
 
 std::vector<Render::Data::Vertex> Render::Data::ChunkMesh::buildMesh(const GameWorld::Voxels::Chunk& chunk, const Render::Data::Types::VoxelTypeManager& type_manager) noexcept

@@ -22,6 +22,8 @@
 
 #include "rendering/utilities/cubeHighlight.hpp"
 
+#include "rendering/mesh/mesh.hpp"
+
 /* TODOLIST
 * 
 *	== Look through world managing to set the height of cubes (do that at first with sine function) and then you're gonne go through perlin noise mate
@@ -47,6 +49,23 @@ Render::Utils::Camera camera{};
 float deltaTime{};
 
 
+struct WorldOptions
+{
+	uint64 selected_voxel{ 1 };
+
+	uint64 rayDist{ 5 };
+	int64 rayDist_min{ 1 };
+	int64 rayDist_max{ 2000 };
+
+	double y_minMin{ -2000 };
+	double y_minMax{ 10 };
+
+	bool instant_voxel_breaking{ false }, instant_voxel_placing{ false };
+
+	uint64 rm{ 0 }, rma{ 8 };
+};
+
+
 int main()
 try
 {
@@ -68,9 +87,7 @@ try
 		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
 		io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
 
-		// Setup Platform/Renderer backends
-		ImGui_ImplGlfw_InitForOpenGL(window.get(), true);          // Second param install_callback=true will install GLFW callbacks and chain to existing ones.
-		ImGui_ImplOpenGL3_Init();
+		
 
 
 	//glfwSetKeyCallback(window.get(), key_callback);
@@ -79,9 +96,13 @@ try
 
 	glfwSetCursorPosCallback(window.get(), mouse_callback);
 
-	glfwSetInputMode(window.get(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	// Setup Platform/Renderer backends
+	ImGui_ImplGlfw_InitForOpenGL(window.get(), true);          // Second param install_callback=true will install GLFW callbacks and chain to existing ones.
+	ImGui_ImplOpenGL3_Init();
 
 	Render::Shader shader{ SHADER_PATH"shader.vert", SHADER_PATH"shader.frag" };
+
+	Render::Shader cubeDisplay{ SHADER_PATH"shader.vert", SHADER_PATH"shader.frag" };
 
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
@@ -97,16 +118,125 @@ try
 
 	GameWorld::World world{};
 
+	
+	WorldOptions WO{};
+
+
+	std::vector<vec3f> pos
+	{
+		// Position					   // Colors
+		vec3f
+		{ 0, 0, 1 },  /*Left-Down*/
+		{ 1, 0, 1 },  /*Right-Down*/
+		{ 0, 1, 1 },  /*Left-Up*/
+
+		{ 1, 0, 1 },  /*Right-Down*/
+		{ 1, 1, 1 },  /*Right-Up*/
+		{ 0, 1, 1 },  /*Left-Up*/
+
+			/*Back*/
+		{ 1, 0, 0 },  /*Left-Down*/
+		{ 0, 0, 0 },  /*Right-Down*/
+		{ 1, 1, 0 },  /*Left-Up*/
+
+		{ 0, 0, 0 },  /*Right-Down*/
+		{ 0, 1, 0 },  /*Right-Up*/
+		{ 1, 1, 0 },  /*Left-Up*/
+
+
+			/*Up*/
+		{ 1, 1, 1 },   /*Left-Down*/
+		{ 1, 1, 0 },  /*Right-Down*/
+		{ 0, 1, 1 },   /*Left-Up*/
+
+		{ 1, 1, 0 },  /*Right-Down*/
+		{ 0, 1, 0 },  /*Right-Up*/
+		{ 0, 1,  1 },   /*Left-Up*/
+
+			/*Down*/
+		{ 1, 0, 0 },  /*Left-Down*/
+		{ 1, 0, 1 },  /*Right-Down*/
+		{ 0, 0, 0 },   /*Left-Up*/
+
+		{ 1, 0, 1 },  /*Right-Down*/
+		{ 0, 0, 1 },   /*Right-Up*/
+		{ 0, 0, 0 },   /*Left-Up*/
+
+
+			/*Left*/
+		{ 1, 0, 1 },  /*Left-Down*/
+		{ 1, 0, 0 },   /*Right-Down*/
+		{ 1, 1, 1 },  /*Left-Up*/
+
+		{ 1, 0, 0 },   /*Right-Down*/
+		{ 1, 1, 0 },   /*Right-Up*/
+		{ 1, 1, 1 },  /*Left-Up*/
+
+
+			/*Right*/
+		{ 0, 0, 0 },  /*Right-Down*/
+		{ 0, 0, 1 },   /*Left-Down*/
+		{ 0, 1, 0 },  /*Right-Up*/
+
+		{ 0, 0, 1 },   /*Left-Up*/
+		{ 0, 1, 1 },  /*Right-Up*/
+		{ 0, 1, 0 },   /*Left-Down*/
+	};
+
+	std::vector<vec2f> uvs{};
+
+	for (const auto& i : Render::mapTextureUVs_6(Render::Data::Types::TextureUVperFace::c_deepStone))
+	{
+		for (const auto& j : i)
+			uvs.push_back(j);
+	}
+
+	std::vector<Render::Data::Vertex> vertices{};
+
+
+	Render::Mesh mesh{ pos, uvs };
+	
+	
 	float lastFrame{};
 	while (window.isOpen())
 	{
 		deltaTime = glfwGetTime() - lastFrame;
 		lastFrame = glfwGetTime();
 
-		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		window.clearEvents();
+
+		// Start the Dear ImGui frame
+		ImGui_ImplOpenGL3_NewFrame();
+		ImGui_ImplGlfw_NewFrame();
+		ImGui::NewFrame();
+		
 
 		inputs(window);
+
+		
+		ImGui::Begin("Debug"); // Window beginning
+
+		ImGui::SliderFloat("Camera Speed", &camera.speed, 0.0f, 100.0f);
+		ImGui::SliderScalar("Ray Distance", ImGuiDataType_U64, &WO.rayDist, &WO.rayDist_min, &WO.rayDist_max);
+		
+		ImGui::Checkbox("Instant Vox. Break", &WO.instant_voxel_breaking);
+		ImGui::Checkbox("Instant Vox. Place", &WO.instant_voxel_placing);
+			
+		ImGui::VSliderScalar("Render Distance", { 15, 100 }, ImGuiDataType_S64, &GameWorld::Voxels::ChunkSettings::world_render_distance, & WO.rm, & WO.rma);
+		ImGui::VSliderScalar("World Depth", { 15, 100 }, ImGuiDataType_::ImGuiDataType_Double, & world.y_min, & WO.y_minMin, & WO.y_minMax);
+
+		ImGui::End(); // Window end
+
+
+		if(window.isKeyPressedOnce(Wai::Buttons::F))
+		{
+			static bool hiddenCursor{ true };
+			hiddenCursor = !hiddenCursor;
+
+			glfwSetInputMode(window.get(), GLFW_CURSOR, hiddenCursor ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
+		}
+
+		
 
 		shader.use();
 
@@ -120,50 +250,101 @@ try
 		shader.setValue("view", view);
 		shader.setValue("proj", proj);
 
+		mat4f model_cubeDisplay{ mpml::Identity4<float> };
+		model_cubeDisplay = mpml::rotate(model_cubeDisplay, mpml::Angle::fromDegrees(75.f), {0, 1, 0});
+		model_cubeDisplay = mpml::scale(model_cubeDisplay, 0.3f);
 
+		model_cubeDisplay = mpml::translate(model_cubeDisplay, { 1.5, -1.2, -1.5 });
+
+		cubeDisplay.use();
+		cubeDisplay.setValue("model", model_cubeDisplay);
+		cubeDisplay.setValue("view", mpml::lookAt(vec3f{0,0,0}, {0, 0, -1}, {0, 1, 0}));
+		cubeDisplay.setValue("proj", proj);
 
 		//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		   
 	
 		world.update(camera.pos);
 
-		world.draw_chunkGrid();
+		
 
-		const auto& ray_result{ GameWorld::Voxels::Utils::raycast(camera.pos, camera.front_dir, world.grid, 2000) };
+		const auto& ray_result{ GameWorld::Voxels::Utils::raycast(camera.pos, camera.front_dir, world.grid, WO.rayDist) };
 
-
+		bool drawHighlight{ false };
 		if (ray_result)
 		{
 			ch.update(model, view, proj, ray_result->pos);
 
-			if (window.isMouseButtonPressedOnce(Wai::Buttons::Mouse::Left))
-				world.set_voxel_at(ray_result->pos, 0);
+			if (window.isMouseButtonPressedOnce(Wai::Buttons::Mouse::Middle))
+			{
+				auto lambda = [&]()
+					{
+						std::vector<vec2f> b_uvs{};
 
-			if (window.isMouseButtonPressedOnce(Wai::Buttons::Mouse::Right))
-				world.set_voxel_at(ray_result->pos + ray_result->normal, 3);
+						for (const auto& i : world.getTypeManager().getType(world.block_at(ray_result->pos)->id).uvs)
+						{
 
-			ch.draw();
+							b_uvs.push_back(i[0]);
+							b_uvs.push_back(i[1]);
+							b_uvs.push_back(i[2]);
+							b_uvs.push_back(i[1]);
+							b_uvs.push_back(i[3]);
+							b_uvs.push_back(i[2]);
+						}
+
+						return b_uvs;
+					};
+
+				WO.selected_voxel = world.block_at(ray_result->pos)->id;
+				mesh.updateBuffer(pos, lambda());
+			}
+
+			if (!WO.instant_voxel_breaking)
+			{
+				if (window.isMouseButtonPressedOnce(Wai::Buttons::Mouse::Left))
+					world.set_voxel_at(ray_result->pos, 0);
+			}
+			else
+			{
+				if (window.isMouseButtonPressed(Wai::Buttons::Mouse::Left))
+					world.set_voxel_at(ray_result->pos, 0);
+			}
+
+			if (!WO.instant_voxel_placing)
+			{
+				if (window.isMouseButtonPressedOnce(Wai::Buttons::Mouse::Right))
+					world.set_voxel_at(ray_result->pos + ray_result->normal, WO.selected_voxel);
+			}
+			else
+			{
+				if (window.isMouseButtonPressed(Wai::Buttons::Mouse::Right))
+					world.set_voxel_at(ray_result->pos + ray_result->normal, WO.selected_voxel);
+			}
+
+			drawHighlight = true;
 		}
 
 		
-		
 
-		window.clearEvents();
-			// (Your code calls glfwPollEvents())
-			// ...
-			// Start the Dear ImGui frame
-			ImGui_ImplOpenGL3_NewFrame();
-			ImGui_ImplGlfw_NewFrame();
-			ImGui::NewFrame();
-			ImGui::ShowDemoWindow(); // Show demo window! :)
+
+
+		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		shader.use();
+		world.draw_chunkGrid();
+
+		cubeDisplay.use();
+		mesh.draw();
+
+		ch.useShader();
+		if(drawHighlight)
+			ch.draw();
+
+		ImGui::Render();
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
 		window.display();
-
-			// Rendering
-			// (Your code clears your framebuffer, renders your other stuff etc.)
-			ImGui::Render();
-			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-			// (Your code calls glfwSwapBuffers() etc.)
 	}
 
 
@@ -226,8 +407,6 @@ void inputs(const Wai::Window& window) noexcept
 	using namespace Wai;
 	using b = Buttons;
 
-	const auto campos = camera.pos;
-
 	float camSpeed{ camera.speed * deltaTime };
 
 	if (window.isKeyPressed(b::Escape))
@@ -251,8 +430,6 @@ void inputs(const Wai::Window& window) noexcept
 	if (window.isKeyPressed(b::Space))
 		camera.pos += camera.up_dir * camSpeed;
 
-	// if (campos != camera.pos)
-	// 	std::cout << "CamPos: " << camera.pos << std::endl;
 }
 
 void framebuffersize_callback(GLFWwindow* window, int width, int height) noexcept

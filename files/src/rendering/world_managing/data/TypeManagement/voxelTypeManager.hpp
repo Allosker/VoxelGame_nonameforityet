@@ -20,6 +20,7 @@ namespace Render::Data::Types
 			types.push_back(TextureUVperFace::c_dirtGrass);
 			types.push_back(TextureUVperFace::c_dirt);
 			types.push_back(TextureUVperFace::c_stone);
+			types.push_back(TextureUVperFace::c_deepStone); 
 		}
 
 

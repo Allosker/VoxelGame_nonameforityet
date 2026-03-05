@@ -22,9 +22,6 @@ void GameWorld::World::update(const types::pos& camPos)
 	{
 		auto& chunk{ grid.chunk_at_loc(loc) };
 
-		double y_min{ 0 };
-		double y_max{ 2 };
-
 
 		for (int64 x{}; x < 32; x++)
 			for (int64 z{}; z < 32; z++)
@@ -54,14 +51,17 @@ void GameWorld::World::update(const types::pos& camPos)
 
 					if (block_pos.y > y_min && block_pos.y <= y_max)
 					{
-						if(block_pos.y < y_max - 4)
+						if(block_pos.y < y_max - 4 && block_pos.y > y_max - 40)
 							current_block.id = 3;
-
+						else
 						if (block_pos.y > y_max - 1)
 							current_block.id = 1;
-
+						else
 						if (block_pos.y < y_max - 1 && block_pos.y > y_max - 4)
 							current_block.id = 2;
+						else
+						if (block_pos.y < y_max - 40)
+							current_block.id = 4;
 					}
 				}
 			}
@@ -93,4 +93,14 @@ bool GameWorld::World::set_voxel_at(const types::pos& block_pos, types::type_id 
 	cm->updateBuffer(cm->buildMesh(*c, type_manager));
 
 	return true;
+}
+
+const Render::Data::Voxel const* GameWorld::World::block_at(const types::pos& block_pos) const noexcept
+{
+	auto* c{ grid.chunk_at(block_pos) };
+
+	if (c == nullptr)
+		return nullptr;
+
+	return &c->block_at(grid.getVoxelIndex(block_pos));
 }

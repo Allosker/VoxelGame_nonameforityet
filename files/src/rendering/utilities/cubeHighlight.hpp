@@ -36,6 +36,8 @@ namespace Render::Utils
 
 		void update(const mat4f& model, const mat4f& view, const mat4f& proj, const vec3f& pos)
 		{
+			CHshader.use();
+
 			setPos(model, pos);
 			CHshader.setValue("view", view);
 			CHshader.setValue("proj", proj);
@@ -47,15 +49,15 @@ namespace Render::Utils
 
 			glBindVertexArray(vao);
 			glDrawArrays(GL_LINES, 0, data.size());
+			glBindVertexArray(0);
 		}
 
+		void useShader() const noexcept { CHshader.use(); }
 
 		// = Setters 
 
 		void setPos(const mat4f& model, const vec3f& pos)
 		{
-			CHshader.use();
-
 			CHshader.setValue("model", mpml::translate(mpml::scale(model, scale), { std::floor(pos.x), std::floor(pos.y), std::floor(pos.z) }));
 		}
 
