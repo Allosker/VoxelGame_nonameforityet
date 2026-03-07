@@ -41,7 +41,7 @@ file(GLOB_RECURSE LIB_FILES CMAKE_CONFIGURE_DEPENDS
 
 file(GLOB IMGUI_FILES CMAKE_CONFIGURE_DEPENDS
 	"${IMGUI_DIR}/*.cpp"
-	"${IMGUI_DIR}/*.h" 
+	"${IMGUI_DIR}/*.h"  
 	"${IMGUI_BACKENDS_DIR}/imgui_impl_glfw.cpp"
 	"${IMGUI_BACKENDS_DIR}/imgui_impl_glfw.h"
 	"${IMGUI_BACKENDS_DIR}/imgui_impl_opengl3.cpp"

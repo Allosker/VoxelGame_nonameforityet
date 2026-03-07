@@ -31,9 +31,7 @@
 */
 
 
-#include "imgui.h"
-#include "imgui_impl_glfw.h"
-#include "imgui_impl_opengl3.h"
+#include "uHeaders/debug.hpp"
 
 
 //static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) noexcept;
@@ -41,8 +39,6 @@
 static void framebuffersize_callback(GLFWwindow* window, int width, int height) noexcept;
 
 static void mouse_callback(GLFWwindow* window, double xpos, double ypos) noexcept;
-
-static void inputs(const Wai::Window& window) noexcept;
 
 Render::Utils::Camera camera{};
 
@@ -106,6 +102,8 @@ try
 
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	//glEnable(GL_MULTISAMPLE);
 
 	Render::Texturing::Texture texture{ ASSET_PATH"atlas.png"};
@@ -211,7 +209,36 @@ try
 		ImGui::NewFrame();
 		
 
-		inputs(window);
+		window.updateInputs(
+			[&]()
+			{
+				using namespace Wai;
+				using b = Buttons;
+
+				float camSpeed{ camera.speed * deltaTime };
+
+				if (window.isKeyPressed(b::Escape))
+					window.close();
+
+				if (window.isKeyPressed(b::W))
+					camera.pos += camera.front_dir * camSpeed;
+
+				if (window.isKeyPressed(b::S))
+					camera.pos -= camera.front_dir * camSpeed;
+
+				if (window.isKeyPressed(b::D))
+					camera.pos += camera.front_dir.cross(camera.up_dir).normal() * camSpeed;
+
+				if (window.isKeyPressed(b::A))
+					camera.pos -= camera.front_dir.cross(camera.up_dir).normal() * camSpeed;
+
+				if (window.isKeyPressed(b::Left_shift))
+					camera.pos -= camera.up_dir * camSpeed;
+
+				if (window.isKeyPressed(b::Space))
+					camera.pos += camera.up_dir * camSpeed;
+			}
+		);
 
 		
 		ImGui::Begin("Debug"); // Window beginning
@@ -251,15 +278,22 @@ try
 		shader.setValue("proj", proj);
 
 		mat4f model_cubeDisplay{ mpml::Identity4<float> };
-		model_cubeDisplay = mpml::rotate(model_cubeDisplay, mpml::Angle::fromDegrees(75.f), {0, 1, 0});
-		model_cubeDisplay = mpml::scale(model_cubeDisplay, 0.3f);
 
-		model_cubeDisplay = mpml::translate(model_cubeDisplay, { 1.5, -1.2, -1.5 });
+		model_cubeDisplay = mpml::translate(model_cubeDisplay, { -0.5, -0.5, -0.5 });
+		model_cubeDisplay = mpml::scale(model_cubeDisplay, 0.5f);
+		model_cubeDisplay = mpml::rotate(model_cubeDisplay, mpml::Angle::fromDegrees(5.f), vec3f{ 0, 0, 1 });
+		float temp{ static_cast<float>(std::sin(glfwGetTime())) };
+		model_cubeDisplay = mpml::rotate(model_cubeDisplay, mpml::Angle::fromDegrees((temp > 1 ? temp : temp + 1.f) * 240.f), vec3f{ 0, 1, 0 });
+		
+
+		model_cubeDisplay = mpml::translate(model_cubeDisplay, { 4.5, -4.5, -2 });
+
 
 		cubeDisplay.use();
 		cubeDisplay.setValue("model", model_cubeDisplay);
-		cubeDisplay.setValue("view", mpml::lookAt(vec3f{0,0,0}, {0, 0, -1}, {0, 1, 0}));
-		cubeDisplay.setValue("proj", proj);
+		cubeDisplay.setValue("view", mpml::Identity4<float>);
+
+		cubeDisplay.setValue("proj", mpml::orthographic_projection(10u, 10u, 0.1f, 100.f));
 
 		//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		   
@@ -302,23 +336,23 @@ try
 			if (!WO.instant_voxel_breaking)
 			{
 				if (window.isMouseButtonPressedOnce(Wai::Buttons::Mouse::Left))
-					world.set_voxel_at(ray_result->pos, 0);
+					world.set_voxel_at(ray_result->pos, 0, camera.pos);
 			}
 			else
 			{
 				if (window.isMouseButtonPressed(Wai::Buttons::Mouse::Left))
-					world.set_voxel_at(ray_result->pos, 0);
+					world.set_voxel_at(ray_result->pos, 0, camera.pos);
 			}
 
 			if (!WO.instant_voxel_placing)
 			{
 				if (window.isMouseButtonPressedOnce(Wai::Buttons::Mouse::Right))
-					world.set_voxel_at(ray_result->pos + ray_result->normal, WO.selected_voxel);
+					world.set_voxel_at(ray_result->pos + ray_result->normal, WO.selected_voxel, camera.pos);
 			}
 			else
 			{
 				if (window.isMouseButtonPressed(Wai::Buttons::Mouse::Right))
-					world.set_voxel_at(ray_result->pos + ray_result->normal, WO.selected_voxel);
+					world.set_voxel_at(ray_result->pos + ray_result->normal, WO.selected_voxel, camera.pos);
 			}
 
 			drawHighlight = true;
@@ -334,8 +368,10 @@ try
 		shader.use();
 		world.draw_chunkGrid();
 
+		glDisable(GL_DEPTH_TEST);
 		cubeDisplay.use();
 		mesh.draw();
+		glEnable(GL_DEPTH_TEST);
 
 		ch.useShader();
 		if(drawHighlight)
@@ -402,37 +438,7 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos) noexcept
 	camera.front_dir = direction.normal();
 }
 
-void inputs(const Wai::Window& window) noexcept
-{
-	using namespace Wai;
-	using b = Buttons;
-
-	float camSpeed{ camera.speed * deltaTime };
-
-	if (window.isKeyPressed(b::Escape))
-		window.close();
-
-	if (window.isKeyPressed(b::W))
-		camera.pos += camera.front_dir * camSpeed;
-
-	if (window.isKeyPressed(b::S))
-		camera.pos -= camera.front_dir * camSpeed;
-
-	if (window.isKeyPressed(b::D))
-		camera.pos += camera.front_dir.cross(camera.up_dir).normal() * camSpeed;
-
-	if (window.isKeyPressed(b::A))
-		camera.pos -= camera.front_dir.cross(camera.up_dir).normal() * camSpeed;
-
-	if (window.isKeyPressed(b::Left_shift))
-		camera.pos -= camera.up_dir * camSpeed;
-
-	if (window.isKeyPressed(b::Space))
-		camera.pos += camera.up_dir * camSpeed;
-
-}
-
 void framebuffersize_callback(GLFWwindow* window, int width, int height) noexcept
 {
-	glViewport(0, 0, width, height);
+	static_cast<Wai::Window*>(glfwGetWindowUserPointer(window))->onFramebufferResize({ width, height });
 }

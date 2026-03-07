@@ -8,6 +8,7 @@
 
 #include <cstddef>
 #include <bit>
+#include <map>
 
 #include "uHeaders/opengl.hpp"
 #include "rendering/world_managing/data/basic/voxel.hpp"
@@ -28,7 +29,7 @@ namespace Render::Data
 
 		ChunkMesh() = delete;
 
-		explicit ChunkMesh(GameWorld::Voxels::Chunk& chunk, const Render::Data::Types::VoxelTypeManager& type_manager) noexcept;
+		explicit ChunkMesh(GameWorld::Voxels::Chunk& chunk, const types::pos& camPos, const Render::Data::Types::VoxelTypeManager& type_manager) noexcept;
 
 		ChunkMesh(ChunkMesh&& other) noexcept;
 		ChunkMesh& operator=(ChunkMesh&& other) noexcept;
@@ -43,9 +44,12 @@ namespace Render::Data
 
 		void draw() const noexcept;
 
-		std::vector<Vertex> buildMesh(const GameWorld::Voxels::Chunk& chunk, const Render::Data::Types::VoxelTypeManager& type_manager) noexcept;
+		void buildMesh(const GameWorld::Voxels::Chunk& chunk, const types::pos& camPos, const Render::Data::Types::VoxelTypeManager& type_manager) noexcept;
 
-		void updateBuffer(const std::vector<Vertex>& meshes) noexcept;
+		void updateMeshBuffer() noexcept;
+		void updateTransparentMeshBuffer() noexcept;
+
+		void updateBuffers() noexcept;
 
 		void destroy() const noexcept;
 
@@ -56,10 +60,16 @@ namespace Render::Data
 
 	private:
 
-		std::uint32_t m_nbVertices{};
+		size_t m_nbVertices{};
+
+		std::map<vec3f, Vertex> m_transparent_mesh{};
+		std::vector<Vertex> m_mesh{};
 
 		GLuint m_vao{};
 		GLuint m_vbo{};
+
+		GLuint m_vaoTransparent{};
+		GLuint m_vboTransparent{};
 		//GLuint m_ebo{};
 
 	public:

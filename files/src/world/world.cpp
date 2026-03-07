@@ -11,67 +11,99 @@ void GameWorld::World::update(const types::pos& camPos)
 		static_cast<int64>(std::floor(camPos.y / GameWorld::Voxels::Chunk::g_size)),
 		static_cast<int64>(std::floor(camPos.z / GameWorld::Voxels::Chunk::g_size)) };
 
-	const auto z_stride{ GameWorld::Voxels::Chunk::g_size * GameWorld::Voxels::Chunk::g_size };
-
 	auto new_chunk_locs{ grid.generate_new_chunks(camLoc) };
 
-	const siv::PerlinNoise::seed_type seed{ 123456u };
-	const siv::PerlinNoise perlin{ seed };
+	generateWorld(new_chunk_locs);
 
-	for(const auto& loc : new_chunk_locs)
+	for (const auto& loc : new_chunk_locs)
+		grid.create_chunkMesh_for_chunk_at(loc, camPos, type_manager);
+
+	grid.discard_outside_chunks(camLoc);
+}
+
+void GameWorld::World::generateWorld(const std::vector<types::loc>& new_chunks_loc)
+{
+	using SeedType = siv::PerlinNoise::seed_type;
+
+	static const auto z_stride{ GameWorld::Voxels::Chunk::g_size * GameWorld::Voxels::Chunk::g_size };
+
+	const SeedType seed{ 123456u };
+	siv::PerlinNoise perlin{ seed };
+
+	for (const auto& loc : new_chunks_loc)
 	{
 		auto& chunk{ grid.chunk_at_loc(loc) };
 
-
+		// Every Block of the Chunk
 		for (int64 x{}; x < 32; x++)
 			for (int64 z{}; z < 32; z++)
 			{
-				const double frequency{ 0.001 }; // lower = bigger hills
-				const double amplitude{ 32 }; // Maximum terrain height
+				// Generate Depth for the world
 
-				vec2d block_xzPos{ vec2l{x, z} + vec2l{chunk.getPos().x, chunk.getPos().z } };
+				//const double frequency{ 0.001 }; // lower = bigger hills
+				//const double amplitude{ 32 }; // Maximum terrain height
 
-				auto n1 = perlin.octave2D_01(block_xzPos.x * 0.05, block_xzPos.y * 0.05, 4) * 16.;
-				auto n2 = perlin.octave2D_01(block_xzPos.x * 0.001, block_xzPos.y * 0.001, 2) * 32.;
-				auto n3 = perlin.octave2D_01(block_xzPos.x * 0.0001, block_xzPos.y * 0.000011, 8) * 2.;
+				vec2d bpz{ vec2l{x, z} + vec2l{chunk.getPos().x, chunk.getPos().z } };
 
-				y_max = n1 + n2 + n3;
+				double scale_p = 0.01;
 
+				vec2d bpz_p{ bpz * scale_p };
+				double plains
+				{
+					 2. * perlin.octave2D_01(1. * bpz_p.x, 1. * bpz_p.y, 0.1) +
+					 1. * perlin.octave2D_01(1. * bpz_p.x, 1. * bpz_p.y, 1) +
+					 0.5 * perlin.octave2D_01(2. * bpz_p.x, 2. * bpz_p.y, 2) +
+					 0.25 * perlin.octave2D_01(4. * bpz_p.x, 4. * bpz_p.y, 4)
+				};
+
+				plains /= (2. + 1. + 00.5 + 0.25);
+				plains = std::pow(plains, 2.);
+
+
+				double scale_m = 0.01;
+
+				vec2d bpz_m{ bpz * scale_m };
+				double mountains
+				{
+					 1. * perlin.octave2D_01(1. * bpz_m.x, 1. * bpz_m.y, 1) +
+					 0.5 * perlin.octave2D_01(2. * bpz_m.x, 2. * bpz_m.y, 2) +
+					 3. * perlin.octave2D_01(4. * bpz_m.x, 4. * bpz_m.y, 3)
+				};
+
+				mountains /= (1. + 0.5 + 3.);
+				mountains = std::pow(mountains, 1.5);
+
+				double sum = plains;
+
+				y_max = sum * 190.;
+
+
+				// Choose Which block type goes where
 				for (int64 y{}; y < 32; y++)
 				{
 					auto& current_block{ chunk.block_at(z * z_stride + y * GameWorld::Voxels::Chunk::g_size + x) };
 
-					
+
 					current_block.id = 0;
 
-					vec3d block_pos{ vec3l{x,y,z} + chunk.getPos() };
+					double bp = y + chunk.getPos().y; // block pos in world coords
 
 
-
-
-					if (block_pos.y > y_min && block_pos.y <= y_max)
+					if (bp >= y_max - 5 && bp <= y_max)
 					{
-						if(block_pos.y < y_max - 4 && block_pos.y > y_max - 40)
-							current_block.id = 3;
-						else
-						if (block_pos.y > y_max - 1)
+						current_block.id = 2;
+
+						if (bp >= y_max - 1)
 							current_block.id = 1;
-						else
-						if (block_pos.y < y_max - 1 && block_pos.y > y_max - 4)
-							current_block.id = 2;
-						else
-						if (block_pos.y < y_max - 40)
-							current_block.id = 4;
 					}
+
+					if (bp > y_max && bp < y_base)
+						current_block.id = 5;
+
 				}
 			}
-		
+
 	}
-
-	for (const auto& loc : new_chunk_locs)
-		grid.create_chunkMesh_for_chunk_at(loc, type_manager);
-
-	grid.discard_outside_chunks(camLoc);
 }
 
 void GameWorld::World::draw_chunkGrid() const noexcept
@@ -79,7 +111,7 @@ void GameWorld::World::draw_chunkGrid() const noexcept
 	grid.draw_all();
 }
 
-bool GameWorld::World::set_voxel_at(const types::pos& block_pos, types::type_id id) noexcept
+bool GameWorld::World::set_voxel_at(const types::pos& block_pos, types::type_id id, const types::pos& camPos) noexcept
 {
 	auto* c{ grid.chunk_at(block_pos) };
 
@@ -90,7 +122,8 @@ bool GameWorld::World::set_voxel_at(const types::pos& block_pos, types::type_id 
 	auto* cm{ grid.chunkmesh_at(block_pos) };
 
 	current_block.id = id;
-	cm->updateBuffer(cm->buildMesh(*c, type_manager));
+	cm->buildMesh(*c, camPos, type_manager);
+	cm->updateBuffers();
 
 	return true;
 }

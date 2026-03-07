@@ -10,8 +10,11 @@
 #include "inputs.hpp"
 #include "utilities/time/clock.hpp"
 
+#include "rendering/utilities/camera.hpp"
+
 #include <string>
 #include <array>
+#include <functional>
 
 namespace Wai
 {
@@ -38,6 +41,13 @@ namespace Wai
 		void updateKeys() const noexcept { m_lastKeyDowns = m_keyDowns; }
 
 		void updateMouseButtons() const noexcept { m_lastMouseButtonsDown = m_mouseButtonsDown; }
+
+		void updateInputs(const std::function<void()>& inputs);
+
+
+		// = CallBacks
+
+		void onFramebufferResize(const vec2i& newSize) noexcept;
 
 
 		// = Getters
@@ -87,7 +97,7 @@ namespace Wai
 
 
 
-		mpml::Vector2<int> m_size{};
+		vec2i m_size{};
 
 		GLFWwindow* m_window{ nullptr };
 

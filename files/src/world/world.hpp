@@ -19,10 +19,14 @@ namespace GameWorld
 
 		void update(const types::pos& camPos);
 
+		void generateWorld(const std::vector<types::loc>& new_chunks_loc);
+
 		void draw_chunkGrid() const noexcept;
 
+		
 
-		bool set_voxel_at(const types::pos& block_pos, types::type_id id) noexcept;
+
+		bool set_voxel_at(const types::pos& block_pos, types::type_id id, const types::pos& camPos) noexcept;
 
 		const Render::Data::Voxel const* block_at(const types::pos& block_pos) const noexcept;
 
@@ -32,8 +36,10 @@ namespace GameWorld
 		Render::Data::Types::VoxelTypeManager type_manager{};
 		Voxels::ChunkGrid grid{};
 
-		double y_min{ -32 };
-		double y_max{ 2 };
+		double y_min{ -100 };
+		double y_max{ 0 };
+
+		const double y_base{ 40 };
 	};
 
 

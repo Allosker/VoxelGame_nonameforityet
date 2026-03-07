@@ -15,7 +15,7 @@ void GameWorld::Voxels::ChunkGrid::update(const types::pos& camPos, const Render
 	auto new_chunk_locs{ generate_new_chunks(camLoc) };
 
 	for (const auto& loc : new_chunk_locs)
-		create_chunkMesh_for_chunk_at(loc, type_manager);
+		create_chunkMesh_for_chunk_at(loc, camPos, type_manager);
 
 	discard_outside_chunks(camLoc);
 }
@@ -94,9 +94,9 @@ bool GameWorld::Voxels::ChunkGrid::is_empty(const types::pos& block_pos) const n
 // Mutators
 // =====================
 
-void GameWorld::Voxels::ChunkGrid::create_chunkMesh_for_chunk_at(const types::loc& key, const Render::Data::Types::VoxelTypeManager& type_manager)
+void GameWorld::Voxels::ChunkGrid::create_chunkMesh_for_chunk_at(const types::loc& key, const types::pos& camPos, const Render::Data::Types::VoxelTypeManager& type_manager)
 {
-	m_chunk_meshes.emplace(key, Render::Data::ChunkMesh{ m_chunks.at(key), type_manager });
+	m_chunk_meshes.emplace(key, Render::Data::ChunkMesh{ m_chunks.at(key), camPos, type_manager });
 }
 
 

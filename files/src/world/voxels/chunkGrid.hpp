@@ -62,10 +62,10 @@ namespace GameWorld::Voxels
 		const Render::Data::ChunkMesh& chunkmesh_at_loc(const types::loc& loc) const noexcept;
 
 		GameWorld::Voxels::Chunk* chunk_at(const types::pos& pos) noexcept;
-		const GameWorld::Voxels::Chunk const* chunk_at(const types::pos& pos) const noexcept;
+		const GameWorld::Voxels::Chunk* chunk_at(const types::pos& pos) const noexcept;
 
 		Render::Data::ChunkMesh* chunkmesh_at(const types::pos& pos) noexcept;
-		const Render::Data::ChunkMesh const* chunkmesh_at(const types::pos& pos) const noexcept;
+		const Render::Data::ChunkMesh* chunkmesh_at(const types::pos& pos) const noexcept;
 
 
 		// = Predicates
@@ -75,7 +75,7 @@ namespace GameWorld::Voxels
 
 		// = Mutators
 
-		void create_chunkMesh_for_chunk_at(const types::loc& key, const Render::Data::Types::VoxelTypeManager& type_manager);
+		void create_chunkMesh_for_chunk_at(const types::loc& key, const types::pos& camPos, const Render::Data::Types::VoxelTypeManager& type_manager);
 
 
 		// = Getters

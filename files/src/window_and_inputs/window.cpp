@@ -22,6 +22,8 @@ Wai::Window::Window(const mpml::Vector2<int>& size_, const std::string& name, GL
 	if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress)))
 		throw std::runtime_error("ERROR::WINDOW_CREATION::Couldn't set glad proc address properly");
 
+	glfwSetWindowUserPointer(m_window, this);
+
 	glfwGetFramebufferSize(m_window, &m_size.x, &m_size.y);
 	glViewport(0, 0, m_size.x, m_size.y);
 }
@@ -42,6 +44,22 @@ void Wai::Window::clearEvents() const noexcept
 	updateKeys();
 	updateMouseButtons();
 	glfwPollEvents();
+}
+
+
+// =====================
+// CallBacks
+// =====================
+
+void Wai::Window::updateInputs(const std::function<void()>& inputs)
+{
+	inputs();
+}
+
+void Wai::Window::onFramebufferResize(const vec2i& newSize) noexcept
+{
+	m_size = newSize;
+	glViewport(0, 0, newSize.x, newSize.y);
 }
 
 

@@ -198,19 +198,22 @@ namespace Render::Data::Types
 
 		constexpr std::array<vec2f, 6> c_deepStone{ vec2f{ 1, 1 }, { 1, 1 }, { 1, 1 }, { 1, 1 }, { 1, 1 }, { 1, 1 } };
 
+		constexpr std::array<vec2f, 6> c_water1{ vec2f{ 2, 2 }, { 2, 2 }, { 2, 2 }, { 2, 2 }, { 2, 2 }, { 2, 2 } };
+
 	}
 
 	struct VoxelType
 	{
 
-		VoxelType() = delete;
+		//VoxelType() = delete;
 
-		VoxelType(/*uint64 id_,*/ const std::array<vec2f, 6>& tex_pos)
-			: /*id{id_},*/ uvs{mapTextureUVs(tex_pos)}
+		VoxelType(const std::array<vec2f, 6>& tex_pos, bool transparent = false)
+			: uvs{mapTextureUVs(tex_pos)}, is_transparent{transparent}
 		{ }
 
 
 		std::array<std::array<vec2f, 4>, 6> uvs{};
+		bool is_transparent{};
 
 		/*uint64 id{};*/
 	};
