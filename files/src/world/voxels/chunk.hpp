@@ -37,9 +37,9 @@ namespace GameWorld::Voxels
 
 		std::vector<Render::Data::Voxel>& getVoxelData() noexcept { return m_voxels; }
 
-		types::loc getPos() const noexcept { return m_pos; }
+		types::pos getPos() const noexcept { return m_pos; }
 
-		types::loc getOppositeCorner() const noexcept { return m_pos + static_cast<int64>(32); }
+		types::pos getOppositeCorner() const noexcept { return m_pos + static_cast<int64>(32); }
 
 
 		// = Predicates
@@ -54,15 +54,14 @@ namespace GameWorld::Voxels
 		Render::Data::Voxel& block_at(const types::chunk_index& index) { return m_voxels.at(index); }
 
 		const Render::Data::Voxel& block_at(const types::chunk_index& index) const { return m_voxels.at(index); }
-
 		
+
 	private:
 
 
 		std::vector<Render::Data::Voxel> m_voxels;
 
 		types::loc m_pos{};
-
 		
 
 	public:

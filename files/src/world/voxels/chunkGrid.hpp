@@ -41,7 +41,7 @@ namespace GameWorld::Voxels
 		std::vector<types::loc> generate_new_chunks(const types::loc& camPos) noexcept;
 
 
-		void draw_all() const noexcept;
+		void draw_all(const types::loc& camLoc) const noexcept;
 
 
 		// = Getters
@@ -83,9 +83,14 @@ namespace GameWorld::Voxels
 		types::chunk_index getVoxelIndex(const types::pos& pos) const;
 
 
+		// Predicates
+
+		static types::loc to_loc(const types::pos& camPos) noexcept;
+
+
 	private: // = Predicates
 
-		std::optional<types::loc> to_loc(const types::pos& camPos) const noexcept;
+		std::optional<types::loc> to_loc_opt(const types::pos& camPos) const noexcept;
 
 
 	private:

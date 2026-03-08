@@ -84,8 +84,12 @@ void Render::Data::ChunkMesh::draw() const noexcept
 	glDrawArrays(GL_TRIANGLES, 0, m_nbVertices);
 
 	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 	glBindVertexArray(m_vaoTransparent);
 	glDrawArrays(GL_TRIANGLES, 0, m_nbVertices_Transparent);
+
+	glDisable(GL_BLEND);
 	glBindVertexArray(0);
 }
 
@@ -94,138 +98,88 @@ void Render::Data::ChunkMesh::buildMesh(const GameWorld::Voxels::Chunk& chunk, c
 	const auto z_stride{ GameWorld::Voxels::Chunk::g_size * GameWorld::Voxels::Chunk::g_size };
 
 	for (std::int32_t x{}; x < GameWorld::Voxels::Chunk::g_size; x++)
+	for (std::int32_t y{}; y < GameWorld::Voxels::Chunk::g_size; y++)
+	for (std::int32_t z{}; z < GameWorld::Voxels::Chunk::g_size; z++)
 	{
-		for (std::int32_t y{}; y < GameWorld::Voxels::Chunk::g_size; y++)
-		{
-			for (std::int32_t z{}; z < GameWorld::Voxels::Chunk::g_size; z++)
-			{
-				std::int32_t block_index{ static_cast<std::int32_t>((z * z_stride) + (y * GameWorld::Voxels::Chunk::g_size) + x) };
+		std::int32_t block_index{ static_cast<std::int32_t>((z * z_stride) + (y * GameWorld::Voxels::Chunk::g_size) + x) };
 
-				auto& current_block{ chunk.getVoxelData()[block_index] };
+		auto& current_block{ chunk.getVoxelData()[block_index] };
 
-				if (!current_block.id)
-					continue;
+		if (!current_block.id)
+			continue;
 
 
-				std::array<size_t, 6> CF_block_dirs{};
+		std::array<size_t, 6> CF_block_dirs{};
 
 
-				if (z + 1 < 32)
-					CF_block_dirs[0] = chunk.getVoxelData()[block_index + z_stride].id;
-				else
-					CF_block_dirs[0] = 0;
+		if (z + 1 < 32)
+			CF_block_dirs[0] = chunk.getVoxelData()[block_index + z_stride].id;
+		else
+			CF_block_dirs[0] = 0;
 
-				if (z - 1 >= 0)
-					CF_block_dirs[1] = chunk.getVoxelData()[block_index - z_stride].id;
-				else
-					CF_block_dirs[1] = 0;
-
-
-				if (y + 1 < 32)
-					CF_block_dirs[2] = chunk.getVoxelData()[block_index + GameWorld::Voxels::Chunk::g_size].id;
-				else
-					CF_block_dirs[2] = 0;
-
-				if (y - 1 >= 0)
-					CF_block_dirs[3] = chunk.getVoxelData()[block_index - GameWorld::Voxels::Chunk::g_size].id;
-				else
-					CF_block_dirs[3] = 0;
+		if (z - 1 >= 0)
+			CF_block_dirs[1] = chunk.getVoxelData()[block_index - z_stride].id;
+		else
+			CF_block_dirs[1] = 0;
 
 
-				if (x + 1 < 32)
-					CF_block_dirs[4] = chunk.getVoxelData()[block_index + 1].id;
-				else
-					CF_block_dirs[4] = 0;
+		if (y + 1 < 32)
+			CF_block_dirs[2] = chunk.getVoxelData()[block_index + GameWorld::Voxels::Chunk::g_size].id;
+		else
+			CF_block_dirs[2] = 0;
 
-				if (x - 1 >= 0)
-					CF_block_dirs[5] = chunk.getVoxelData()[block_index - 1].id;
-				else
-					CF_block_dirs[5] = 0;
-
-
-				vec3f translation{ static_cast<float>(x + chunk.getPos().x), static_cast<float>(y + chunk.getPos().y), static_cast<float>(z + chunk.getPos().z)};
+		if (y - 1 >= 0)
+			CF_block_dirs[3] = chunk.getVoxelData()[block_index - GameWorld::Voxels::Chunk::g_size].id;
+		else
+			CF_block_dirs[3] = 0;
 
 
-				const auto& uvs{ type_manager.getType(current_block.id).uvs };
+		if (x + 1 < 32)
+			CF_block_dirs[4] = chunk.getVoxelData()[block_index + 1].id;
+		else
+			CF_block_dirs[4] = 0;
 
-				static const auto push_mesh = [](size_t block_face, auto& mesh, const auto& translation, const auto& uvs)
+		if (x - 1 >= 0)
+			CF_block_dirs[5] = chunk.getVoxelData()[block_index - 1].id;
+		else
+			CF_block_dirs[5] = 0;
+
+
+
+		vec3f translation{ static_cast<float>(x + chunk.getPos().x), static_cast<float>(y + chunk.getPos().y), static_cast<float>(z + chunk.getPos().z)};
+
+		const auto& type{ type_manager.getType(current_block.id) };
+					
+
+		for (size_t i{}; i < 6; i++)
+			if (!CF_block_dirs[i] || (type_manager.getType(CF_block_dirs[i]).is_transparent && !type.is_transparent))
+			{	
+				const auto index{ i * 6 };
+				const auto& offset{ type.face_offsets };
+
+				if (type.is_transparent)
 				{
-					const auto index{ block_face * 6 };
-
-					mesh.push_back({ Voxel::faces[index + 0] + translation, uvs[block_face][0] });
-					mesh.push_back({ Voxel::faces[index + 1] + translation, uvs[block_face][1] });
-					mesh.push_back({ Voxel::faces[index + 2] + translation, uvs[block_face][2] });
-					mesh.push_back({ Voxel::faces[index + 3] + translation, uvs[block_face][1] });
-					mesh.push_back({ Voxel::faces[index + 4] + translation, uvs[block_face][3] });
-					mesh.push_back({ Voxel::faces[index + 5] + translation, uvs[block_face][2] });
-				};
-				static const auto emplace_transparent_mesh = [](size_t block_face, auto& m_transparent_mesh, const auto& translation, const auto& uvs)
-				{
-					const auto index{ block_face * 6 };
-
-					m_transparent_mesh.emplace_back(
-					std::pair<vec3f, std::array<Vertex, 6>>
+					m_transparent_mesh.emplace_back( std::pair<vec3f, std::array<Vertex, 6>>
 					{
 						translation, std::array<Vertex, 6>{
-							Vertex{ Voxel::faces[index + 0] + translation, uvs[block_face][0] },
-								Vertex{ Voxel::faces[index + 1] + translation, uvs[block_face][1] },
-								Vertex{ Voxel::faces[index + 2] + translation, uvs[block_face][2] },
-								Vertex{ Voxel::faces[index + 3] + translation, uvs[block_face][1] },
-								Vertex{ Voxel::faces[index + 4] + translation, uvs[block_face][3] },
-								Vertex{ Voxel::faces[index + 5] + translation, uvs[block_face][2] }
-						}});
-				};
-																																
-				if (!CF_block_dirs[0] || (type_manager.getType(CF_block_dirs[0]).is_transparent && !type_manager.getType(current_block.id).is_transparent))
-				{	
-					if (type_manager.getType(current_block.id).is_transparent)
-						emplace_transparent_mesh(0, m_transparent_mesh, translation, uvs);
-					else
-						push_mesh(0, m_mesh, translation, uvs);
-				}																					 					   
-																									 					   
-				if (!CF_block_dirs[1] || (type_manager.getType(CF_block_dirs[1]).is_transparent && !type_manager.getType(current_block.id).is_transparent))
-				{																					 					   
-					if (type_manager.getType(current_block.id).is_transparent)
-						emplace_transparent_mesh(1, m_transparent_mesh, translation, uvs);
-					else
-						push_mesh(1, m_mesh, translation, uvs);
-				}																					 					   
-																									 					   
-				if (!CF_block_dirs[2] || (type_manager.getType(CF_block_dirs[2]).is_transparent && !type_manager.getType(current_block.id).is_transparent))
-				{																					 					   
-					if (type_manager.getType(current_block.id).is_transparent)
-						emplace_transparent_mesh(2, m_transparent_mesh, translation, uvs);
-					else
-						push_mesh(2, m_mesh, translation, uvs);
-				}																					 					   
-																									 					   
-				if (!CF_block_dirs[3] || (type_manager.getType(CF_block_dirs[3]).is_transparent && !type_manager.getType(current_block.id).is_transparent))
-				{																					 					   
-					if (type_manager.getType(current_block.id).is_transparent)
-						emplace_transparent_mesh(3, m_transparent_mesh, translation, uvs);
-					else
-						push_mesh(3, m_mesh, translation, uvs);
-				}																					 					   
-																									 					   
-				if (!CF_block_dirs[4] || (type_manager.getType(CF_block_dirs[4]).is_transparent && !type_manager.getType(current_block.id).is_transparent))
-				{																					 					   
-					if (type_manager.getType(current_block.id).is_transparent)
-						emplace_transparent_mesh(4, m_transparent_mesh, translation, uvs);
-					else
-						push_mesh(4, m_mesh, translation, uvs);
-				}																					 					   
-																									 					   
-				if (!CF_block_dirs[5] || (type_manager.getType(CF_block_dirs[5]).is_transparent && !type_manager.getType(current_block.id).is_transparent))
-				{																					 					   
-					if (type_manager.getType(current_block.id).is_transparent)
-						emplace_transparent_mesh(5, m_transparent_mesh, translation, uvs);
-					else
-						push_mesh(5, m_mesh, translation, uvs);
+						Vertex{ Voxel::faces[index + 0] + translation + offset[i], type.uvs[i][0] },
+						Vertex{ Voxel::faces[index + 1] + translation + offset[i], type.uvs[i][1] },
+						Vertex{ Voxel::faces[index + 2] + translation + offset[i], type.uvs[i][2] },
+						Vertex{ Voxel::faces[index + 3] + translation + offset[i], type.uvs[i][1] },
+						Vertex{ Voxel::faces[index + 4] + translation + offset[i], type.uvs[i][3] },
+						Vertex{ Voxel::faces[index + 5] + translation + offset[i], type.uvs[i][2] }
+					}});
 				}
-
-			}
-		}
+				else
+				{
+					m_mesh.push_back({ Voxel::faces[index + 0] + translation + offset[i], type.uvs[i][0] });
+					m_mesh.push_back({ Voxel::faces[index + 1] + translation + offset[i], type.uvs[i][1] });
+					m_mesh.push_back({ Voxel::faces[index + 2] + translation + offset[i], type.uvs[i][2] });
+					m_mesh.push_back({ Voxel::faces[index + 3] + translation + offset[i], type.uvs[i][1] });
+					m_mesh.push_back({ Voxel::faces[index + 4] + translation + offset[i], type.uvs[i][3] });
+					m_mesh.push_back({ Voxel::faces[index + 5] + translation + offset[i], type.uvs[i][2] });
+				}
+			}																					 					   
 
 	}
 
@@ -246,7 +200,7 @@ void Render::Data::ChunkMesh::updateMeshBuffer() noexcept
 
 void Render::Data::ChunkMesh::updateTransparentMeshBuffer(const types::pos& camPos) noexcept
 {
-	if (m_transparent_mesh.empty())
+	if ((has_transparency = m_transparent_mesh.empty()) != false)
 		return;
 
 	std::sort(m_transparent_mesh.begin(), m_transparent_mesh.end(), [&](const auto& a, const auto& b)

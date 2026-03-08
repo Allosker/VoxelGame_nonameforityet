@@ -149,6 +149,11 @@ void Render::Shader::setValue(const std::string& name, const mat4f& value) const
 	glUniformMatrix4fv(glGetUniformLocation(m_id, name.c_str()), 1, false, value.data_ptr());
 }
 
+void Render::Shader::setValueLocation(GLint location, const mat4f& value) const noexcept
+{
+	glUniformMatrix4fv(location, 1, false, value.data_ptr());
+}
+
 
 // =====================
 // Private

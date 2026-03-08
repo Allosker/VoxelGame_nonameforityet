@@ -74,7 +74,7 @@ namespace Render
 			for (auto& uv : mappedUVs[i])
 			{
 
-				uv = uv * 32.f + texturePos[i] * 32.f;
+				uv = (uv + texturePos[i]) * 32.f;
 
 				//if (uv.x > 1) uv.x -= 1; else uv.x += 1;
 				//if (uv.y < 1) uv.y -= 1; else uv.y += 1;
@@ -189,8 +189,9 @@ namespace Render::Data::Types
 
 	namespace TextureUVperFace
 	{
+		// Each vector represents the position of the texture of a face under the format: 32x32
 
-		constexpr std::array<vec2f, 6> c_dirtGrass{ vec2f{ 0, 1 }, { 0, 1 }, { 0, 0 }, { 0, 2 }, { 0, 1 }, { 0, 1 } };
+		constexpr std::array<vec2f, 6> c_dirtGrass{ vec2f{ 0,1 }, { 0, 1 }, { 0, 0 }, { 0, 2 }, { 0, 1 }, { 0, 1 } };
 
 		constexpr std::array<vec2f, 6> c_dirt{ vec2f{ 0, 2 }, { 0, 2 }, { 0, 2 }, { 0, 2 }, { 0, 2 }, { 0, 2 } };
 		
@@ -207,12 +208,17 @@ namespace Render::Data::Types
 
 		//VoxelType() = delete;
 
-		VoxelType(const std::array<vec2f, 6>& tex_pos, bool transparent = false, bool destructible = true)
-			: uvs{mapTextureUVs(tex_pos)}, is_transparent{transparent}, is_destructible{ destructible }
+		VoxelType(const std::array<vec2f, 6>& tex_pos, bool transparent = false, bool destructible = true, const std::array<vec3f, 6>& offsets = {0})
+			: uvs{mapTextureUVs(tex_pos)}, is_transparent{transparent}, is_destructible{ destructible }, face_offsets{offsets}
 		{ }
 
 
 		std::array<std::array<vec2f, 4>, 6> uvs{};
+
+		// do offset for each face
+		std::array<vec3f, 6> face_offsets{};
+
+
 		bool is_transparent{};
 		bool is_destructible{};
 

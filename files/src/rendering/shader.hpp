@@ -48,6 +48,8 @@ namespace Render
 		void setValue(const std::string& name, const mat3f& value) const noexcept;
 		void setValue(const std::string& name, const mat4f& value) const noexcept;
 
+		void setValueLocation(GLint location, const mat4f& value) const noexcept;
+
 
 	private:
 

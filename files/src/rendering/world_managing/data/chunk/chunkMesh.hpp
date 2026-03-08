@@ -71,7 +71,11 @@ namespace Render::Data
 
 		GLuint m_vaoTransparent{};
 		GLuint m_vboTransparent{};
-		//GLuint m_ebo{};
+		
+
+	public:
+
+		bool has_transparency{};
 
 	public:
 

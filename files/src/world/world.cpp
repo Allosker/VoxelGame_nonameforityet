@@ -6,19 +6,24 @@
 
 void GameWorld::World::update(const types::pos& camPos)
 {
-	types::loc camLoc{
-		static_cast<int64>(std::floor(camPos.x / GameWorld::Voxels::Chunk::g_size)),
-		static_cast<int64>(std::floor(camPos.y / GameWorld::Voxels::Chunk::g_size)),
-		static_cast<int64>(std::floor(camPos.z / GameWorld::Voxels::Chunk::g_size)) };
+	static types::loc lastCamLoc{};
 
-	auto new_chunk_locs{ grid.generate_new_chunks(camLoc) };
+	types::loc camLoc{ GameWorld::Voxels::ChunkGrid::to_loc(camPos) };
 
-	generateWorld(new_chunk_locs);
 
-	for (const auto& loc : new_chunk_locs)
-		grid.create_chunkMesh_for_chunk_at(loc, camPos, type_manager);
+	if (lastCamLoc != camLoc)
+	{
+		auto new_chunk_locs{ grid.generate_new_chunks(camLoc) };
 
-	grid.discard_outside_chunks(camLoc);
+		generateWorld(new_chunk_locs);
+
+		for (const auto& loc : new_chunk_locs)
+			grid.create_chunkMesh_for_chunk_at(loc, camPos, type_manager);
+
+		grid.discard_outside_chunks(camLoc);
+
+		lastCamLoc = camLoc;
+	}
 }
 
 void GameWorld::World::generateWorld(const std::vector<types::loc>& new_chunks_loc)
@@ -43,7 +48,7 @@ void GameWorld::World::generateWorld(const std::vector<types::loc>& new_chunks_l
 				//const double frequency{ 0.001 }; // lower = bigger hills
 				//const double amplitude{ 32 }; // Maximum terrain height
 
-				vec2d bpz{ vec2l{x, z} + vec2l{chunk.getPos().x, chunk.getPos().z } };
+				vec2d bpz{ vec2d{(double)x, (double)z} + vec2d{chunk.getPos().x, chunk.getPos().z } };
 
 				double scale_p = 0.01;
 
@@ -94,7 +99,12 @@ void GameWorld::World::generateWorld(const std::vector<types::loc>& new_chunks_l
 						current_block.id = 2;
 
 						if (bp >= y_max - 1)
-							current_block.id = 1;
+							if(bp < y_base - 1)
+							{
+								current_block.id = 2;
+							}
+							else
+								current_block.id = 1;
 
 						
 					}
@@ -115,9 +125,9 @@ void GameWorld::World::generateWorld(const std::vector<types::loc>& new_chunks_l
 	}
 }
 
-void GameWorld::World::draw_chunkGrid() const noexcept
+void GameWorld::World::draw_chunkGrid(const types::loc& camLoc) const noexcept
 {
-	grid.draw_all();
+	grid.draw_all(camLoc);
 }
 
 bool GameWorld::World::set_voxel_at(const types::pos& block_pos, types::type_id id, const types::pos& camPos) noexcept
@@ -145,4 +155,9 @@ const Render::Data::Voxel const* GameWorld::World::block_at(const types::pos& bl
 		return nullptr;
 
 	return &c->block_at(grid.getVoxelIndex(block_pos));
+}
+
+const GameWorld::Voxels::Chunk* GameWorld::World::chunk_at(const types::pos& chunk_pos) const noexcept
+{
+	return grid.chunk_at(chunk_pos);
 }

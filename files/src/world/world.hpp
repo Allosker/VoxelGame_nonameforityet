@@ -21,7 +21,7 @@ namespace GameWorld
 
 		void generateWorld(const std::vector<types::loc>& new_chunks_loc);
 
-		void draw_chunkGrid() const noexcept;
+		void draw_chunkGrid(const types::loc& camLoc) const noexcept;
 
 		
 
@@ -29,6 +29,8 @@ namespace GameWorld
 		bool set_voxel_at(const types::pos& block_pos, types::type_id id, const types::pos& camPos) noexcept;
 
 		const Render::Data::Voxel const* block_at(const types::pos& block_pos) const noexcept;
+
+		const GameWorld::Voxels::Chunk* chunk_at(const types::pos& chunk_pos) const noexcept;
 
 		const Render::Data::Types::VoxelTypeManager& getTypeManager() const noexcept { return type_manager; }
 

@@ -102,8 +102,6 @@ try
 
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	//glEnable(GL_MULTISAMPLE);
 
 	Render::Texturing::Texture texture{ ASSET_PATH"atlas.png"};
@@ -193,7 +191,10 @@ try
 
 
 	Render::Mesh mesh{ pos, uvs };
+
+	struct BoudingBox { vec3f orig{ 0,0,0 }; vec3f size{ 1, 1, 1 }; } camBound;
 	
+	camera.pos = 100;
 	
 	float lastFrame{};
 	while (window.isOpen())
@@ -241,18 +242,31 @@ try
 		);
 
 		
-		ImGui::Begin("Debug"); // Window beginning
-
-		ImGui::SliderFloat("Camera Speed", &camera.speed, 0.0f, 100.0f);
-		ImGui::SliderScalar("Ray Distance", ImGuiDataType_U64, &WO.rayDist, &WO.rayDist_min, &WO.rayDist_max);
-		
-		ImGui::Checkbox("Instant Vox. Break", &WO.instant_voxel_breaking);
-		ImGui::Checkbox("Instant Vox. Place", &WO.instant_voxel_placing);
+		{
+			ImGui::Begin("Debug"); // Window beginning
 			
-		ImGui::VSliderScalar("Render Distance", { 15, 100 }, ImGuiDataType_S64, &GameWorld::Voxels::ChunkSettings::world_render_distance, & WO.rm, & WO.rma);
-		ImGui::VSliderScalar("World Depth", { 15, 100 }, ImGuiDataType_::ImGuiDataType_Double, & world.y_min, & WO.y_minMin, & WO.y_minMax);
+			ImGui::Text("Camera Pos: %f %f %f", camera.pos.x, camera.pos.y, camera.pos.z);
 
-		ImGui::End(); // Window end
+			const GameWorld::Voxels::Chunk* cl{ world.chunk_at(camera.pos) };
+
+			if(cl)
+			{
+				const types::loc c{ GameWorld::Voxels::ChunkGrid::to_loc(cl->getPos()) };
+
+				ImGui::Text("Chunk Loc : %ld %ld %ld", c.x, c.y, c.z);
+			}
+
+					ImGui::SliderFloat("Camera Speed", &camera.speed, 0.0f, 100.0f);
+			ImGui::SliderScalar("Ray Distance", ImGuiDataType_U64, &WO.rayDist, &WO.rayDist_min, &WO.rayDist_max);
+
+			ImGui::Checkbox("Instant Vox. Break", &WO.instant_voxel_breaking);
+			ImGui::Checkbox("Instant Vox. Place", &WO.instant_voxel_placing);
+
+			ImGui::VSliderScalar("Render Distance", { 15, 100 }, ImGuiDataType_S64, &GameWorld::Voxels::ChunkSettings::world_render_distance, &WO.rm, &WO.rma);
+			ImGui::VSliderScalar("World Depth", { 15, 100 }, ImGuiDataType_::ImGuiDataType_Double, &world.y_min, &WO.y_minMin, &WO.y_minMax);
+
+			ImGui::End(); // Window end
+		}
 
 
 		if(window.isKeyPressedOnce(Wai::Buttons::F))
@@ -362,14 +376,25 @@ try
 		}
 
 		
+		if (world.block_at(camera.pos)->id)
+		{
+			vec3f block_box{ 
+				(vec3l)world.chunk_at(camera.pos)->getPos() +
+				types::loc{ (int64)std::floor(camera.pos.x), (int64)std::floor(camera.pos.y), (int64)std::floor(camera.pos.z) }
+			};
+			
 
+			auto offset{ camera.pos - block_box };
 
+			camera.pos += offset;
+		}																 
+					
 
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		shader.use();
-		world.draw_chunkGrid();
+		world.draw_chunkGrid(GameWorld::Voxels::ChunkGrid::to_loc(camera.pos));
 
 		glDisable(GL_DEPTH_TEST);
 		cubeDisplay.use();
