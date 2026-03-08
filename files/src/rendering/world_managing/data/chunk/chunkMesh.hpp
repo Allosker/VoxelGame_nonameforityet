@@ -44,12 +44,12 @@ namespace Render::Data
 
 		void draw() const noexcept;
 
-		void buildMesh(const GameWorld::Voxels::Chunk& chunk, const types::pos& camPos, const Render::Data::Types::VoxelTypeManager& type_manager) noexcept;
+		void buildMesh(const GameWorld::Voxels::Chunk& chunk, const Render::Data::Types::VoxelTypeManager& type_manager) noexcept;
 
 		void updateMeshBuffer() noexcept;
-		void updateTransparentMeshBuffer() noexcept;
+		void updateTransparentMeshBuffer(const types::pos& camPos) noexcept;
 
-		void updateBuffers() noexcept;
+		void updateBuffers(const types::pos& camPos) noexcept;
 
 		void destroy() const noexcept;
 
@@ -61,8 +61,9 @@ namespace Render::Data
 	private:
 
 		size_t m_nbVertices{};
+		size_t m_nbVertices_Transparent{};
 
-		std::map<vec3f, Vertex> m_transparent_mesh{};
+		std::vector< std::pair<vec3f, std::array<Vertex, 6>>> m_transparent_mesh{};
 		std::vector<Vertex> m_mesh{};
 
 		GLuint m_vao{};

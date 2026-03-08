@@ -77,16 +77,16 @@ void GameWorld::Voxels::ChunkGrid::draw_all() const noexcept
 
 // =====================
 // Predicates
-// =====================
+// =====================-
 
-bool GameWorld::Voxels::ChunkGrid::is_empty(const types::pos& block_pos) const noexcept
+bool GameWorld::Voxels::ChunkGrid::is_empty(const types::pos& block_pos, const Render::Data::Types::VoxelTypeManager& type_manager) const noexcept
 {
 	auto* c{ chunk_at(block_pos) };
 
 	if (c == nullptr)
 		return true;
 
-	return !c->block_at(getVoxelIndex(block_pos)).id;
+	return !c->block_at(getVoxelIndex(block_pos)).id || !type_manager.getType(c->block_at(getVoxelIndex(block_pos)).id).is_destructible;
 }
 
 

@@ -21,7 +21,7 @@ namespace Render::Data::Types
 			types.push_back(TextureUVperFace::c_dirt);
 			types.push_back(TextureUVperFace::c_stone);
 			types.push_back(TextureUVperFace::c_deepStone);
-			types.push_back({ TextureUVperFace::c_water1 , true});
+			types.push_back({ TextureUVperFace::c_water1 , true, false});
 		}
 
 

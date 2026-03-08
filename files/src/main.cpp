@@ -302,60 +302,63 @@ try
 
 		
 
-		const auto& ray_result{ GameWorld::Voxels::Utils::raycast(camera.pos, camera.front_dir, world.grid, WO.rayDist) };
+		const auto& ray_result{ GameWorld::Voxels::Utils::raycast(camera.pos, camera.front_dir, world.grid, WO.rayDist, world.getTypeManager()) };
 
 		bool drawHighlight{ false };
 		if (ray_result)
 		{
-			ch.update(model, view, proj, ray_result->pos);
 
-			if (window.isMouseButtonPressedOnce(Wai::Buttons::Mouse::Middle))
-			{
-				auto lambda = [&]()
-					{
-						std::vector<vec2f> b_uvs{};
+				ch.update(model, view, proj, ray_result->pos);
 
-						for (const auto& i : world.getTypeManager().getType(world.block_at(ray_result->pos)->id).uvs)
+
+
+				if (window.isMouseButtonPressedOnce(Wai::Buttons::Mouse::Middle))
+				{
+					auto lambda = [&]()
 						{
+							std::vector<vec2f> b_uvs{};
 
-							b_uvs.push_back(i[0]);
-							b_uvs.push_back(i[1]);
-							b_uvs.push_back(i[2]);
-							b_uvs.push_back(i[1]);
-							b_uvs.push_back(i[3]);
-							b_uvs.push_back(i[2]);
-						}
+							for (const auto& i : world.getTypeManager().getType(world.block_at(ray_result->pos)->id).uvs)
+							{
 
-						return b_uvs;
-					};
+								b_uvs.push_back(i[0]);
+								b_uvs.push_back(i[1]);
+								b_uvs.push_back(i[2]);
+								b_uvs.push_back(i[1]);
+								b_uvs.push_back(i[3]);
+								b_uvs.push_back(i[2]);
+							}
 
-				WO.selected_voxel = world.block_at(ray_result->pos)->id;
-				mesh.updateBuffer(pos, lambda());
-			}
+							return b_uvs;
+						};
 
-			if (!WO.instant_voxel_breaking)
-			{
-				if (window.isMouseButtonPressedOnce(Wai::Buttons::Mouse::Left))
-					world.set_voxel_at(ray_result->pos, 0, camera.pos);
-			}
-			else
-			{
-				if (window.isMouseButtonPressed(Wai::Buttons::Mouse::Left))
-					world.set_voxel_at(ray_result->pos, 0, camera.pos);
-			}
+					WO.selected_voxel = world.block_at(ray_result->pos)->id;
+					mesh.updateBuffer(pos, lambda());
+				}
 
-			if (!WO.instant_voxel_placing)
-			{
-				if (window.isMouseButtonPressedOnce(Wai::Buttons::Mouse::Right))
-					world.set_voxel_at(ray_result->pos + ray_result->normal, WO.selected_voxel, camera.pos);
-			}
-			else
-			{
-				if (window.isMouseButtonPressed(Wai::Buttons::Mouse::Right))
-					world.set_voxel_at(ray_result->pos + ray_result->normal, WO.selected_voxel, camera.pos);
-			}
+				if (!WO.instant_voxel_breaking)
+				{
+					if (window.isMouseButtonPressedOnce(Wai::Buttons::Mouse::Left))
+						world.set_voxel_at(ray_result->pos, 0, camera.pos);
+				}
+				else
+				{
+					if (window.isMouseButtonPressed(Wai::Buttons::Mouse::Left))
+						world.set_voxel_at(ray_result->pos, 0, camera.pos);
+				}
 
-			drawHighlight = true;
+				if (!WO.instant_voxel_placing)
+				{
+					if (window.isMouseButtonPressedOnce(Wai::Buttons::Mouse::Right))
+						world.set_voxel_at(ray_result->pos + ray_result->normal, WO.selected_voxel, camera.pos);
+				}
+				else
+				{
+					if (window.isMouseButtonPressed(Wai::Buttons::Mouse::Right))
+						world.set_voxel_at(ray_result->pos + ray_result->normal, WO.selected_voxel, camera.pos);
+				}
+
+				drawHighlight = true;
 		}
 
 		

@@ -207,13 +207,14 @@ namespace Render::Data::Types
 
 		//VoxelType() = delete;
 
-		VoxelType(const std::array<vec2f, 6>& tex_pos, bool transparent = false)
-			: uvs{mapTextureUVs(tex_pos)}, is_transparent{transparent}
+		VoxelType(const std::array<vec2f, 6>& tex_pos, bool transparent = false, bool destructible = true)
+			: uvs{mapTextureUVs(tex_pos)}, is_transparent{transparent}, is_destructible{ destructible }
 		{ }
 
 
 		std::array<std::array<vec2f, 4>, 6> uvs{};
 		bool is_transparent{};
+		bool is_destructible{};
 
 		/*uint64 id{};*/
 	};

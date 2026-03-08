@@ -68,14 +68,14 @@ namespace GameWorld::Voxels::Utils
 	};
 
 	// Returns the location of the block that was hit by the ray alongside its corresponding chunk, if no block was hit, std::nullopt is returned
-	static inline std::optional<RayCastResult> raycast(const types::pos& origin, const types::pos& dir, const GameWorld::Voxels::ChunkGrid& grid, uint64 maxLength) noexcept
+	static inline std::optional<RayCastResult> raycast(const types::pos& origin, const types::pos& dir, const GameWorld::Voxels::ChunkGrid& grid, uint64 maxLength, const Render::Data::Types::VoxelTypeManager& type_manager) noexcept
 	{
 		Ray ray{ origin, dir };
 		vec3f normal{};
 
 		while ((origin - ray.pos).length() < maxLength)
 		{
-			if (!grid.is_empty(ray.pos))
+			if (!grid.is_empty(ray.pos, type_manager))
 			{
 				return std::make_optional<RayCastResult>({ origin, ray.pos, normal });
 			}

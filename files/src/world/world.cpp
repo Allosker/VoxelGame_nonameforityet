@@ -95,10 +95,19 @@ void GameWorld::World::generateWorld(const std::vector<types::loc>& new_chunks_l
 
 						if (bp >= y_max - 1)
 							current_block.id = 1;
+
+						
 					}
+
+					if (bp <= y_max - 5 && bp > y_max - 40)
+						current_block.id = 3;
+
+					if (bp <= y_max - 40)
+						current_block.id = 4;
 
 					if (bp > y_max && bp < y_base)
 						current_block.id = 5;
+
 
 				}
 			}
@@ -122,8 +131,8 @@ bool GameWorld::World::set_voxel_at(const types::pos& block_pos, types::type_id 
 	auto* cm{ grid.chunkmesh_at(block_pos) };
 
 	current_block.id = id;
-	cm->buildMesh(*c, camPos, type_manager);
-	cm->updateBuffers();
+	cm->buildMesh(*c, type_manager);
+	cm->updateBuffers(camPos);
 
 	return true;
 }

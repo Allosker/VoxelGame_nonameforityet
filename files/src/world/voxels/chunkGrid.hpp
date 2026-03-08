@@ -70,7 +70,7 @@ namespace GameWorld::Voxels
 
 		// = Predicates
 
-		bool is_empty(const types::pos& block_pos) const noexcept;
+		bool is_empty(const types::pos& block_pos, const Render::Data::Types::VoxelTypeManager& type_manager) const noexcept;
 
 
 		// = Mutators
