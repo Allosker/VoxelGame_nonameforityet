@@ -51,7 +51,7 @@ void Wai::Window::clearEvents() const noexcept
 // CallBacks
 // =====================
 
-void Wai::Window::updateInputs(const std::function<void()>& inputs)
+void Wai::Window::processInputs(const std::function<void()>& inputs)
 {
 	inputs();
 }

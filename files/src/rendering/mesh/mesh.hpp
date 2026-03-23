@@ -24,6 +24,8 @@ namespace Render
 
 		Mesh(const std::vector<Data::Vertex>& vertices, GLenum draw_mode = GL_STATIC_DRAW);
 
+		Mesh(const std::vector<Data::VertexColor>& vertices, GLenum draw_mode = GL_STATIC_DRAW);
+
 		Mesh(const std::vector<vec3f>& positions, const std::vector<vec2f>& uvs, GLenum draw_mode = GL_STATIC_DRAW);
 
 		Mesh(const Mesh&) = delete;
@@ -37,7 +39,7 @@ namespace Render
 
 		// = Actors
 		
-		void updateBuffer(const std::vector<Data::Vertex>& vertices, GLenum draw_mode = GL_STATIC_DRAW) noexcept;
+		void updateBuffer(const auto& vertices, GLsizeiptr size_data, GLenum draw_mode = GL_STATIC_DRAW) noexcept;
 
 		void updateBuffer(const std::vector<vec3f>& positions, const std::vector<vec2f>& uvs, GLenum draw_mode = GL_STATIC_DRAW);
 

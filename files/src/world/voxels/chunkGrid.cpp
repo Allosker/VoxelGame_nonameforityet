@@ -188,9 +188,9 @@ types::chunk_index GameWorld::Voxels::ChunkGrid::getVoxelIndex(const types::pos&
 types::loc GameWorld::Voxels::ChunkGrid::to_loc(const types::pos& pos) noexcept
 {
 	return { 
-		static_cast<int>(std::floor(pos.x / Chunk::g_size)),
-		static_cast<int>(std::floor(pos.y / Chunk::g_size)),
-		static_cast<int>(std::floor(pos.z / Chunk::g_size)) };
+		static_cast<int32>(std::floor(pos.x / Chunk::g_size)),
+		static_cast<int32>(std::floor(pos.y / Chunk::g_size)),
+		static_cast<int32>(std::floor(pos.z / Chunk::g_size)) };
 }
 
 /*private*/ std::optional<types::loc> GameWorld::Voxels::ChunkGrid::to_loc_opt(const types::pos& camPos) const noexcept

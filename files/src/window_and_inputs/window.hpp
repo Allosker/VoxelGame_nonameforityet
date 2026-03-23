@@ -42,7 +42,7 @@ namespace Wai
 
 		void updateMouseButtons() const noexcept { m_lastMouseButtonsDown = m_mouseButtonsDown; }
 
-		void updateInputs(const std::function<void()>& inputs);
+		void processInputs(const std::function<void()>& inputs);
 
 
 		// = CallBacks

@@ -151,10 +151,20 @@ const Render::Data::Voxel const* GameWorld::World::block_at(const types::pos& bl
 {
 	auto* c{ grid.chunk_at(block_pos) };
 
-	if (c == nullptr)
+	if (!c)
 		return nullptr;
 
-	return &c->block_at(grid.getVoxelIndex(block_pos));
+	auto* ptr =  &c->block_at(grid.getVoxelIndex(block_pos));
+
+	if (!ptr->id)
+		return nullptr;
+
+	return ptr;
+}
+
+Render::Data::Voxel const* GameWorld::World::block_at(const types::loc& block_loc) const noexcept
+{
+	return block_at(static_cast<types::pos>(block_loc));
 }
 
 const GameWorld::Voxels::Chunk* GameWorld::World::chunk_at(const types::pos& chunk_pos) const noexcept

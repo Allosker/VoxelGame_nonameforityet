@@ -30,6 +30,8 @@ namespace GameWorld
 
 		const Render::Data::Voxel const* block_at(const types::pos& block_pos) const noexcept;
 
+		const Render::Data::Voxel const* block_at(const types::loc& block_loc) const noexcept;
+
 		const GameWorld::Voxels::Chunk* chunk_at(const types::pos& chunk_pos) const noexcept;
 
 		const Render::Data::Types::VoxelTypeManager& getTypeManager() const noexcept { return type_manager; }

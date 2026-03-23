@@ -18,7 +18,6 @@
 #include "world/world.hpp"
 
 #include "rendering/assets_managing/texturing/texture.hpp"
-#include "window_and_inputs/inputs.hpp"
 
 #include "rendering/utilities/cubeHighlight.hpp"
 
@@ -192,7 +191,8 @@ try
 
 	Render::Mesh mesh{ pos, uvs };
 
-	struct BoudingBox { vec3f orig{ 0,0,0 }; vec3f size{ 1, 1, 1 }; } camBound;
+	Render::Mesh cbpos{ std::vector<Render::Data::VertexColor>{ { {0, 0, 0}, {0,0,0} }, {{100, 100, 100}, {0,0,0}} } };
+	Render::Shader cbshader{ SHADER_PATH"color.vert", SHADER_PATH"color.frag" };
 	
 	camera.pos = 100;
 	
@@ -210,16 +210,23 @@ try
 		ImGui::NewFrame();
 		
 
-		window.updateInputs(
+		window.processInputs(
 			[&]()
 			{
 				using namespace Wai;
 				using b = Buttons;
 
-				float camSpeed{ camera.speed * deltaTime };
-
 				if (window.isKeyPressed(b::Escape))
 					window.close();
+			}
+		);
+
+		static const auto& move{ [&]()
+			{
+				using namespace Wai;
+				using b = Buttons;
+
+				float camSpeed{ camera.speed * deltaTime };
 
 				if (window.isKeyPressed(b::W))
 					camera.pos += camera.front_dir * camSpeed;
@@ -238,8 +245,7 @@ try
 
 				if (window.isKeyPressed(b::Space))
 					camera.pos += camera.up_dir * camSpeed;
-			}
-		);
+			} };
 
 		
 		{
@@ -285,11 +291,14 @@ try
 		mat4f view{ mpml::lookAt(camera.pos, camera.front_dir + camera.pos, camera.up_dir) };
 		mat4f proj{ mpml::perspective(mpml::Angle::fromDegrees(90), window.getSize().x, window.getSize().y, 0.1f, 1000.f) };
 
-
-
 		shader.setValue("model", model);
 		shader.setValue("view", view);
 		shader.setValue("proj", proj);
+
+		cbshader.use();
+		cbshader.setValue("model", model);
+		cbshader.setValue("view", view);
+		cbshader.setValue("proj", proj);
 
 		mat4f model_cubeDisplay{ mpml::Identity4<float> };
 
@@ -318,11 +327,11 @@ try
 
 		const auto& ray_result{ GameWorld::Voxels::Utils::raycast(camera.pos, camera.front_dir, world.grid, WO.rayDist, world.getTypeManager()) };
 
-		bool drawHighlight{ false };
+		bool drawHighlight{ true };
 		if (ray_result)
 		{
 
-				ch.update(model, view, proj, ray_result->pos);
+				//ch.update(model, view, proj, ray_result->pos);
 
 
 
@@ -375,20 +384,125 @@ try
 				drawHighlight = true;
 		}
 
-		
-		if (world.block_at(camera.pos)->id)
+
+		struct BoundingBox
 		{
-			vec3f block_box{ 
-				(vec3l)world.chunk_at(camera.pos)->getPos() +
-				types::loc{ (int64)std::floor(camera.pos.x), (int64)std::floor(camera.pos.y), (int64)std::floor(camera.pos.z) }
-			};
+			bool intersect(const BoundingBox& outer)
+			{
+				return
+					min.x <= outer.max.x && max.x >= outer.min.x && 
+
+					min.y <= outer.max.y && max.y >= outer.min.y &&
+
+					min.z <= outer.max.z && max.z >= outer.min.z;
+			}
+
+			vec3f findIntersection(const BoundingBox& outer, const GameWorld::World& world, const types::loc& block_loc)
+			{
+				vec3f right	{ max.x - outer.min.x, 0, 0 };
+				vec3f down	{ 0, max.y - outer.min.y, 0 };
+				vec3f back	{ 0, 0, max.z - outer.min.z };
+
+				vec3f left	{ outer.max.x - min.x, 0, 0 };
+				vec3f up	{ 0, outer.max.y - min.y, 0 };
+				vec3f front	{ 0, 0, outer.max.z - min.z };
+
+				vec3f result{};
+				float bestDist{-1};
+
+				if (left.x > 0 && (left.x < bestDist || bestDist < 0))
+				{
+					if (!world.block_at(block_loc + types::loc{ 1, 0, 0 }))
+					{
+						result = -left;
+						bestDist = left.x;
+					}
+				}
+
+				if (right.x > 0 && (right.x < bestDist || bestDist < 0))
+				{
+					if (!world.block_at(block_loc + types::loc{ -1, 0, 0 }))
+					{
+						result = right;
+						bestDist = right.x;
+					}
+				}
+
+
+				if (up.y > 0 && (up.y < bestDist || bestDist < 0))
+				{
+					if (!world.block_at(block_loc + types::loc{ 0, 1, 0 }))
+					{
+						result = -up;
+						bestDist = up.y;
+					}
+				}
+
+				if (down.y > 0 && (down.y < bestDist || bestDist < 0))
+				{
+					if (!world.block_at(block_loc + types::loc{ 0, -1, 0 }))
+					{
+						result = down;
+						bestDist = down.y;
+					}
+				}
+
+
+				if (front.z > 0 && (front.z < bestDist || bestDist < 0))
+				{
+					if (!world.block_at(block_loc + types::loc{ 0, 0, 1 }))
+					{
+						result = -front;
+						bestDist = front.z;
+					}
+				}
+
+				if (back.z > 0 && (back.z < bestDist || bestDist < 0))
+				{
+					if (!world.block_at(block_loc + types::loc{ 0, 0, -1 }))
+					{
+						result = back;
+						bestDist = back.z;
+					}
+				}
+
+
+				return result;
+			}
+
+			vec3f min{};
+			vec3f max{};
+		};
+
+		BoundingBox cam{ camera.pos - vec3f{1}, camera.pos + vec3f{1} };
+
+		std::vector<types::loc> camPoss;
+
+		move();
+
+		const auto camFlooredMin{ mpml::floor(cam.min) };
+		const auto camFlooredMax{ mpml::floor(cam.max) };
+
+		for (int x{ (int)camFlooredMin.x }; x <= camFlooredMax.x; x++)
+			for (int y{ (int)camFlooredMin.y }; y <= camFlooredMax.y; y++)
+				for (int z{ (int)camFlooredMin.z }; z <= camFlooredMax.z; z++)
+					camPoss.emplace_back(vec3i{ x, y, z });
+
+		for (const auto& pos : camPoss)
+			if(const auto* cubeptr{ world.block_at(pos) }; cubeptr && cubeptr->id)
+			{
+				BoundingBox cube{ pos, pos + types::loc{1} };
+
+				if(cam.intersect(cube))
+				{
+
+					camera.pos -= cam.findIntersection(cube, world, pos);
+
+					cam = BoundingBox{ camera.pos - vec3f{1}, camera.pos + vec3f{1} };
+				}
+			}
 			
-
-			auto offset{ camera.pos - block_box };
-
-			camera.pos += offset;
-		}																 
-					
+		
 
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -399,6 +513,9 @@ try
 		glDisable(GL_DEPTH_TEST);
 		cubeDisplay.use();
 		mesh.draw();
+
+		cbshader.use();
+		cbpos.draw(GL_LINE_STRIP);
 		glEnable(GL_DEPTH_TEST);
 
 		ch.useShader();

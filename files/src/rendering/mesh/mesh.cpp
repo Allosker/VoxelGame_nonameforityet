@@ -13,7 +13,7 @@ Render::Mesh::Mesh(const std::vector<Data::Vertex>& vertices, GLenum draw_mode)
 
 	glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
 
-	updateBuffer(vertices, draw_mode);
+	updateBuffer(vertices, sizeof(Data::Vertex), draw_mode);
 
 	glBindVertexArray(m_vao);
 
@@ -21,6 +21,26 @@ Render::Mesh::Mesh(const std::vector<Data::Vertex>& vertices, GLenum draw_mode)
 	glEnableVertexAttribArray(0);
 
 	glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(Data::Vertex), std::bit_cast<void*>(offsetof(Data::Vertex, uv)));
+	glEnableVertexAttribArray(1);
+
+	glBindVertexArray(0);
+}
+
+Render::Mesh::Mesh(const std::vector<Data::VertexColor>& vertices, GLenum draw_mode)
+{
+	glCreateVertexArrays(1, &m_vao);
+	glGenBuffers(1, &m_vbo);
+
+	glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
+
+	updateBuffer(vertices, sizeof(Data::VertexColor), draw_mode);
+
+	glBindVertexArray(m_vao);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(Data::VertexColor), std::bit_cast<void*>(offsetof(Data::VertexColor, pos)));
+	glEnableVertexAttribArray(0);
+
+	glVertexAttribPointer(1, 3, GL_FLOAT, false, sizeof(Data::VertexColor), std::bit_cast<void*>(offsetof(Data::VertexColor, color)));
 	glEnableVertexAttribArray(1);
 
 	glBindVertexArray(0);
@@ -67,20 +87,20 @@ Render::Mesh::~Mesh() noexcept
 // Actors 
 // =====================
 
-void Render::Mesh::updateBuffer(const std::vector<Data::Vertex>& vertices, GLenum draw_mode) noexcept
+void Render::Mesh::updateBuffer(const auto& vertices, GLsizeiptr size_data, GLenum draw_mode) noexcept
 {
 	glBindVertexArray(m_vao);
 	glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
 
 	m_nbVertices = static_cast<GLsizei>(vertices.size());
 
-	glBufferData(GL_ARRAY_BUFFER, m_nbVertices * sizeof(Data::Vertex), vertices.data(), draw_mode);
+	glBufferData(GL_ARRAY_BUFFER, m_nbVertices * size_data, vertices.data(), draw_mode);
 	glBindVertexArray(0);
 }
 
 void Render::Mesh::updateBuffer(const std::vector<vec3f>& positions, const std::vector<vec2f>& uvs, GLenum draw_mode)
 {
-	updateBuffer(makeVertices(positions, uvs), draw_mode);
+	updateBuffer(makeVertices(positions, uvs), sizeof(Data::Vertex), draw_mode);
 }
 
 void Render::Mesh::draw(GLenum mode) const noexcept

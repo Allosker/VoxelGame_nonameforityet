@@ -50,7 +50,7 @@ file(GLOB IMGUI_FILES CMAKE_CONFIGURE_DEPENDS
 	"${IMGUI_MISC_DIR}/imgui_stdlib.cpp"
 )  
  
-# Create Project    
+# Create Project     
 
 add_executable( MYPROJECT
 	${CPP_FILES}
