@@ -8,7 +8,6 @@
 #include "window_and_inputs/inputs.hpp"
 
 #include "rendering/shader.hpp"
-#include "rendering/utilities/camera.hpp"
 
 // Block Hitting
 #include "world/voxels/utilities/ray.hpp"
@@ -25,21 +24,24 @@
 
 /* TODOLIST
 * 
-*	== Look through world managing to set the height of cubes (do that at first with sine function) and then you're gonne go through perlin noise mate
+*	== Fix it when you go onto a block from a certain direction, you get teleported on the right or left. Only if there is an empty block on the left/right down of it.
 *
 */
 
 
 #include "uHeaders/debug.hpp"
 
+#include "physics/collisions/basicHitbox.hpp"
+#include "world/players/player/player.hpp"
 
-//static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) noexcept;
+
 
 static void framebuffersize_callback(GLFWwindow* window, int width, int height) noexcept;
 
 static void mouse_callback(GLFWwindow* window, double xpos, double ypos) noexcept;
 
-Render::Utils::Camera camera{};
+
+GameWorld::Player player{};
 
 float deltaTime{};
 
@@ -193,8 +195,7 @@ try
 
 	Render::Mesh cbpos{ std::vector<Render::Data::VertexColor>{ { {0, 0, 0}, {0,0,0} }, {{100, 100, 100}, {0,0,0}} } };
 	Render::Shader cbshader{ SHADER_PATH"color.vert", SHADER_PATH"color.frag" };
-	
-	camera.pos = 100;
+
 	
 	float lastFrame{};
 	while (window.isOpen())
@@ -208,52 +209,66 @@ try
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
-		
 
+		player.resetMovement();
 		window.processInputs(
 			[&]()
 			{
 				using namespace Wai;
+				using namespace GameWorld;
 				using b = Buttons;
 
 				if (window.isKeyPressed(b::Escape))
 					window.close();
-			}
-		);
 
-		static const auto& move{ [&]()
-			{
-				using namespace Wai;
-				using b = Buttons;
-
-				float camSpeed{ camera.speed * deltaTime };
 
 				if (window.isKeyPressed(b::W))
-					camera.pos += camera.front_dir * camSpeed;
+					player.move(Player::Forward, deltaTime);
 
 				if (window.isKeyPressed(b::S))
-					camera.pos -= camera.front_dir * camSpeed;
+					player.move(Player::Backward, deltaTime);
 
 				if (window.isKeyPressed(b::D))
-					camera.pos += camera.front_dir.cross(camera.up_dir).normal() * camSpeed;
+					player.move(Player::Right, deltaTime);
 
 				if (window.isKeyPressed(b::A))
-					camera.pos -= camera.front_dir.cross(camera.up_dir).normal() * camSpeed;
+					player.move(Player::Left, deltaTime);
+
 
 				if (window.isKeyPressed(b::Left_shift))
-					camera.pos -= camera.up_dir * camSpeed;
+					player.move(Player::Downward, deltaTime);
 
-				if (window.isKeyPressed(b::Space))
-					camera.pos += camera.up_dir * camSpeed;
-			} };
+				if(!player.attributes.flying)
+				{
+					if (window.isKeyPressedOnce(b::Space))
+						player.move(Player::Upward, deltaTime);
+				}
+				else
+					if (window.isKeyPressed(b::Space))
+						player.move(Player::Upward, deltaTime);
+
+
+				if (window.isKeyPressedOnce(Wai::Buttons::F))
+				{
+					static bool hiddenCursor{ true };
+					hiddenCursor = !hiddenCursor;
+
+					glfwSetInputMode(window.get(), GLFW_CURSOR, hiddenCursor ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
+				}
+			}
+		);
 
 		
 		{
 			ImGui::Begin("Debug"); // Window beginning
 			
-			ImGui::Text("Camera Pos: %f %f %f", camera.pos.x, camera.pos.y, camera.pos.z);
+			ImGui::Text("Camera Pos	: %f %f %f", player.getPos().x, player.getPos().y, player.getPos().z);
+			ImGui::Text("Velocity	: %f %f %f", player.getVelocity().x, player.getVelocity().y, player.getVelocity().z);
 
-			const GameWorld::Voxels::Chunk* cl{ world.chunk_at(camera.pos) };
+			ImGui::Checkbox("Flying", &player.attributes.flying);
+			ImGui::Checkbox("Ghost ", &player.attributes.ghost);
+
+			const GameWorld::Voxels::Chunk* cl{ world.chunk_at(player.getPos()) };
 
 			if(cl)
 			{
@@ -262,7 +277,8 @@ try
 				ImGui::Text("Chunk Loc : %ld %ld %ld", c.x, c.y, c.z);
 			}
 
-					ImGui::SliderFloat("Camera Speed", &camera.speed, 0.0f, 100.0f);
+			ImGui::SliderFloat("Player Speed   ", &player.attributes.speed, 0.0f, 500.0f);
+			ImGui::SliderFloat("Player MaxSpeed", &player.attributes.maxSpeed, 0.0f, 1000.f);
 			ImGui::SliderScalar("Ray Distance", ImGuiDataType_U64, &WO.rayDist, &WO.rayDist_min, &WO.rayDist_max);
 
 			ImGui::Checkbox("Instant Vox. Break", &WO.instant_voxel_breaking);
@@ -274,64 +290,57 @@ try
 			ImGui::End(); // Window end
 		}
 
-
-		if(window.isKeyPressedOnce(Wai::Buttons::F))
-		{
-			static bool hiddenCursor{ true };
-			hiddenCursor = !hiddenCursor;
-
-			glfwSetInputMode(window.get(), GLFW_CURSOR, hiddenCursor ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
-		}
-
 		
 
 		shader.use();
 
 		mat4f model{ mpml::Identity4<float> };
-		mat4f view{ mpml::lookAt(camera.pos, camera.front_dir + camera.pos, camera.up_dir) };
+		mat4f view{ mpml::lookAt(player.getPos(), player.getCamera().front_dir + player.getPos(), player.getCamera().up_dir)};
 		mat4f proj{ mpml::perspective(mpml::Angle::fromDegrees(90), window.getSize().x, window.getSize().y, 0.1f, 1000.f) };
 
-		shader.setValue("model", model);
-		shader.setValue("view", view);
-		shader.setValue("proj", proj);
+		{
+			shader.setValue("model", model);
+			shader.setValue("view", view);
+			shader.setValue("proj", proj);
 
-		cbshader.use();
-		cbshader.setValue("model", model);
-		cbshader.setValue("view", view);
-		cbshader.setValue("proj", proj);
+			cbshader.use();
+			cbshader.setValue("model", model);
+			cbshader.setValue("view", view);
+			cbshader.setValue("proj", proj);
 
-		mat4f model_cubeDisplay{ mpml::Identity4<float> };
+			mat4f model_cubeDisplay{ mpml::Identity4<float> };
 
-		model_cubeDisplay = mpml::translate(model_cubeDisplay, { -0.5, -0.5, -0.5 });
-		model_cubeDisplay = mpml::scale(model_cubeDisplay, 0.5f);
-		model_cubeDisplay = mpml::rotate(model_cubeDisplay, mpml::Angle::fromDegrees(5.f), vec3f{ 0, 0, 1 });
-		float temp{ static_cast<float>(std::sin(glfwGetTime())) };
-		model_cubeDisplay = mpml::rotate(model_cubeDisplay, mpml::Angle::fromDegrees((temp > 1 ? temp : temp + 1.f) * 240.f), vec3f{ 0, 1, 0 });
+			model_cubeDisplay = mpml::translate(model_cubeDisplay, { -0.5, -0.5, -0.5 });
+			model_cubeDisplay = mpml::scale(model_cubeDisplay, 0.5f);
+			model_cubeDisplay = mpml::rotate(model_cubeDisplay, mpml::Angle::fromDegrees(5.f), vec3f{ 0, 0, 1 });
+			float temp{ static_cast<float>(std::sin(glfwGetTime())) };
+			model_cubeDisplay = mpml::rotate(model_cubeDisplay, mpml::Angle::fromDegrees((temp > 1 ? temp : temp + 1.f) * 240.f), vec3f{ 0, 1, 0 });
+
+
+			model_cubeDisplay = mpml::translate(model_cubeDisplay, { 4.5, -4.5, -2 });
+
+
+			cubeDisplay.use();
+			cubeDisplay.setValue("model", model_cubeDisplay);
+			cubeDisplay.setValue("view", mpml::Identity4<float>);
+
+			cubeDisplay.setValue("proj", mpml::orthographic_projection(10u, 10u, 0.1f, 100.f));
+
+			//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+
+			world.update(player.getPos());
+		}
+
 		
 
-		model_cubeDisplay = mpml::translate(model_cubeDisplay, { 4.5, -4.5, -2 });
+		const auto& ray_result{ GameWorld::Voxels::Utils::raycast(player.getPos(), player.getCamera().front_dir, world.grid, WO.rayDist, world.getTypeManager())};
 
-
-		cubeDisplay.use();
-		cubeDisplay.setValue("model", model_cubeDisplay);
-		cubeDisplay.setValue("view", mpml::Identity4<float>);
-
-		cubeDisplay.setValue("proj", mpml::orthographic_projection(10u, 10u, 0.1f, 100.f));
-
-		//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-		   
-	
-		world.update(camera.pos);
-
-		
-
-		const auto& ray_result{ GameWorld::Voxels::Utils::raycast(camera.pos, camera.front_dir, world.grid, WO.rayDist, world.getTypeManager()) };
-
-		bool drawHighlight{ true };
+		bool drawHighlight{ false };
 		if (ray_result)
 		{
 
-				//ch.update(model, view, proj, ray_result->pos);
+				ch.update(model, view, proj, ray_result->pos);
 
 
 
@@ -362,153 +371,39 @@ try
 				if (!WO.instant_voxel_breaking)
 				{
 					if (window.isMouseButtonPressedOnce(Wai::Buttons::Mouse::Left))
-						world.set_voxel_at(ray_result->pos, 0, camera.pos);
+						world.set_voxel_at(ray_result->pos, 0, player.getPos());
 				}
 				else
 				{
 					if (window.isMouseButtonPressed(Wai::Buttons::Mouse::Left))
-						world.set_voxel_at(ray_result->pos, 0, camera.pos);
+						world.set_voxel_at(ray_result->pos, 0, player.getPos());
 				}
 
 				if (!WO.instant_voxel_placing)
 				{
 					if (window.isMouseButtonPressedOnce(Wai::Buttons::Mouse::Right))
-						world.set_voxel_at(ray_result->pos + ray_result->normal, WO.selected_voxel, camera.pos);
+						world.set_voxel_at(ray_result->pos + ray_result->normal, WO.selected_voxel, player.getPos());
 				}
 				else
 				{
 					if (window.isMouseButtonPressed(Wai::Buttons::Mouse::Right))
-						world.set_voxel_at(ray_result->pos + ray_result->normal, WO.selected_voxel, camera.pos);
+						world.set_voxel_at(ray_result->pos + ray_result->normal, WO.selected_voxel, player.getPos());
 				}
 
 				drawHighlight = true;
 		}
-
-
-		struct BoundingBox
-		{
-			bool intersect(const BoundingBox& outer)
-			{
-				return
-					min.x <= outer.max.x && max.x >= outer.min.x && 
-
-					min.y <= outer.max.y && max.y >= outer.min.y &&
-
-					min.z <= outer.max.z && max.z >= outer.min.z;
-			}
-
-			vec3f findIntersection(const BoundingBox& outer, const GameWorld::World& world, const types::loc& block_loc)
-			{
-				vec3f right	{ max.x - outer.min.x, 0, 0 };
-				vec3f down	{ 0, max.y - outer.min.y, 0 };
-				vec3f back	{ 0, 0, max.z - outer.min.z };
-
-				vec3f left	{ outer.max.x - min.x, 0, 0 };
-				vec3f up	{ 0, outer.max.y - min.y, 0 };
-				vec3f front	{ 0, 0, outer.max.z - min.z };
-
-				vec3f result{};
-				float bestDist{-1};
-
-				if (left.x > 0 && (left.x < bestDist || bestDist < 0))
-				{
-					if (!world.block_at(block_loc + types::loc{ 1, 0, 0 }))
-					{
-						result = -left;
-						bestDist = left.x;
-					}
-				}
-
-				if (right.x > 0 && (right.x < bestDist || bestDist < 0))
-				{
-					if (!world.block_at(block_loc + types::loc{ -1, 0, 0 }))
-					{
-						result = right;
-						bestDist = right.x;
-					}
-				}
-
-
-				if (up.y > 0 && (up.y < bestDist || bestDist < 0))
-				{
-					if (!world.block_at(block_loc + types::loc{ 0, 1, 0 }))
-					{
-						result = -up;
-						bestDist = up.y;
-					}
-				}
-
-				if (down.y > 0 && (down.y < bestDist || bestDist < 0))
-				{
-					if (!world.block_at(block_loc + types::loc{ 0, -1, 0 }))
-					{
-						result = down;
-						bestDist = down.y;
-					}
-				}
-
-
-				if (front.z > 0 && (front.z < bestDist || bestDist < 0))
-				{
-					if (!world.block_at(block_loc + types::loc{ 0, 0, 1 }))
-					{
-						result = -front;
-						bestDist = front.z;
-					}
-				}
-
-				if (back.z > 0 && (back.z < bestDist || bestDist < 0))
-				{
-					if (!world.block_at(block_loc + types::loc{ 0, 0, -1 }))
-					{
-						result = back;
-						bestDist = back.z;
-					}
-				}
-
-
-				return result;
-			}
-
-			vec3f min{};
-			vec3f max{};
-		};
-
-		BoundingBox cam{ camera.pos - vec3f{1}, camera.pos + vec3f{1} };
-
-		std::vector<types::loc> camPoss;
-
-		move();
-
-		const auto camFlooredMin{ mpml::floor(cam.min) };
-		const auto camFlooredMax{ mpml::floor(cam.max) };
-
-		for (int x{ (int)camFlooredMin.x }; x <= camFlooredMax.x; x++)
-			for (int y{ (int)camFlooredMin.y }; y <= camFlooredMax.y; y++)
-				for (int z{ (int)camFlooredMin.z }; z <= camFlooredMax.z; z++)
-					camPoss.emplace_back(vec3i{ x, y, z });
-
-		for (const auto& pos : camPoss)
-			if(const auto* cubeptr{ world.block_at(pos) }; cubeptr && cubeptr->id)
-			{
-				BoundingBox cube{ pos, pos + types::loc{1} };
-
-				if(cam.intersect(cube))
-				{
-
-					camera.pos -= cam.findIntersection(cube, world, pos);
-
-					cam = BoundingBox{ camera.pos - vec3f{1}, camera.pos + vec3f{1} };
-				}
-			}
 			
+
+		player.update(world, deltaTime); 
 		
+
+		// Rendering
 
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		shader.use();
-		world.draw_chunkGrid(GameWorld::Voxels::ChunkGrid::to_loc(camera.pos));
+		world.draw_chunkGrid(GameWorld::Voxels::ChunkGrid::to_loc(player.getPos()));
 
 		glDisable(GL_DEPTH_TEST);
 		cubeDisplay.use();
@@ -546,41 +441,18 @@ catch (const std::runtime_error& e)
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos) noexcept
 {
-	static float lastX{ static_cast<float>(xpos) }, lastY{ static_cast<float>(ypos) };
+	static vec2f last{ static_cast<vec2f>(vec2d{xpos, ypos}) };
 
-	float xoffset = xpos - lastX;
-	float yoffset = ypos - lastY;
+	vec2f offset{ static_cast<vec2f>(vec2d{xpos - last.x, ypos - last.y}) };
 
-	lastX = xpos;
-	lastY = ypos;
+	last = static_cast<vec2f>(vec2d{ xpos, ypos });
 
-	float sensitivity{ 0.1f };
+	const auto sensitivity = 0.1f;
 
-	xoffset *= sensitivity;
-	yoffset *= sensitivity;
-
-	static float yaw{-90}, pitch{};
-
-	yaw += xoffset;
-	pitch += yoffset;
+	offset *= sensitivity;
 
 
-	if (pitch > 89.f)
-		pitch = 89.f;
-	if (pitch < -89.f)
-		pitch = -89.f;
-
-	vec3f direction{};
-
-	float radPitch{ mpml::toRadians(pitch) };
-	float cosPitch{ std::cos(radPitch) };
-	float radYaw{ mpml::toRadians(yaw) };
-
-	direction.x = std::cos(radYaw) * cosPitch;
-	direction.y = -std::sin(radPitch);
-	direction.z = std::sin(radYaw) * cosPitch;
-
-	camera.front_dir = direction.normal();
+	static_cast<Wai::Window*>(glfwGetWindowUserPointer(window))->onMouseMovement(offset, player);
 }
 
 void framebuffersize_callback(GLFWwindow* window, int width, int height) noexcept

@@ -62,6 +62,32 @@ void Wai::Window::onFramebufferResize(const vec2i& newSize) noexcept
 	glViewport(0, 0, newSize.x, newSize.y);
 }
 
+void Wai::Window::onMouseMovement(const vec2f& offset, GameWorld::Player& player) noexcept
+{
+	static float yaw{ -90 }, pitch{};
+
+	yaw += offset.x;
+	pitch += offset.y;
+
+
+	if (pitch > 89.f)
+		pitch = 89.f;
+	if (pitch < -89.f)
+		pitch = -89.f;
+
+	vec3f direction{};
+
+	float radPitch{ mpml::toRadians(pitch) };
+	float cosPitch{ std::cos(radPitch) };
+	float radYaw{ mpml::toRadians(yaw) };
+
+	direction.x = std::cos(radYaw) * cosPitch;
+	direction.y = -std::sin(radPitch);
+	direction.z = std::sin(radYaw) * cosPitch;
+
+	player.getCamera().front_dir = direction.normal();
+}
+
 
 // =====================
 // Getters

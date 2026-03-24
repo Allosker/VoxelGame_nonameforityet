@@ -12,6 +12,8 @@
 
 #include "rendering/utilities/camera.hpp"
 
+#include "world/players/player/player.hpp"
+
 #include <string>
 #include <array>
 #include <functional>
@@ -48,6 +50,8 @@ namespace Wai
 		// = CallBacks
 
 		void onFramebufferResize(const vec2i& newSize) noexcept;
+
+		void onMouseMovement(const vec2f& pos, GameWorld::Player& player) noexcept;
 
 
 		// = Getters
@@ -94,8 +98,6 @@ namespace Wai
 
 		mutable std::array<bool, 8> m_mouseButtonsDown{};
 		mutable std::array<bool, 8> m_lastMouseButtonsDown{};
-
-
 
 		vec2i m_size{};
 

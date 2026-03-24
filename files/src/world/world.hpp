@@ -40,6 +40,11 @@ namespace GameWorld
 		Render::Data::Types::VoxelTypeManager type_manager{};
 		Voxels::ChunkGrid grid{};
 
+		struct
+		{
+			float gravity{ -28.5 };
+		} settings;
+
 		double y_min{ -100 };
 		double y_max{ 0 };
 

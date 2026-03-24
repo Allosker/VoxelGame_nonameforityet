@@ -5,7 +5,7 @@
 // Define a basic Camera struct with three basic positions. Note: this is subject to changes.
 // ---------------------------------------
 
-#include "mpml/mpml.hpp"
+#include "uHeaders/opengl.hpp"
 
 namespace Render::Utils
 {
@@ -19,11 +19,11 @@ namespace Render::Utils
 
 		Camera() noexcept = default;
 
+		vec3f right_dir() const noexcept { return front_dir.cross(up_dir); }
+
 		vec3f pos{ 0.f, 0.f, -1.f };
 		vec3f up_dir{ vec3f{0.f, 1.f, 0.f}.normal() };
 		vec3f front_dir{ 0.f, 0.f, 0.f };
-
-		float speed{ 5.f };
 	};
 
 }

@@ -12,10 +12,10 @@ project (
 	LANGUAGES C CXX
 ) 
  
-# Directories
+# Directories  
 
 set(SRC_DIR "${PROJECT_SOURCE_DIR}/files/src/") 
-set(INCLUDE_DIR "${PROJECT_SOURCE_DIR}/files/src/")
+set(INCLUDE_DIR "${PROJECT_SOURCE_DIR}/files/src/") 
 set(LIB_DIR "${PROJECT_SOURCE_DIR}/files/libs/") 
 
 set(IMGUI_DIR "${PROJECT_SOURCE_DIR}/files/libs/imgui")
@@ -70,7 +70,7 @@ set_property(TARGET MYPROJECT PROPERTY CXX_STANDARD 20)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
  
-# Other Paths
+# Other Paths  
 
 set(SHADER_DIR "${CMAKE_SOURCE_DIR}/files/shaders/")
 target_compile_definitions(MYPROJECT PRIVATE SHADER_PATH="${SHADER_DIR}")

@@ -37,9 +37,9 @@ namespace GameWorld::Voxels
 
 		std::vector<Render::Data::Voxel>& getVoxelData() noexcept { return m_voxels; }
 
-		types::pos getPos() const noexcept { return m_pos; }
+		types::pos getPos() const noexcept { return static_cast<types::pos>(m_pos); }
 
-		types::pos getOppositeCorner() const noexcept { return m_pos + static_cast<int64>(32); }
+		types::pos getOppositeCorner() const noexcept { return static_cast<types::pos>(m_pos + static_cast<int64>(32)); }
 
 
 		// = Predicates
