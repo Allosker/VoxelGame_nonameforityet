@@ -279,6 +279,7 @@ try
 
 			ImGui::SliderFloat("Player Speed   ", &player.attributes.speed, 0.0f, 500.0f);
 			ImGui::SliderFloat("Player MaxSpeed", &player.attributes.maxSpeed, 0.0f, 1000.f);
+			ImGui::SliderFloat("Player JUmpHeight", &player.attributes.jumpHeight, 0.0f, 1000.f);
 			ImGui::SliderScalar("Ray Distance", ImGuiDataType_U64, &WO.rayDist, &WO.rayDist_min, &WO.rayDist_max);
 
 			ImGui::Checkbox("Instant Vox. Break", &WO.instant_voxel_breaking);
@@ -394,7 +395,7 @@ try
 		}
 			
 
-		player.update(world, deltaTime); 
+		player.update(world, deltaTime);
 		
 
 		// Rendering

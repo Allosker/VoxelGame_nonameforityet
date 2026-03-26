@@ -51,10 +51,17 @@ namespace GameWorld::Voxels
 
 		// = Mutators
 
+		Render::Data::Voxel& block_at(const types::loc& loc) { return block_at(loc.x + loc.y * g_size + loc.z * g_size * g_size ); }
+
 		Render::Data::Voxel& block_at(const types::chunk_index& index) { return m_voxels.at(index); }
+
+		Render::Data::Voxel* block_at_ptr(const types::loc& loc) { return block_at_ptr(loc.x + loc.y * g_size + loc.z * g_size * g_size); }
+
+		Render::Data::Voxel* block_at_ptr(const types::chunk_index& index);
 
 		const Render::Data::Voxel& block_at(const types::chunk_index& index) const { return m_voxels.at(index); }
 		
+	private:
 
 	private:
 
@@ -67,6 +74,7 @@ namespace GameWorld::Voxels
 	public:
 
 		static constexpr std::uint8_t g_size{ 32 };
+		static constexpr std::uint16_t g_maxSize{ 32'768 };
 	};
 
 }

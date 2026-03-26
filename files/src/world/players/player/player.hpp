@@ -74,14 +74,14 @@ namespace GameWorld
 			float sensitivity{ 0.1f };
 
 			bool moving{ false };
-			bool flying{ false };
-			bool ghost{ false };
+			bool flying{ true };
+			bool ghost{ true };
 
 		} attributes;
 
 	private:
 
-		Render::Utils::Camera m_camera{ {100, 100, 100} };
+		Render::Utils::Camera m_camera{ {641, 88, -543} };
 		Physics::Collisions::BasicHitbox m_hitbox{};
 
 		vec3f m_velocity{};

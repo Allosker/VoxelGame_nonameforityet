@@ -26,3 +26,14 @@ const bool GameWorld::Voxels::Chunk::isWithinChunk(const types::pos& point) cons
 
 	return false;
 }
+
+Render::Data::Voxel* GameWorld::Voxels::Chunk::block_at_ptr(const types::chunk_index& index)
+{
+	if (index < 0)
+		return nullptr;
+
+	if (index >= Chunk::g_maxSize)
+		return nullptr;
+
+	return &m_voxels.at(index); 
+}

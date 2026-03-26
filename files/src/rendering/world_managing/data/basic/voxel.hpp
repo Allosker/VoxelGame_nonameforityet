@@ -21,7 +21,7 @@ namespace Render::Data
 	
 	struct Voxel
 	{
-		types::type_id id{};
+		types::type_id id{0};
 
 		static constexpr std::array<vec3f, 36> faces
 		{

@@ -190,6 +190,7 @@ namespace Render::Data::Types
 	namespace TextureUVperFace
 	{
 		// Each vector represents the position of the texture of a face under the format: 32x32
+		// front, back / up, down / left, right
 
 		constexpr std::array<vec2f, 6> c_dirtGrass{ vec2f{ 0,1 }, { 0, 1 }, { 0, 0 }, { 0, 2 }, { 0, 1 }, { 0, 1 } };
 
@@ -200,6 +201,10 @@ namespace Render::Data::Types
 		constexpr std::array<vec2f, 6> c_deepStone{ vec2f{ 1, 1 }, { 1, 1 }, { 1, 1 }, { 1, 1 }, { 1, 1 }, { 1, 1 } };
 
 		constexpr std::array<vec2f, 6> c_water1{ vec2f{ 2, 2 }, { 2, 2 }, { 2, 2 }, { 2, 2 }, { 2, 2 }, { 2, 2 } };
+
+		constexpr std::array<vec2f, 6> c_tree{ vec2f{ 2, 1 }, { 2, 1 }, { 2, 0 }, { 2, 0 }, { 2, 1 }, { 2, 1 } };
+
+		constexpr std::array<vec2f, 6> c_leaf{ vec2f{ 1, 0 }, { 1, 0 }, { 1, 0 }, { 1, 0 }, { 1, 0 }, { 1, 0 } };
 
 	}
 
