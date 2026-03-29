@@ -38,6 +38,8 @@ namespace GameWorld::Voxels
 
 		void discard_outside_chunks(const types::loc& camPos) noexcept;
 
+		void discard_all_chunks() noexcept;
+
 		std::vector<types::loc> generate_new_chunks(const types::loc& camPos) noexcept;
 
 

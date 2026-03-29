@@ -277,6 +277,16 @@ try
 				ImGui::Text("Chunk Loc : %ld %ld %ld", c.x, c.y, c.z);
 			}
 
+			{
+				const double tf_mi{ 1 }, tf_ma{ 20 };
+				const double t_mi{ 0.0000000000000001 }, t_ma{ 1 };
+				if (ImGui::SliderScalar("Tree frequency: ", ImGuiDataType_Double, &world.debug.tree_frequency, &tf_mi, &tf_ma))
+					world.update(player.getPos(), true);
+
+				if (ImGui::SliderScalar("Tree threshold: ", ImGuiDataType_Double, &world.debug.tree_threshold, &t_mi, &t_ma))
+					world.update(player.getPos(), true);
+			}
+
 			ImGui::SliderFloat("Player Speed   ", &player.attributes.speed, 0.0f, 500.0f);
 			ImGui::SliderFloat("Player MaxSpeed", &player.attributes.maxSpeed, 0.0f, 1000.f);
 			ImGui::SliderFloat("Player JUmpHeight", &player.attributes.jumpHeight, 0.0f, 1000.f);

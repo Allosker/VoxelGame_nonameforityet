@@ -44,6 +44,18 @@ void GameWorld::Voxels::ChunkGrid::discard_outside_chunks(const types::loc& camL
 	}
 }
 
+void GameWorld::Voxels::ChunkGrid::discard_all_chunks() noexcept
+{
+	for (auto& key : m_chunk_meshes)
+		key.second.destroy();
+
+	std::map<types::loc, GameWorld::Voxels::Chunk> empty_chunks{};
+	m_chunks.swap(empty_chunks);
+
+	std::map<types::loc, Render::Data::ChunkMesh> empty_chunk_meshes{};
+	m_chunk_meshes.swap(empty_chunk_meshes);
+}
+
 std::vector<types::loc> GameWorld::Voxels::ChunkGrid::generate_new_chunks(const types::loc& camLoc) noexcept
 {
 	std::vector<types::loc> locations{};

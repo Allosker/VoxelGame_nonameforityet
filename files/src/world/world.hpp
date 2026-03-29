@@ -17,7 +17,7 @@ namespace GameWorld
 
 
 
-		void update(const types::pos& camPos);
+		void update(const types::pos& camPos, bool force_reload=false);
 
 		void generateWorld(const std::vector<types::loc>& new_chunks_loc);
 
@@ -44,6 +44,12 @@ namespace GameWorld
 		{
 			float gravity{ -28.5 };
 		} settings;
+
+		struct
+		{
+			double tree_frequency{ 20 };
+			double tree_threshold{ 0.2 };
+		} debug;
 
 		double y_min{ -100 };
 		double y_max{ 0 };

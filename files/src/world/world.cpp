@@ -4,14 +4,17 @@
 
 #include "PerlinNoiseHO/PerlinNoise.hpp"
 
-void GameWorld::World::update(const types::pos& camPos)
+void GameWorld::World::update(const types::pos& camPos, bool force_reload)
 {
 	static types::loc lastCamLoc{};
 
 	types::loc camLoc{ GameWorld::Voxels::ChunkGrid::to_loc(camPos) };
 
+	if (force_reload)
+		grid.discard_all_chunks();
 
-	if (lastCamLoc != camLoc)
+
+	if (force_reload || (lastCamLoc != camLoc))
 	{
 		auto new_chunk_locs{ grid.generate_new_chunks(camLoc) };
 
@@ -54,6 +57,7 @@ void GameWorld::World::generateWorld(const std::vector<types::loc>& new_chunks_l
 
 			return {};
 		};
+
 
 	for (const auto& loc : new_chunks_loc)
 	{
@@ -118,9 +122,13 @@ void GameWorld::World::generateWorld(const std::vector<types::loc>& new_chunks_l
 						if (bp > y_max && bp < sea_level)
 							current_block.id = 5;
 					}
-
-					if (bp > y_max && /*condition for tree to spawn*/ && bp < y_max + 1)
+					
+					if (
+						bp > y_max && bp < y_max + 1 && 
+						perlin.octave2D_01(x * debug.tree_frequency, z * debug.tree_frequency, 4) <= debug.tree_threshold
+						)
 					{
+
 						if (auto& b = chunk.block_at({ x, y, z }); b.id != 5)
 							b.id = 6;
 						else
