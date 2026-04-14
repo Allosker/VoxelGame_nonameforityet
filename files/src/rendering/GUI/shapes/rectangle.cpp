@@ -4,34 +4,34 @@
 // Construction/Destruction
 // =====================
 
-Render::GUI::Rectangle::Rectangle(vec2f size, vec2f ori, const UvAtlas& rect) noexcept
+Render::GUI::Rectangle::Rectangle(vec2f size, vec2f ori, const UvAtlas& attributes)
 	: m_origin{ ori }, m_baseSize{size}, m_scale{1.f, 1.f},
 	Mesh(std::array<Data::Vertex2D, 6>
 	{
 		Render::Data::Vertex2D
 		{
 			{0, 0},
-			{mapTextureUvs(rect.pos_in_atlas, rect.subset_size)}
+			{mapTextureUvs(attributes.pos_in_atlas, attributes.subset_size)}
 		},
 		{
 			{size.x, 0},
-			{mapTextureUvs({rect.pos_in_atlas + types::atlas_units{1, 0}}, rect.subset_size)}
+			{mapTextureUvs({attributes.pos_in_atlas + types::atlas_units{1, 0}}, attributes.subset_size)}
 		},
 		{
 			{size.x, size.y},
-			{mapTextureUvs({rect.pos_in_atlas + types::atlas_units{1, 1}}, rect.subset_size)}
+			{mapTextureUvs({attributes.pos_in_atlas + types::atlas_units{1, 1}}, attributes.subset_size)}
 		},
 		{
 			{0, 0},
-			{mapTextureUvs(rect.pos_in_atlas, rect.subset_size)}
+			{mapTextureUvs(attributes.pos_in_atlas, attributes.subset_size)}
 		},
 		{
 			{0, size.y},
-			{mapTextureUvs({rect.pos_in_atlas + types::atlas_units{0, 1}}, rect.subset_size)}
+			{mapTextureUvs({attributes.pos_in_atlas + types::atlas_units{0, 1}}, attributes.subset_size)}
 		},
 		{
 			{size.x, size.y},
-			{mapTextureUvs({rect.pos_in_atlas + types::atlas_units{1, 1}}, rect.subset_size)}
+			{mapTextureUvs({attributes.pos_in_atlas + types::atlas_units{1, 1}}, attributes.subset_size)}
 		},
 	})
 {
@@ -39,7 +39,7 @@ Render::GUI::Rectangle::Rectangle(vec2f size, vec2f ori, const UvAtlas& rect) no
 		m_transformNeedUpdate = true;
 }
 
-Render::GUI::Rectangle::Rectangle(vec2f size, vec2f ori, const UvPixels& attributes) noexcept
+Render::GUI::Rectangle::Rectangle(vec2f size, vec2f ori, const UvPixels& attributes)
 	: m_origin{ ori }, m_baseSize{size}, m_scale { 1.f, 1.f },
 	Mesh(std::array<Data::Vertex2D, 6>
 {
@@ -72,6 +72,36 @@ Render::GUI::Rectangle::Rectangle(vec2f size, vec2f ori, const UvPixels& attribu
 {
 	if (m_origin.x != 0 || m_origin.y != 0)
 		m_transformNeedUpdate = true;
+}
+
+Render::GUI::Rectangle::Rectangle(Rectangle&& other) noexcept
+	: Mesh(std::move(other))
+	, m_transformations		{ other.m_transformations }
+	, m_scale{ other.m_scale }
+	, m_baseSize{ other.m_baseSize }
+	, m_origin{ other.m_origin }
+	, m_position{ other.m_position }
+	, m_rotation{ other.m_rotation }
+	, m_transformNeedUpdate{ other.m_transformNeedUpdate }
+{
+}
+
+Render::GUI::Rectangle& Render::GUI::Rectangle::operator=(Rectangle&& other) noexcept
+{
+	if (this == &other)
+		return *this;
+
+	Mesh::operator=(std::move(other));
+
+	m_transformations		= other.m_transformations;
+	m_scale					= other.m_scale;
+	m_baseSize				= other.m_baseSize;
+	m_origin				= other.m_origin;
+	m_position				= other.m_position;
+	m_rotation				= other.m_rotation;
+	m_transformNeedUpdate	= other.m_transformNeedUpdate;
+
+	return *this;
 }
 
 
@@ -150,6 +180,75 @@ void Render::GUI::Rectangle::scale(vec2f factor) noexcept
 void Render::GUI::Rectangle::rotate(mpml::Angle<> theta) noexcept
 {
 	setRotation(mpml::Angle<>::fromRadians(m_rotation.asRadians() + theta.asRadians()));
+}
+
+
+void Render::GUI::Rectangle::updateSprite(const UvAtlas& attributes) noexcept
+{
+	Mesh::updateBuffer<Render::Data::Vertex2D>
+		(
+			std::array<Data::Vertex2D, 6>
+	{
+		Render::Data::Vertex2D
+		{
+			{0, 0},
+			{mapTextureUvs(attributes.pos_in_atlas, attributes.subset_size)}
+		},
+		{
+			{m_baseSize.x, 0},
+			{mapTextureUvs({attributes.pos_in_atlas + types::atlas_units{1, 0}}, attributes.subset_size)}
+		},
+		{
+			{m_baseSize.x, m_baseSize.y},
+			{mapTextureUvs({attributes.pos_in_atlas + types::atlas_units{1, 1}}, attributes.subset_size)}
+		},
+		{
+			{0, 0},
+			{mapTextureUvs(attributes.pos_in_atlas, attributes.subset_size)}
+		},
+		{
+			{0, m_baseSize.y},
+			{mapTextureUvs({attributes.pos_in_atlas + types::atlas_units{0, 1}}, attributes.subset_size)}
+		},
+		{
+			{m_baseSize.x, m_baseSize.y},
+			{mapTextureUvs({attributes.pos_in_atlas + types::atlas_units{1, 1}}, attributes.subset_size)}
+		},
+	}, sizeof(Render::Data::Vertex2D), GL_STREAM_DRAW);
+}
+
+void Render::GUI::Rectangle::updateSprite(const UvPixels& attributes) noexcept
+{
+	Mesh::updateBuffer<Render::Data::Vertex2D>
+		(
+			std::array<Data::Vertex2D, 6>
+	{
+		Render::Data::Vertex2D
+		{
+			{0, 0},
+			attributes.pos_in_texture
+		},
+	{
+		{m_baseSize.x, 0},
+		{attributes.pos_in_texture + types::uvs{ attributes.subset_size.x, 0}}
+	},
+	{
+		{m_baseSize.x, m_baseSize.y},
+		{attributes.pos_in_texture + types::uvs{ attributes.subset_size.x, attributes.subset_size.y}}
+	},
+	{
+		{0, 0},
+		attributes.pos_in_texture
+	},
+	{
+		{0, m_baseSize.y},
+		{attributes.pos_in_texture + types::uvs{ 0, attributes.subset_size.y}}
+	},
+	{
+		{m_baseSize.x, m_baseSize.y},
+		{attributes.pos_in_texture + types::uvs{ attributes.subset_size.x, attributes.subset_size.y}}
+	},
+	}, sizeof(Render::Data::Vertex2D), GL_STREAM_DRAW);
 }
 
 

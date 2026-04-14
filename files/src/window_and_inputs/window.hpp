@@ -90,6 +90,10 @@ namespace Wai
 		void resize(const mpml::Vector2<int>& new_size) noexcept;
 
 
+	public:
+
+		static constexpr vec2f framebuffer_GUI_size{ 1920.f,1080.f };
+		 
 	private:
 
 		// Make that better

@@ -6,6 +6,8 @@
 
 #include "rendering/GUI/Items/itemType.hpp"
 
+#include "rendering/assets_managing/utilities.hpp"
+
 #include <vector>
 
 namespace Render::GUI
@@ -37,7 +39,14 @@ namespace Render::GUI
 
 
 		std::vector<ItemType> types{};
+
+		static constexpr vec2f texture_size_item{ 33.f };
+		static constexpr vec2f real_size_item{ 99.f }; 
 	};
 
+	inline UvAtlas to_UvAtlas(types::type_id id, const ItemTypeManager& manager) noexcept
+	{
+		return { manager.getType(id).pos_in_atlas, ItemTypeManager::texture_size_item };
+	}
 
 }

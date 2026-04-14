@@ -71,8 +71,6 @@ namespace Render
 
 		GLsizei m_nbVertices{};
 
-		bool m_moved{ false };
-
 	};
 
 	// Construction/Destruction

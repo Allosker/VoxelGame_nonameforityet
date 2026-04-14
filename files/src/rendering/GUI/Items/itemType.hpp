@@ -45,8 +45,6 @@ namespace Render::GUI
 		types::atlas_units pos_in_atlas{};
 
 
-		static constexpr float texture_size_item{ 32.f };
-
 	};
 
 

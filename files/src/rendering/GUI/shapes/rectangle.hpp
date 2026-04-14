@@ -17,15 +17,23 @@ namespace Render::GUI
 {
 	
 	class Rectangle
-		: public Mesh
+		: protected Mesh
 	{
 	public:
 
 		// = Construction/Destruction
 
-		Rectangle(vec2f size, vec2f pos, const UvAtlas& attributes) noexcept;
+		Rectangle(vec2f size, vec2f pos, const UvAtlas& attributes);
 
-		Rectangle(vec2f size, vec2f pos, const UvPixels& attributes) noexcept;
+		Rectangle(vec2f size, vec2f pos, const UvPixels& attributes);
+
+
+		Rectangle(Rectangle&& other) noexcept;
+
+		Rectangle& operator=(Rectangle&& other) noexcept;
+
+
+		virtual ~Rectangle() = default;
 
 
 		// = Getters
@@ -52,6 +60,12 @@ namespace Render::GUI
 
 		void rotate(mpml::Angle<> theta) noexcept;
 
+
+
+		void updateSprite(const UvAtlas& attributes) noexcept;
+
+		void updateSprite(const UvPixels& attributes) noexcept;
+
 		
 		// = Actors
 
@@ -62,17 +76,16 @@ namespace Render::GUI
 
 	private:
 
-		mpml::Matrix4<float> m_transformations{ mpml::Identity4<float> };
+		mpml::Matrix4<float>	m_transformations		{ mpml::Identity4<float> };
 
-		vec2f m_scale{};
-		vec2f m_baseSize{};
-		vec2f m_origin{};
-		vec2f m_position{};
+		vec2f					m_scale					{};
+		vec2f					m_baseSize				{};
+		vec2f					m_origin				{};
+		vec2f					m_position				{};
 
-		mpml::Angle<> m_rotation{ mpml::Angle<>::fromRadians(0) };
+		mpml::Angle<>			m_rotation				{ mpml::Angle<>::fromRadians(0) };
 
-		
-		bool m_transformNeedUpdate{ false };
+		bool					m_transformNeedUpdate	{ false };
 
 	};
 

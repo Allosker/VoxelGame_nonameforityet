@@ -22,7 +22,7 @@ set(IMGUI_DIR "${PROJECT_SOURCE_DIR}/files/libs/imgui")
 set(IMGUI_BACKENDS_DIR "${PROJECT_SOURCE_DIR}/files/libs/imgui/backends")
 set(IMGUI_MISC_DIR "${PROJECT_SOURCE_DIR}/files/libs/imgui/misc")
 
-set(IMPLOT_DIR "${PROJECT_SOURCE_DIR}/files/libs/implot") 
+set(IMPLOT_DIR "${PROJECT_SOURCE_DIR}/files/libs/implot")   
   
 # Fetch files   
  

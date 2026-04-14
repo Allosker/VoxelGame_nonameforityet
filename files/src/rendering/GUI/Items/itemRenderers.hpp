@@ -12,28 +12,25 @@
 #include "world/items/item.hpp"
 
 
-namespace Render::GUI
-{
-	class ItemGUI
-		: public Rectangle 
-	{
-	public:
-
-		ItemGUI(const GameWorld::Inventory::Item& item, const ItemTypeManager& manager)
-			: Rectangle(g_GUI_size, { g_GUI_size.x / 2, g_GUI_size.y / 2 }, Render::UvAtlas{ manager.getType(item.id).pos_in_atlas, g_texture_size})
-		{
-		}
-
-		void draw(const Shader& shader)
-		{
-			Rectangle::draw(shader);
-		}
-
-		static constexpr vec2f g_texture_size{ 33.f, 33.f };
-		static constexpr vec2f g_GUI_size{ 99.f, 99.f };
-
-	};
-}
+//namespace Render::GUI
+//{
+//	class ItemGUI
+//		: public Rectangle 
+//	{
+//	public:
+//
+//		ItemGUI(const GameWorld::Inventory::Item& item, const ItemTypeManager& manager)
+//			: Rectangle(g_GUI_size, { g_GUI_size.x / 2, g_GUI_size.y / 2 }, Render::UvAtlas{ manager.getType(item.id).pos_in_atlas, g_texture_size})
+//		{
+//		}
+//
+//		void draw(const Shader& shader)
+//		{
+//			Rectangle::draw(shader);
+//		}
+//
+//	};
+//}
 
 namespace Render
 {

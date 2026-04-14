@@ -39,42 +39,9 @@
 #include "rendering/GUI/Items/itemRenderers.hpp"
 #include "rendering/GUI/Items/itemTypeManager.hpp"
 
+#include "rendering/GUI/HUD/hotbar.hpp"
+
 #include <fstream>
-
-
-constexpr float DESIGN_WIDTH{ 1920.f };
-constexpr float DESIGN_HEIGHT{ 1080.f };
-
-class Hotbar
-{
-public: 
-
-	Hotbar()
-	{
-	}
-
-
-	const vec2f& getSlotPosition_at(std::size_t index)
-	{
-		return m_slots[index].first;
-	}
-
-
-public:
-
-
-	static constexpr vec2f slot_size{ 145, 144 };
-
-private:
-
-	std::array<std::pair<vec2f, bool>, 10> m_slots
-	{ 
-		std::pair<vec2f, bool>
-		{{93 - DESIGN_WIDTH / 2, 254 - DESIGN_HEIGHT / 2}, true},
-		{{1'827 - DESIGN_WIDTH / 2, 254 - DESIGN_HEIGHT / 2}, true}
-	};
-
-};
 
 
 static void framebuffersize_callback(GLFWwindow* window, int width, int height) noexcept;
@@ -176,23 +143,17 @@ try
 
 	GameWorld::World world{};
 
+	Render::GUI::ItemTypeManager itemTypeManager{};
+
 	
 	WorldOptions WO{};
 
 
-	Hotbar hotbar_obj{};
+	Render::GUI::Hotbar hotbar{ textureInventoryAtlas, itemTypeManager };
 
-	Render::GUI::ItemTypeManager itemManager{};
-
-	Render::GUI::ItemGUI item{ {1}, itemManager };
-
-	auto temp = hotbar_obj.getSlotPosition_at(0);
-	item.setPosition(temp - vec2f{-Hotbar::slot_size.x / 2, Hotbar::slot_size.y / 2});
 
 	Render::GUI::Rectangle crossair{ {50, 50}, {0, 0}, Render::UvPixels{{0, 17}, {17, 17}} };
 	crossair.setPosition({ -crossair.getSize().x / 2, -crossair.getSize().y / 2 });
-
-	Render::GUI::Rectangle hotbar{ textureInventoryAtlas.getSize(), {0, 0}, Render::UvPixels{textureInventoryAtlas.getSize(), textureInventoryAtlas.getSize() } };
 
 	
 
@@ -454,7 +415,7 @@ try
 		
 
 
-		mat4f proj2D{ mpml::orthographic_projection((float)DESIGN_WIDTH, (float)DESIGN_HEIGHT, 0.f, 1.f) };
+		mat4f proj2D{ mpml::orthographic_projection(Wai::Window::framebuffer_GUI_size.x, Wai::Window::framebuffer_GUI_size.y, 0.f, 1.f) };
 		shader2Drectangle.setValue("proj", proj2D);
 
 
@@ -463,16 +424,9 @@ try
 		crossair.draw_transparent(shader2Drectangle);
 
 
-		textureInventoryAtlas.bind();
 
-		
-		hotbar.setPosition({ -hotbar.getSize().x / 2, -DESIGN_HEIGHT / 2});
+		hotbar.draw(shader2Drectangle, textureInventoryAtlas, textureBlockInventoryAtlas);
 
-		hotbar.draw_transparent(shader2Drectangle);
-
-		textureBlockInventoryAtlas.bind();
-
-		item.draw_transparent(shader2Drectangle);
 		
 
 		glEnable(GL_CULL_FACE);
