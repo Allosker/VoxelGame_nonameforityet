@@ -117,5 +117,48 @@ namespace GameWorld::Voxels::Utils
 		return std::nullopt;
 	}
 
+	static inline std::optional<RayCastResult> raycast_chunk(const types::pos& origin, const types::pos& dir, const GameWorld::Voxels::ChunkGrid& grid, uint64 render_distance, const Render::Data::Types::VoxelTypeManager& type_manager) noexcept
+	{
+		Ray ray{ origin, dir };
+		vec3f normal{};
+
+		while ((origin - ray.pos).length() < render_distance)
+		{
+			if (ray.tMax.x < ray.tMax.y)
+			{
+				if (ray.tMax.x < ray.tMax.z)
+				{
+					ray.pos.x += ray.step.x;
+					ray.tMax.x += ray.tDelta.x;
+					normal = { -ray.step.x, 0.f, 0.f };
+				}
+				else
+				{
+					ray.pos.z += ray.step.z;
+					ray.tMax.z += ray.tDelta.z;
+					normal = { 0.f, 0.f, -ray.step.z };
+				}
+			}
+			else
+			{
+				if (ray.tMax.y < ray.tMax.z)
+				{
+					ray.pos.y += ray.step.y;
+					ray.tMax.y += ray.tDelta.y;
+					normal = { 0.f, -ray.step.y, 0.f };
+				}
+				else
+				{
+					ray.pos.z += ray.step.z;
+					ray.tMax.z += ray.tDelta.z;
+					normal = { 0.f, 0.f, -ray.step.z };
+				}
+			}
+
+		}
+
+		return std::nullopt;
+	}
+
 
 } // Render::Utils

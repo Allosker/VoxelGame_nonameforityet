@@ -42,6 +42,7 @@ namespace Render
 
 		void setValue(const std::string& name, float value) const noexcept;
 
+		void setValue(const std::string& name, const vec2f& value) const noexcept;
 		void setValue(const std::string& name, const vec3f& value) const noexcept;
 		void setValue(const std::string& name, const vec4f& value) const noexcept;
 

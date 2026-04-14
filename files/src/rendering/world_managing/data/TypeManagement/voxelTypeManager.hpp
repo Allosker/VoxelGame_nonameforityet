@@ -23,7 +23,7 @@ namespace Render::Data::Types
 			types.push_back(TextureUVperFace::c_deepStone);
 			types.push_back({ TextureUVperFace::c_water1, true, false, {0, 0, {0, -0.1, 0}, 0, 0, 0} });
 			types.push_back(TextureUVperFace::c_tree);
-			types.push_back({ TextureUVperFace::c_leaf, true });
+			types.push_back({ TextureUVperFace::c_leaf });
 		}
 
 

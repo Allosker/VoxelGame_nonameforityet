@@ -21,6 +21,8 @@ set(LIB_DIR "${PROJECT_SOURCE_DIR}/files/libs/")
 set(IMGUI_DIR "${PROJECT_SOURCE_DIR}/files/libs/imgui")
 set(IMGUI_BACKENDS_DIR "${PROJECT_SOURCE_DIR}/files/libs/imgui/backends")
 set(IMGUI_MISC_DIR "${PROJECT_SOURCE_DIR}/files/libs/imgui/misc")
+
+set(IMPLOT_DIR "${PROJECT_SOURCE_DIR}/files/libs/implot") 
   
 # Fetch files   
  
@@ -49,6 +51,15 @@ file(GLOB IMGUI_FILES CMAKE_CONFIGURE_DEPENDS
 	"${IMGUI_BACKENDS_DIR}/imgui_impl_opengl3_loader.h"
 	"${IMGUI_MISC_DIR}/imgui_stdlib.cpp"
 )  
+
+file(GLOB IMPLOT_FILES CMAKE_CONFIGURE_DEPENDS
+	"${IMPLOT_DIR}/*.cpp"
+	"${IMPLOT_DIR}/*.h"  
+	"${IMPLOT_DIR}/implot.h" 
+	"${IMPLOT_DIR}/implot_internal.h"
+	"${IMPLOT_DIR}/implot.cpp"
+	"${IMPLOT_DIR}/implot_items.cpp"
+)  
  
 # Create Project     
 
@@ -57,12 +68,14 @@ add_executable( MYPROJECT
 	${HPP_FILES}
 	${LIB_FILES}
 	${IMGUI_FILES}
+	${IMPLOT_FILES}
 )  
 
 target_include_directories(MYPROJECT PUBLIC ${INCLUDE_DIR})
 target_include_directories(MYPROJECT PUBLIC ${LIB_DIR})
 target_include_directories(MYPROJECT PUBLIC ${IMGUI_DIR})
 target_include_directories(MYPROJECT PUBLIC ${IMGUI_BACKENDS_DIR})
+target_include_directories(MYPROJECT PUBLIC ${IMPLOT_DIR})
   
 # Other Settings
  
@@ -70,9 +83,9 @@ set_property(TARGET MYPROJECT PROPERTY CXX_STANDARD 20)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
  
-# Other Paths  
+# Other Paths    
 
-set(SHADER_DIR "${CMAKE_SOURCE_DIR}/files/shaders/")
+set(SHADER_DIR "${CMAKE_SOURCE_DIR}/files/shaders/")     
 target_compile_definitions(MYPROJECT PRIVATE SHADER_PATH="${SHADER_DIR}")
 
 set(ASSET_DIR "${CMAKE_SOURCE_DIR}/files/assets/")
@@ -101,6 +114,7 @@ endif()
 FetchContent_MakeAvailable(glfw)   
 
 target_link_libraries(MYPROJECT PRIVATE glfw)
+
 
 # MPML - Math Library
 FetchContent_Declare(

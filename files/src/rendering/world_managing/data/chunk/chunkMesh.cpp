@@ -4,7 +4,7 @@
 // Construction/Destruction
 // =====================
 
-Render::Data::ChunkMesh::ChunkMesh(GameWorld::Voxels::Chunk& chunk, const types::pos& camPos, const Render::Data::Types::VoxelTypeManager& type_manager) noexcept
+Render::Data::ChunkMesh::ChunkMesh() noexcept
 {
 	glGenVertexArrays(1, &m_vao);
 	glCreateBuffers(1, &m_vbo);
@@ -12,8 +12,6 @@ Render::Data::ChunkMesh::ChunkMesh(GameWorld::Voxels::Chunk& chunk, const types:
 	glGenVertexArrays(1, &m_vaoTransparent);
 	glCreateBuffers(1, &m_vboTransparent);
 
-	buildMesh(chunk, type_manager);
-	updateBuffers(camPos);
 
 	const auto setAttribs{ []() 
 		{
@@ -57,6 +55,9 @@ Render::Data::ChunkMesh& Render::Data::ChunkMesh::operator=(ChunkMesh&& other) n
 	m_vaoTransparent = other.m_vaoTransparent;
 	m_vboTransparent = other.m_vboTransparent;
 
+	flags.dirty = other.flags.dirty;
+	flags.has_transparency = other.flags.has_transparency;
+
 	other.m_nbVertices = 0;
 	other.m_vao = 0;
 	other.m_vbo = 0;
@@ -64,6 +65,10 @@ Render::Data::ChunkMesh& Render::Data::ChunkMesh::operator=(ChunkMesh&& other) n
 	other.m_nbVertices_Transparent = 0;
 	other.m_vaoTransparent = 0;
 	other.m_vboTransparent = 0;
+
+	other.flags.dirty = false;
+	other.flags.has_transparency = false;
+	other.flags.destroy = true;
 
 	return *this;
 }
@@ -93,15 +98,19 @@ void Render::Data::ChunkMesh::draw() const noexcept
 	glBindVertexArray(0);
 }
 
-void Render::Data::ChunkMesh::buildMesh(const GameWorld::Voxels::Chunk& chunk, const Render::Data::Types::VoxelTypeManager& type_manager) noexcept
+void Render::Data::ChunkMesh::buildMesh(
+	const GameWorld::Voxels::Chunk& chunk,
+	const Render::Data::Types::VoxelTypeManager& type_manager,
+	const GameWorld::Voxels::ChunkGrid& grid
+) noexcept
 {
 	const auto z_stride{ GameWorld::Voxels::Chunk::g_size * GameWorld::Voxels::Chunk::g_size };
 
-	for (std::int32_t x{}; x < GameWorld::Voxels::Chunk::g_size; x++)
-	for (std::int32_t y{}; y < GameWorld::Voxels::Chunk::g_size; y++)
-	for (std::int32_t z{}; z < GameWorld::Voxels::Chunk::g_size; z++)
+	for (int32 x{}; x < GameWorld::Voxels::Chunk::g_size; x++)
+	for (int32 y{}; y < GameWorld::Voxels::Chunk::g_size; y++)
+	for (int32 z{}; z < GameWorld::Voxels::Chunk::g_size; z++)
 	{
-		std::int32_t block_index{ static_cast<std::int32_t>((z * z_stride) + (y * GameWorld::Voxels::Chunk::g_size) + x) };
+		int32 block_index{ static_cast<int32>((z * z_stride) + (y * GameWorld::Voxels::Chunk::g_size) + x) };
 
 		auto& current_block{ chunk.getVoxelData()[block_index] };
 
@@ -112,37 +121,43 @@ void Render::Data::ChunkMesh::buildMesh(const GameWorld::Voxels::Chunk& chunk, c
 		std::array<size_t, 6> CF_block_dirs{};
 
 
-		if (z + 1 < 32)
+		if (z + 1 < GameWorld::Voxels::Chunk::g_size)
 			CF_block_dirs[0] = chunk.getVoxelData()[block_index + z_stride].id;
-		else
-			CF_block_dirs[0] = 0;
+		else 
+			if (const auto* c{grid.chunk_at(static_cast<types::pos>(vec3i{x, y, z + 1} + static_cast<vec3i>(chunk.getPos())))})
+			CF_block_dirs[0] = c->block_at(static_cast<types::loc>(vec3i{ x, y, 0 })).id;
 
 		if (z - 1 >= 0)
 			CF_block_dirs[1] = chunk.getVoxelData()[block_index - z_stride].id;
 		else
-			CF_block_dirs[1] = 0;
+			if (const auto* c{ grid.chunk_at(static_cast<types::pos>(vec3i{x, y, z - 1} + static_cast<vec3i>(chunk.getPos()))) })
+				CF_block_dirs[1] = c->block_at(types::loc{ x, y, GameWorld::Voxels::Chunk::g_size - 1 }).id;
 
 
-		if (y + 1 < 32)
+		if (y + 1 < GameWorld::Voxels::Chunk::g_size)
 			CF_block_dirs[2] = chunk.getVoxelData()[block_index + GameWorld::Voxels::Chunk::g_size].id;
 		else
-			CF_block_dirs[2] = 0;
+			if (const auto* c{ grid.chunk_at(static_cast<types::pos>(vec3i{x, y + 1, z} + static_cast<vec3i>(chunk.getPos()))) })
+				CF_block_dirs[2] = c->block_at(types::loc{ x, 0, z }).id;
 
 		if (y - 1 >= 0)
 			CF_block_dirs[3] = chunk.getVoxelData()[block_index - GameWorld::Voxels::Chunk::g_size].id;
 		else
-			CF_block_dirs[3] = 0;
+			if (const auto* c{ grid.chunk_at(static_cast<types::pos>(vec3i{x, y - 1, z} + static_cast<vec3i>(chunk.getPos()))) })
+				CF_block_dirs[3] = c->block_at(types::loc{ x, GameWorld::Voxels::Chunk::g_size - 1, z }).id;
 
 
-		if (x + 1 < 32)
+		if (x + 1 < GameWorld::Voxels::Chunk::g_size)
 			CF_block_dirs[4] = chunk.getVoxelData()[block_index + 1].id;
 		else
-			CF_block_dirs[4] = 0;
+			if (const auto* c{ grid.chunk_at(static_cast<types::pos>(vec3i{x + 1, y, z} + static_cast<vec3i>(chunk.getPos()))) })
+				CF_block_dirs[4] = c->block_at(types::loc{ 0, y, z }).id;
 
 		if (x - 1 >= 0)
 			CF_block_dirs[5] = chunk.getVoxelData()[block_index - 1].id;
 		else
-			CF_block_dirs[5] = 0;
+			if (const auto* c{ grid.chunk_at(static_cast<types::pos>(vec3i{x - 1, y, z} + static_cast<vec3i>(chunk.getPos()))) })
+				CF_block_dirs[5] = c->block_at(types::loc{ GameWorld::Voxels::Chunk::g_size - 1, y, z }).id;
 
 
 
@@ -200,7 +215,9 @@ void Render::Data::ChunkMesh::updateMeshBuffer() noexcept
 
 void Render::Data::ChunkMesh::updateTransparentMeshBuffer(const types::pos& camPos) noexcept
 {
-	if ((has_transparency = m_transparent_mesh.empty()) != false)
+	flags.has_transparency = !m_transparent_mesh.empty();
+
+	if (!flags.has_transparency)
 		return;
 
 	std::sort(m_transparent_mesh.begin(), m_transparent_mesh.end(), [&](const auto& a, const auto& b)

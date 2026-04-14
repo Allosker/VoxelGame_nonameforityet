@@ -16,8 +16,9 @@
 
 #include "rendering/world_managing/data/TypeManagement/voxelTypeManager.hpp"
 
-#include "world/voxels/chunk.hpp"
+#include "world/voxels/chunkGrid.hpp"
 
+#include "world/voxels/chunk.hpp"
 
 namespace Render::Data
 {
@@ -27,10 +28,9 @@ namespace Render::Data
 
 	// = Construction/Destruction
 
-		ChunkMesh() = delete;
 
-		explicit ChunkMesh(GameWorld::Voxels::Chunk& chunk, const types::pos& camPos, const Render::Data::Types::VoxelTypeManager& type_manager) noexcept;
-
+		explicit ChunkMesh() noexcept;
+		 
 		ChunkMesh(ChunkMesh&& other) noexcept;
 		ChunkMesh& operator=(ChunkMesh&& other) noexcept;
 
@@ -44,7 +44,11 @@ namespace Render::Data
 
 		void draw() const noexcept;
 
-		void buildMesh(const GameWorld::Voxels::Chunk& chunk, const Render::Data::Types::VoxelTypeManager& type_manager) noexcept;
+		void buildMesh(
+			const GameWorld::Voxels::Chunk& chunk,
+			const Render::Data::Types::VoxelTypeManager& type_manager,
+			const GameWorld::Voxels::ChunkGrid& grid
+		) noexcept;
 
 		void updateMeshBuffer() noexcept;
 		void updateTransparentMeshBuffer(const types::pos& camPos) noexcept;
@@ -72,10 +76,17 @@ namespace Render::Data
 		GLuint m_vaoTransparent{};
 		GLuint m_vboTransparent{};
 		
+		GameWorld::Voxels::ChunkGrid grid;
 
 	public:
 
-		bool has_transparency{};
+		struct
+		{
+			bool has_transparency{};
+			bool dirty{ true };
+
+			bool destroy{};
+		} flags;
 
 	public:
 

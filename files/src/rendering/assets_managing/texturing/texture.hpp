@@ -47,6 +47,8 @@ namespace Render::Texturing
 
 		GLuint ID() const noexcept { return m_tex; }
 
+		vec2f getSize() const noexcept { return vec2f{ static_cast<float>(m_width), static_cast<float>(m_height) }; }
+
 
 	private:
 

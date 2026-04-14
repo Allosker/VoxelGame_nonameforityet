@@ -8,22 +8,12 @@
 
 Render::Mesh::Mesh(const std::vector<Data::Vertex>& vertices, GLenum draw_mode)
 {
-	glCreateVertexArrays(1, &m_vao);
-	glGenBuffers(1, &m_vbo);
+	createBuffers<Data::Vertex>(vertices, draw_mode, {3, 2});
+}
 
-	glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-
-	updateBuffer(vertices, sizeof(Data::Vertex), draw_mode);
-
-	glBindVertexArray(m_vao);
-
-	glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(Data::Vertex), std::bit_cast<void*>(offsetof(Data::Vertex, pos)));
-	glEnableVertexAttribArray(0);
-
-	glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(Data::Vertex), std::bit_cast<void*>(offsetof(Data::Vertex, uv)));
-	glEnableVertexAttribArray(1);
-
-	glBindVertexArray(0);
+Render::Mesh::Mesh(const std::vector<Data::Vertex2D>& vertices, GLenum draw_mode)
+{
+	createBuffers<Data::Vertex2D>(vertices, draw_mode, {2, 2});
 }
 
 Render::Mesh::Mesh(const std::vector<Data::VertexColor>& vertices, GLenum draw_mode)
@@ -87,16 +77,6 @@ Render::Mesh::~Mesh() noexcept
 // Actors 
 // =====================
 
-void Render::Mesh::updateBuffer(const auto& vertices, GLsizeiptr size_data, GLenum draw_mode) noexcept
-{
-	glBindVertexArray(m_vao);
-	glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-
-	m_nbVertices = static_cast<GLsizei>(vertices.size());
-
-	glBufferData(GL_ARRAY_BUFFER, m_nbVertices * size_data, vertices.data(), draw_mode);
-	glBindVertexArray(0);
-}
 
 void Render::Mesh::updateBuffer(const std::vector<vec3f>& positions, const std::vector<vec2f>& uvs, GLenum draw_mode)
 {
@@ -108,6 +88,18 @@ void Render::Mesh::draw(GLenum mode) const noexcept
 	glBindVertexArray(m_vao);
 	glDrawArrays(mode, 0, m_nbVertices);
 	glBindVertexArray(0);
+}
+
+void Render::Mesh::draw_transparent(GLenum mode) const noexcept
+{
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	glBindVertexArray(m_vao);
+	glDrawArrays(mode, 0, m_nbVertices);
+	glBindVertexArray(0);
+
+	glDisable(GL_BLEND);
 }
 
 /*private*/ std::vector<Render::Data::Vertex> Render::Mesh::makeVertices(const std::vector<vec3f>& positions, const std::vector<vec2f>& uvs) const

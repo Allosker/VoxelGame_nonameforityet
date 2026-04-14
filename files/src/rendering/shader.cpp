@@ -129,6 +129,11 @@ void Render::Shader::setValue(const std::string& name, float value) const noexce
 	glUniform1f(glGetUniformLocation(m_id, name.c_str()), value);
 }
 
+void Render::Shader::setValue(const std::string& name, const vec2f& value) const noexcept
+{
+	glUniform2fv(glGetUniformLocation(m_id, name.c_str()), 1, value.data_ptr());
+}
+
 void Render::Shader::setValue(const std::string& name, const vec3f& value) const noexcept
 {
 	glUniform3fv(glGetUniformLocation(m_id, name.c_str()), 1, value.data_ptr());
@@ -141,7 +146,7 @@ void Render::Shader::setValue(const std::string& name, const vec4f& value) const
 
 void Render::Shader::setValue(const std::string& name, const mat3f& value) const noexcept
 {
-	glUniformMatrix3fv(glGetUniformLocation(m_id, name.c_str()), 1, false, value.data_ptr());
+	glUniformMatrix3fv(glGetUniformLocation(m_id, name.c_str()), 1, true, value.data_ptr());
 }
 
 void Render::Shader::setValue(const std::string& name, const mat4f& value) const noexcept

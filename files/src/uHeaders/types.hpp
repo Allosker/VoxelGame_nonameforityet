@@ -28,4 +28,9 @@ namespace types
 	using chunk_index = uint16;
 
 	using type_id = std::size_t;
+
+	using mapped_uvs = mpml::Vector2<float>;
+	using uvs = mpml::Vector2<float>;
+	using atlas_units = mpml::Vector2<float>;
+	using pixels = mpml::Vector2<float>;
 }

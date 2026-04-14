@@ -7,12 +7,15 @@
 
 #include "uHeaders/types.hpp"
 #include "world/voxels/chunk.hpp"
-#include "rendering/world_managing/data/chunk/chunkMesh.hpp"
 #include "rendering/world_managing/data/typeManagement/voxelTypeManager.hpp"
 #include <optional>
 #include <map>
 #include <vector>
 
+namespace Render::Data
+{
+	class ChunkMesh;
+}
 
 namespace GameWorld::Voxels
 {
@@ -34,7 +37,7 @@ namespace GameWorld::Voxels
 
 		// Actors
 
-		void update(const types::pos& camPos, const Render::Data::Types::VoxelTypeManager& type_manager) noexcept;
+		void update(const Render::Data::Types::VoxelTypeManager& type_manager, const types::pos& playerPos) noexcept;
 
 		void discard_outside_chunks(const types::loc& camPos) noexcept;
 
@@ -53,6 +56,9 @@ namespace GameWorld::Voxels
 		std::map<types::loc, GameWorld::Voxels::Chunk>& getChunks() noexcept { return m_chunks; }
 		const std::map<types::loc, GameWorld::Voxels::Chunk>& getChunks() const noexcept { return m_chunks; }
 
+		std::map<types::loc, Render::Data::ChunkMesh>& getChunkMeshes() noexcept { return m_chunk_meshes; }
+		const std::map<types::loc, Render::Data::ChunkMesh>& getChunkMeshes() const noexcept { return m_chunk_meshes; }
+
 		// No guards against invalid loc
 		GameWorld::Voxels::Chunk& chunk_at_loc(const types::loc& loc) noexcept;
 		// No guard against invalid loc
@@ -62,6 +68,9 @@ namespace GameWorld::Voxels
 		Render::Data::ChunkMesh& chunkmesh_at_loc(const types::loc& loc) noexcept;
 		// No guards against invalid loc
 		const Render::Data::ChunkMesh& chunkmesh_at_loc(const types::loc& loc) const noexcept;
+
+		Render::Data::ChunkMesh* chunkmesh_at_loc_ptr(const types::loc& loc) noexcept;
+		const Render::Data::ChunkMesh* chunkmesh_at_loc_ptr(const types::loc& loc) const noexcept;
 
 		GameWorld::Voxels::Chunk* chunk_at(const types::pos& pos) noexcept;
 		const GameWorld::Voxels::Chunk* chunk_at(const types::pos& pos) const noexcept;
@@ -77,7 +86,7 @@ namespace GameWorld::Voxels
 
 		// = Mutators
 
-		void create_chunkMesh_for_chunk_at(const types::loc& key, const types::pos& camPos, const Render::Data::Types::VoxelTypeManager& type_manager);
+		void create_chunkMesh_for_chunk_at(const types::loc& key);
 
 
 		// = Getters
