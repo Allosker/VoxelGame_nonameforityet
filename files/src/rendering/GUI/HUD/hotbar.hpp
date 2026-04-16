@@ -34,6 +34,13 @@ namespace Render::GUI
 		std::optional<GameWorld::Inventory::Item> getSlot_at(std::size_t index) const noexcept;
 
 
+		GameWorld::Inventory::Item getSelectedItem() const noexcept { return m_slots[m_cursor_position].second; }
+
+
+		std::vector<std::pair<Rectangle, GameWorld::Inventory::Item>>& getSlots() noexcept { return m_slots; }
+		const std::vector<std::pair<Rectangle, GameWorld::Inventory::Item>>& getSlots() const noexcept { return m_slots; }
+
+
 		// = Setters
 
 		void setCurrentSlot(GameWorld::Inventory::Item item, const ItemTypeManager& itm) noexcept;

@@ -47,6 +47,9 @@ void Render::GUI::Hotbar::setCurrentSlot(GameWorld::Inventory::Item item, const 
 
 GameWorld::Inventory::Item Render::GUI::Hotbar::nextSlot(int8 index) noexcept
 {
+	if (m_disabled)
+		return m_slots[m_cursor_position].second;
+
 	m_cursor_position += index;
 
 	int64 size = m_slots.size();
@@ -76,17 +79,30 @@ void Render::GUI::Hotbar::disable() noexcept
 {
 	m_cursor_changed = false;
 	last_cursor = -1;
+	m_disabled = true;
 
 	m_slots[m_cursor_position].first.setScale(1);
 	m_slots[m_cursor_position].first.move({ 0, -g_slot_size.x / 2 });
 
-	m_disabled = true;
+	m_items_slots[m_cursor_position].setScale(1);
+	m_items_slots[m_cursor_position].move({ 0, -g_slot_size.x / 2 });
+
+	for (size_t i{}; i < m_slots.size(); i++)
+	{
+		m_slots[i].first.setScale(1.3);
+		m_items_slots[i].setScale(1.3);
+	}
 }
 
 void Render::GUI::Hotbar::enable() noexcept
 {
 	m_disabled = false;
-	m_cursor_changed = false;
+
+	for (size_t i{}; i < m_slots.size(); i++)
+	{
+		m_slots[i].first.setScale(1);
+		m_items_slots[i].setScale(1);
+	}
 }
 
 void Render::GUI::Hotbar::draw(

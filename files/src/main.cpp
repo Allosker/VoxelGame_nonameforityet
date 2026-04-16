@@ -60,8 +60,6 @@ float deltaTime{};
 
 struct WorldOptions
 {
-	uint64 selected_voxel{ 1 };
-
 	uint64 rayDist{ 5 };
 	int64 rayDist_min{ 1 };
 	int64 rayDist_max{ 2000 };
@@ -196,7 +194,7 @@ try
 					window.close();
 
 				if (vec2f delta = window.getMouseWheelDelta(); delta.y != 0)
-					WO.selected_voxel = hotbar.nextSlot(delta.y).id;
+					hotbar.nextSlot(delta.y).id;
 
 
 				if (window.isKeyPressed(b::W))
@@ -346,8 +344,8 @@ try
 		}
 
 		
-
-		
+		inventory.update(window, itemTypeManager, hotbar, Wai::Window::toGUICoordinates(window, window.getMousePos()));
+		//std::println("{}", Wai::Window::toGUICoordinates(window, window.getMousePos()));
 
 		mat4f model{ mpml::Identity4<float> };
 		mat4f view{ mpml::lookAt(player.getPos(), player.getCamera().front_dir + player.getPos(), player.getCamera().up_dir)};
@@ -370,45 +368,46 @@ try
 		const auto& ray_result{ GameWorld::Voxels::Utils::raycast(player.getPos(), player.getCamera().front_dir, world.grid, WO.rayDist, world.getTypeManager())};
 
 		bool drawHighlight{ false };
-		if (ray_result)
-		{
-
-			ch.update(model, view, proj, ray_result->pos);
-
-
-
-			if (window.isMouseButtonPressedOnce(Wai::Buttons::Mouse::Middle))
+		if(!window.isCursorHidden())
+			if (ray_result)
 			{
-				auto& id{ world.block_at(ray_result->pos)->id };
 
-				hotbar.setCurrentSlot({ id }, itemTypeManager);
-				WO.selected_voxel = id;
-			}
+				ch.update(model, view, proj, ray_result->pos);
 
-			if (!WO.instant_voxel_breaking)
-			{
-				if (window.isMouseButtonPressedOnce(Wai::Buttons::Mouse::Left))
-					world.set_voxel_at(ray_result->pos, 0);
-			}
-			else
-			{
-				if (window.isMouseButtonPressed(Wai::Buttons::Mouse::Left))
-					world.set_voxel_at(ray_result->pos, 0);
-			}
 
-			if (!WO.instant_voxel_placing)
-			{
-				if (window.isMouseButtonPressedOnce(Wai::Buttons::Mouse::Right))
-					world.set_voxel_at(ray_result->pos + ray_result->normal, WO.selected_voxel);
-			}
-			else
-			{
-				if (window.isMouseButtonPressed(Wai::Buttons::Mouse::Right))
-					world.set_voxel_at(ray_result->pos + ray_result->normal, WO.selected_voxel);
-			}
 
-			drawHighlight = true;
-		}
+				if (window.isMouseButtonPressedOnce(Wai::Buttons::Mouse::Middle))
+				{
+					auto& id{ world.block_at(ray_result->pos)->id };
+
+					hotbar.setCurrentSlot({ id }, itemTypeManager);
+					hotbar.setCurrentSlot({ id }, itemTypeManager);
+				}
+
+				if (!WO.instant_voxel_breaking)
+				{
+					if (window.isMouseButtonPressedOnce(Wai::Buttons::Mouse::Left))
+						world.set_voxel_at(ray_result->pos, 0);
+				}
+				else
+				{
+					if (window.isMouseButtonPressed(Wai::Buttons::Mouse::Left))
+						world.set_voxel_at(ray_result->pos, 0);
+				}
+
+				if (!WO.instant_voxel_placing)
+				{
+					if (window.isMouseButtonPressedOnce(Wai::Buttons::Mouse::Right))
+						world.set_voxel_at(ray_result->pos + ray_result->normal, hotbar.getSelectedItem().id);
+				}
+				else
+				{
+					if (window.isMouseButtonPressed(Wai::Buttons::Mouse::Right))
+						world.set_voxel_at(ray_result->pos + ray_result->normal, hotbar.getSelectedItem().id);
+				}
+
+				drawHighlight = true;
+			}
 			
 
 		player.update(world, deltaTime);

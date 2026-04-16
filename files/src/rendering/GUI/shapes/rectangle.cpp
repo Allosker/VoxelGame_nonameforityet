@@ -154,11 +154,11 @@ void Render::GUI::Rectangle::updateSprite(const UvPixels& attributes) noexcept
 		(
 			std::array<Data::Vertex2D, 6>
 	{
-		Render::Data::Vertex2D
-		{
-			{0, 0},
-			attributes.pos_in_texture
-		},
+	Render::Data::Vertex2D
+	{
+		{0, 0},
+		attributes.pos_in_texture
+	},
 	{
 		{m_baseSize.x, 0},
 		{attributes.pos_in_texture + types::uvs{ attributes.subset_size.x, 0}}
@@ -190,9 +190,10 @@ void Render::GUI::Rectangle::updateSprite(const UvPixels& attributes) noexcept
 bool Render::GUI::Rectangle::contains(vec2f point) const noexcept
 {
 	auto size{ getSize() };
+
 	return
-		(point.x > m_position.x && point.x < (m_position.x + size.x)) &&
-		(point.y > m_position.y && point.y < (m_position.y + size.y));
+		(point.x > m_position.x - m_origin.x && point.x < (m_position.x - m_origin.x + size.x)) &&
+		(point.y > m_position.y - m_origin.y && point.y < (m_position.y - m_origin.y + size.y));
 }
 
 

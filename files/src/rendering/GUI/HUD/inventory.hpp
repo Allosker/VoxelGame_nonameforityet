@@ -29,6 +29,7 @@ namespace Render::GUI
 		Inventory(const Texturing::Texture& texture_inventory, const Texturing::Texture& texture_slot);
 
 
+		void update(const Wai::Window& window, const ItemTypeManager& itm, Hotbar& hotbar, vec2f point) noexcept;
 
 
 		void enable(Wai::Window& window, Hotbar& hotbar) noexcept;
@@ -53,8 +54,11 @@ namespace Render::GUI
 	private:
 
 		Rectangle m_inventory;
+		Rectangle m_moving_item;
 		std::vector<std::pair<Rectangle, GameWorld::Inventory::Item>> m_slots;
 		std::vector<Rectangle> m_items_slots;
+
+		std::size_t m_cursor{};
 
 		bool m_activated{ true };
 

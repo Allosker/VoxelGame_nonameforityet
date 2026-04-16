@@ -105,6 +105,8 @@ namespace Wai
 
 	public:
 
+		static vec2f toGUICoordinates(const Window& window, vec2f point) noexcept;
+
 		static constexpr vec2f g_guiViewSize{ 1920.f,1080.f };
 		 
 	private:

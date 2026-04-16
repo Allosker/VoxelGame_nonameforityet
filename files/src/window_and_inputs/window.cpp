@@ -164,6 +164,14 @@ void Wai::Window::resize(const mpml::Vector2<int>& new_size) noexcept
 	m_size = new_size;
 }
 
+vec2f Wai::Window::toGUICoordinates(const Window& window, vec2f point) noexcept
+{
+	vec2f mult1{ point - vec2f(window.m_size / 2) };
+	vec2f mult2{ g_guiViewSize.x / window.m_size.x,  g_guiViewSize.y / -window.m_size.y };
+
+	return { mult1.x * mult2.x, mult1.y * mult2.y };
+}
+
 
 
 
