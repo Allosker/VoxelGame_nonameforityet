@@ -51,12 +51,15 @@ void Render::GUI::Inventory::update(const Wai::Window& window, const ItemTypeMan
 		}
 		else if (clicked_slot != -1)
 		{
-			m_moving_item.updateSprite({});
-			if (!isWithinHotbar)
-				m_slots[m_cursor].second = wasWithinHotbar ? hotbar.getSlots()[clicked_slot].second : m_slots[clicked_slot].second;
-			else
-				hotbar.getSlots()[m_cursor].second = wasWithinHotbar ? hotbar.getSlots()[clicked_slot].second : m_slots[clicked_slot].second;
-			clicked_slot = -1;
+			if (isWithinSlot)
+			{
+				m_moving_item.updateSprite({});
+				if (!isWithinHotbar)
+					m_slots[m_cursor].second = wasWithinHotbar ? hotbar.getSlots()[clicked_slot].second : m_slots[clicked_slot].second;
+				else
+					hotbar.getSlots()[m_cursor].second = wasWithinHotbar ? hotbar.getSlots()[clicked_slot].second : m_slots[clicked_slot].second;
+				clicked_slot = -1;
+			}
 		}
 	}
 
