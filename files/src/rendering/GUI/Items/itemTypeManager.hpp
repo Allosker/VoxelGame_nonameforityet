@@ -40,13 +40,18 @@ namespace Render::GUI
 
 		std::vector<ItemType> types{};
 
-		static constexpr vec2f texture_size_item{ 33.f };
-		static constexpr vec2f real_size_item{ 99.f }; 
+		static constexpr vec2f g_texture_size_item{ 33.f };
+		static constexpr vec2f g_size_gui_block{ 66.f };
 	};
 
 	inline UvAtlas to_UvAtlas(types::type_id id, const ItemTypeManager& manager) noexcept
 	{
-		return { manager.getType(id).pos_in_atlas, ItemTypeManager::texture_size_item };
+		return { manager.getType(id).pos_in_atlas, ItemTypeManager::g_texture_size_item };
+	}
+
+	inline UvPixels mapTextureUvs(types::type_id id, const ItemTypeManager& manager) noexcept
+	{
+		return mapTextureUvs(to_UvAtlas(id, manager));
 	}
 
 }

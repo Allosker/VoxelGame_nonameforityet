@@ -38,7 +38,7 @@ namespace Wai
 
 		void display() const noexcept { glfwSwapBuffers(m_window); }
 
-		void clearEvents() const noexcept;
+		void clearEvents() noexcept;
 
 		void updateKeys() const noexcept { m_lastKeyDowns = m_keyDowns; }
 
@@ -46,12 +46,18 @@ namespace Wai
 
 		void processInputs(const std::function<void()>& inputs);
 
+		bool alternateCursorVisibility() noexcept;
+
 
 		// = CallBacks
 
-		void onFramebufferResize(const vec2i& newSize) noexcept;
+		void onFramebufferResize(vec2i newSize) noexcept;
 
-		void onMouseMovement(const vec2f& pos, GameWorld::Player& player) noexcept;
+		void onMouseMovement(vec2f pos, GameWorld::Player& player) noexcept;
+
+		void onMouseWheelScroll(vec2f delta) noexcept;
+
+		void onMouseCursorPosChange(vec2f newCursorPos) noexcept;
 
 
 		// = Getters
@@ -66,9 +72,16 @@ namespace Wai
 		std::uint32_t getMods() const noexcept;
 
 
+		vec2f getMouseWheelDelta() const noexcept {  return m_mouseWheel_delta; }
+
+		vec2f getMousePos() const noexcept { return m_mousePos; }
+
+
 		// = Predicates
 
 		bool isOpen() const noexcept { return !glfwWindowShouldClose(m_window); }
+
+		bool isCursorHidden() const noexcept { return m_cursorHidden; }
 
 		bool are_mods_set(int mods) const noexcept { return getMods() & mods; }
 
@@ -92,7 +105,7 @@ namespace Wai
 
 	public:
 
-		static constexpr vec2f framebuffer_GUI_size{ 1920.f,1080.f };
+		static constexpr vec2f g_guiViewSize{ 1920.f,1080.f };
 		 
 	private:
 
@@ -104,6 +117,12 @@ namespace Wai
 		mutable std::array<bool, 8> m_lastMouseButtonsDown{};
 
 		vec2i m_size{};
+
+		vec2f m_mouseWheel_delta{};
+		vec2f m_mousePos{};
+
+		bool m_wheelScrolledThisFrame{ false };
+		bool m_cursorHidden{ true };
 
 		GLFWwindow* m_window{ nullptr };
 

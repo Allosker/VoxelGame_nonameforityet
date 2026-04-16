@@ -202,7 +202,10 @@ void GameWorld::World::generateWorld(const std::vector<types::loc>& new_chunks_l
 					if (current_block.id != 6)
 					{
 						if (bp <= y_max && bp >= y_max - 1)
-							current_block.id = 1;
+							if (bp < debug.sea_level - 1)
+								current_block.id = 2;
+							else
+								current_block.id = 1;
 
 						if (bp <= y_max - 1 && bp >= y_max - 4)
 							current_block.id = 2;
@@ -215,10 +218,11 @@ void GameWorld::World::generateWorld(const std::vector<types::loc>& new_chunks_l
 
 						if (bp > y_max && bp < debug.sea_level)
 							current_block.id = 5;
+
 					}
 					
 					if (
-						bp > y_max && bp < y_max + 1 && 
+						bp > y_max && bp < y_max + 1 && bp > debug.sea_level && 
 						perlin.octave2D_01(x * debug.tree_frequency, z * debug.tree_frequency, 4) <= debug.tree_threshold
 						)
 					{

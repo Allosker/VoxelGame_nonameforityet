@@ -27,6 +27,7 @@
 /* TODOLIST
 * 
 *	== Fix it when you go onto a block from a certain direction, you get teleported on the right or left. Only if there is an empty block on the left/right down of it.
+*	== Fix it so that when you scroll the mouse wheel swiftly, it doesn't break the hotbar
 *
 */
 
@@ -40,6 +41,7 @@
 #include "rendering/GUI/Items/itemTypeManager.hpp"
 
 #include "rendering/GUI/HUD/hotbar.hpp"
+#include "rendering/GUI/HUD/inventory.hpp"
 
 #include <fstream>
 
@@ -47,6 +49,8 @@
 static void framebuffersize_callback(GLFWwindow* window, int width, int height) noexcept;
 
 static void mouse_callback(GLFWwindow* window, double xpos, double ypos) noexcept;
+
+static void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) noexcept;
 
 
 GameWorld::Player player{};
@@ -71,7 +75,6 @@ struct WorldOptions
 };
 
 
-inline bool mouseCanMoveEverything{};
 inline bool G_WINDOW_WAS_RESIZED{false};
 
 int main()
@@ -114,6 +117,9 @@ try
 
 	glfwSetCursorPosCallback(window.get(), mouse_callback);
 
+	glfwSetScrollCallback(window.get(), scroll_callback);
+
+
 	// Setup Platform/Renderer backends
 	ImGui_ImplGlfw_InitForOpenGL(window.get(), true);          // Second param install_callback=true will install GLFW callbacks and chain to existing ones.
 	ImGui_ImplOpenGL3_Init();
@@ -129,13 +135,16 @@ try
 	glEnable(GL_CULL_FACE);
 	//glEnable(GL_MULTISAMPLE);
 
-	Render::Texturing::Texture textureAtlas{ ASSET_PATH"atlas.png"};
+	Render::Texturing::Texture textureAtlas{ ASSET_PATH"blocks/world/atlas.png"};
 
-	Render::Texturing::Texture crossAirAtlas{ ASSET_PATH"crossair_atlas.png" };
+	Render::Texturing::Texture crossAirAtlas{ ASSET_PATH"hud/crossair_atlas.png" };
 
-	Render::Texturing::Texture textureBlockInventoryAtlas{ ASSET_PATH"block_inventory_atlas.png" };
+	Render::Texturing::Texture atlas_guiBlocks{ ASSET_PATH"blocks/gui/block_inventory_atlas.png" };
 
-	Render::Texturing::Texture textureInventoryAtlas{ ASSET_PATH"inventory.png" };
+	Render::Texturing::Texture texture_guiSlot{ ASSET_PATH"hud/slot.png" };
+
+	Render::Texturing::Texture texture_guiInventorySlot{ ASSET_PATH"hud/slot_inventory.png" };
+	Render::Texturing::Texture texture_guiInventory{ ASSET_PATH"hud/inventory.png" };
 
 
 
@@ -149,7 +158,11 @@ try
 	WorldOptions WO{};
 
 
-	Render::GUI::Hotbar hotbar{ textureInventoryAtlas, itemTypeManager };
+	Render::GUI::Hotbar hotbar{ texture_guiSlot, itemTypeManager };
+
+	Render::GUI::Inventory inventory{ texture_guiInventory, texture_guiInventorySlot };
+
+	Render::GUI::Rectangle test{ texture_guiInventory.getSize(), {texture_guiInventory.getSize().x / 2, texture_guiInventory.getSize().y / 2}, Render::UvPixels{{}, texture_guiInventory.getSize()} };
 
 
 	Render::GUI::Rectangle crossair{ {50, 50}, {0, 0}, Render::UvPixels{{0, 17}, {17, 17}} };
@@ -171,7 +184,6 @@ try
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 
-		static bool hiddenCursor{ true };
 		player.resetMovement();
 		window.processInputs(
 			[&]()
@@ -182,6 +194,9 @@ try
 
 				if (window.isKeyPressed(b::Escape))
 					window.close();
+
+				if (vec2f delta = window.getMouseWheelDelta(); delta.y != 0)
+					WO.selected_voxel = hotbar.nextSlot(delta.y).id;
 
 
 				if (window.isKeyPressed(b::W))
@@ -209,8 +224,20 @@ try
 					if (window.isKeyPressed(b::Space))
 						player.move(Player::Upward, deltaTime);
 
+				if (window.isKeyPressedOnce(b::Tab))
+					inventory.process(window, hotbar);
+
 				if (window.isKeyPressedOnce(b::E))
 					world.update(player.getPos(), true);
+
+				if (window.isKeyPressedOnce(b::P))
+					hotbar.newPairOfSlots(texture_guiSlot);
+
+				if (window.isKeyPressedOnce(b::M))
+					hotbar.disable();
+
+				if (window.isKeyPressedOnce(b::L))
+					hotbar.enable();
 
 				/*if (window.isKeyPressedOnce(b::R))
 				{
@@ -235,12 +262,7 @@ try
 				}*/
 
 				if (window.isKeyPressedOnce(Wai::Buttons::F))
-				{
-					hiddenCursor = !hiddenCursor;
-					mouseCanMoveEverything = hiddenCursor;
-
-					glfwSetInputMode(window.get(), GLFW_CURSOR, hiddenCursor ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
-				}
+					window.alternateCursorVisibility();
 			}
 		);
 
@@ -356,7 +378,12 @@ try
 
 
 			if (window.isMouseButtonPressedOnce(Wai::Buttons::Mouse::Middle))
-				WO.selected_voxel = world.block_at(ray_result->pos)->id;
+			{
+				auto& id{ world.block_at(ray_result->pos)->id };
+
+				hotbar.setCurrentSlot({ id }, itemTypeManager);
+				WO.selected_voxel = id;
+			}
 
 			if (!WO.instant_voxel_breaking)
 			{
@@ -415,7 +442,8 @@ try
 		
 
 
-		mat4f proj2D{ mpml::orthographic_projection(Wai::Window::framebuffer_GUI_size.x, Wai::Window::framebuffer_GUI_size.y, 0.f, 1.f) };
+		mat4f proj2D{ mpml::orthographic_projection(Wai::Window::g_guiViewSize.x, Wai::Window::g_guiViewSize.y, 0.f, 1.f) };
+		//proj2D = mpml::translate(proj2D, { -Wai::Window::g_guiViewSize.x / 2, Wai::Window::g_guiViewSize.y / 2, 0 });
 		shader2Drectangle.setValue("proj", proj2D);
 
 
@@ -425,9 +453,10 @@ try
 
 
 
-		hotbar.draw(shader2Drectangle, textureInventoryAtlas, textureBlockInventoryAtlas);
+		hotbar.draw(shader2Drectangle, texture_guiSlot, atlas_guiBlocks, itemTypeManager);
 
-		
+		inventory.draw(shader2Drectangle, texture_guiInventory, texture_guiInventorySlot, atlas_guiBlocks, itemTypeManager);
+
 
 		glEnable(GL_CULL_FACE);
 
@@ -456,6 +485,11 @@ catch (const std::runtime_error& e)
 	return -1;
 }
 
+void framebuffersize_callback(GLFWwindow* window, int width, int height) noexcept
+{
+	static_cast<Wai::Window*>(glfwGetWindowUserPointer(window))->onFramebufferResize({ width, height });
+}
+
 void mouse_callback(GLFWwindow* window, double xpos, double ypos) noexcept
 {
 	static vec2f last{ static_cast<vec2f>(vec2d{xpos, ypos}) };
@@ -468,11 +502,16 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos) noexcept
 
 	offset *= sensitivity;
 
-	if (!mouseCanMoveEverything)
+	if (!static_cast<Wai::Window*>(glfwGetWindowUserPointer(window))->isCursorHidden())
 		static_cast<Wai::Window*>(glfwGetWindowUserPointer(window))->onMouseMovement(offset, player);
+
+	static_cast<Wai::Window*>(glfwGetWindowUserPointer(window))->onMouseCursorPosChange({ static_cast<float>(xpos), static_cast<float>(ypos) });
 }
 
-void framebuffersize_callback(GLFWwindow* window, int width, int height) noexcept
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) noexcept
 {
-	static_cast<Wai::Window*>(glfwGetWindowUserPointer(window))->onFramebufferResize({ width, height });
+	static_cast<Wai::Window*>(glfwGetWindowUserPointer(window))->onMouseWheelScroll({ static_cast<float>(xoffset), static_cast<float>(yoffset) });
 }
+
+
+

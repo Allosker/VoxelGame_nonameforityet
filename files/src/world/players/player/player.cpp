@@ -120,7 +120,6 @@ void GameWorld::Player::move(const Direction& dir, float deltaTime) noexcept
 			m_camera.pos += vec3f{ 0, attributes.jumpHeight, 0 } * deltaTime;
 		break;
 	}
-
 	attributes.moving = true;
 }
 

@@ -39,10 +39,12 @@ Wai::Window::~Window() noexcept
 // Actors
 // =====================
 
-void Wai::Window::clearEvents() const noexcept
+void Wai::Window::clearEvents() noexcept
 {
 	updateKeys();
 	updateMouseButtons();
+	m_mouseWheel_delta = vec2f{0};
+	m_wheelScrolledThisFrame = false;
 	glfwPollEvents();
 }
 
@@ -56,13 +58,21 @@ void Wai::Window::processInputs(const std::function<void()>& inputs)
 	inputs();
 }
 
-void Wai::Window::onFramebufferResize(const vec2i& newSize) noexcept
+bool Wai::Window::alternateCursorVisibility() noexcept
+{
+	m_cursorHidden = !m_cursorHidden;
+
+	glfwSetInputMode(m_window, GLFW_CURSOR, m_cursorHidden ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
+	return m_cursorHidden;
+}
+
+void Wai::Window::onFramebufferResize(vec2i newSize) noexcept
 {
 	m_size = newSize;
 	glViewport(0, 0, newSize.x, newSize.y);
 }
 
-void Wai::Window::onMouseMovement(const vec2f& offset, GameWorld::Player& player) noexcept
+void Wai::Window::onMouseMovement(vec2f offset, GameWorld::Player& player) noexcept
 {
 	static float yaw{ -90 }, pitch{};
 
@@ -86,6 +96,16 @@ void Wai::Window::onMouseMovement(const vec2f& offset, GameWorld::Player& player
 	direction.z = std::sin(radYaw) * cosPitch;
 
 	player.getCamera().front_dir = direction.normal();
+}
+
+void Wai::Window::onMouseWheelScroll(vec2f delta) noexcept
+{
+	m_mouseWheel_delta = delta;
+}
+
+void Wai::Window::onMouseCursorPosChange(vec2f newCursorPos) noexcept
+{
+	m_mousePos = newCursorPos;
 }
 
 

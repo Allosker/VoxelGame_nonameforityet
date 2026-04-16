@@ -6,6 +6,7 @@
 // ---------------------------------------
 
 #include <optional>
+#include <vector>
 
 #include "rendering/GUI/Items/itemTypeManager.hpp"
 #include "rendering/GUI/shapes/rectangle.hpp"
@@ -21,40 +22,58 @@ namespace Render::GUI
 	{
 	public:
 
-		Hotbar(const Render::Texturing::Texture& textureHotbar, const ItemTypeManager& itemTypeManager);
+		// = Construction/Destruction
+
+		Hotbar(const Render::Texturing::Texture& texture_slot, const ItemTypeManager& itemTypeManager);
 
 
-		Rectangle* getSlotRender_at(std::size_t index)
-		{
-			if (index < 0 || index >= m_slots.size())
-				return nullptr;
+		// = Getters
 
-			return &m_slots[index].first;
-		}
+		Rectangle* getSlotRender_at(std::size_t index) noexcept;
 
-		std::optional<GameWorld::Inventory::Item> getSlot_at(std::size_t index)
-		{
-			if (index < 0 || index >= m_slots.size())
-				return std::nullopt;
-
-			return std::make_optional(m_slots[index].second);
-		}
+		std::optional<GameWorld::Inventory::Item> getSlot_at(std::size_t index) const noexcept;
 
 
-		void draw(const Shader& shader, const Render::Texturing::Texture& textureHotbar, const Render::Texturing::Texture& atlasItems) noexcept;
+		// = Setters
 
-	public:
+		void setCurrentSlot(GameWorld::Inventory::Item item, const ItemTypeManager& itm) noexcept;
 
 
-		static constexpr vec2f slot_size{ 145, 144 };
+		// = Actors
+
+		// Returns the next slot based on the index which must be either 1 or -1
+		GameWorld::Inventory::Item nextSlot(int8 index) noexcept;
+
+		void newPairOfSlots(const Render::Texturing::Texture& texture_slot) noexcept;
+
+		void disable() noexcept;
+		void enable() noexcept;
+
+		void draw(const Shader& shader, const Render::Texturing::Texture& texture_slot, const Render::Texturing::Texture& texture_block_gui_atlas, const ItemTypeManager& itm) noexcept;
+
 
 	private:
 
-		std::array<std::pair<Rectangle, GameWorld::Inventory::Item>, 10> m_slots;
+		void create_new_slots(const Render::Texturing::Texture& texture_slot) noexcept;
 
-		Render::GUI::Rectangle m_hotbar;
+	public:
 
-		static constexpr vec2f g_size_GUI_item{ 99.f };
+		static constexpr vec2f g_slot_size{ 80 };
+
+		static constexpr std::size_t g_max_nb_slots{ 10 };
+
+	private:
+
+		std::vector<std::pair<Rectangle, GameWorld::Inventory::Item>> m_slots;
+		std::vector<Rectangle> m_items_slots{};
+
+
+		int64 m_cursor_position{};
+		int64 last_cursor{ -1 };
+
+		bool m_cursor_changed{ false };
+		bool m_disabled{ false };
 
 	};
-}
+
+} // Render::GUI

@@ -23,9 +23,7 @@ namespace Render::GUI
 
 		// = Construction/Destruction
 
-		Rectangle(vec2f size, vec2f pos, const UvAtlas& attributes);
-
-		Rectangle(vec2f size, vec2f pos, const UvPixels& attributes);
+		Rectangle(vec2f size, vec2f ori, const UvPixels& attributes);
 
 
 		Rectangle(Rectangle&& other) noexcept;
@@ -62,9 +60,12 @@ namespace Render::GUI
 
 
 
-		void updateSprite(const UvAtlas& attributes) noexcept;
-
 		void updateSprite(const UvPixels& attributes) noexcept;
+
+
+		// = Predicates
+		
+		bool contains(vec2f point) const noexcept;
 
 		
 		// = Actors

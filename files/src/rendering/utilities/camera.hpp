@@ -23,7 +23,7 @@ namespace Render::Utils
 
 		vec3f pos{ 0.f, 0.f, -1.f };
 		vec3f up_dir{ vec3f{0.f, 1.f, 0.f}.normal() };
-		vec3f front_dir{ 0.f, 0.f, 0.f };
+		vec3f front_dir{ 0.f, 0.f, -1.f };
 	};
 
 }

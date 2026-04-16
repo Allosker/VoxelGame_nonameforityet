@@ -24,10 +24,15 @@ namespace Render
 		types::pixels subset_size{};
 	};
 
-	// Doesn't work, fix it
+
 	inline types::uvs mapTextureUvs(vec2f point, vec2f unitSize) noexcept
 	{
 		return { point.x * unitSize.x, point.y * unitSize.y };
+	}
+
+	inline UvPixels mapTextureUvs(const UvAtlas& atlas) noexcept
+	{
+		return { { atlas.pos_in_atlas.x * atlas.subset_size.x, atlas.pos_in_atlas.y * atlas.subset_size.y }, atlas.subset_size };
 	}
 
 }
