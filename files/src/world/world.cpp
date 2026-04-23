@@ -183,8 +183,6 @@ void GameWorld::World::generateWorld(const std::vector<types::loc>& new_chunks_l
 				vec2d bpz{ x + chunk.getPos().x, z + chunk.getPos().z };
 
 
-
-
 				double continentalness = perlin.octave2D_11(bpz.x * debug.continentalness_frequency, bpz.y * debug.continentalness_frequency, 6);
 				
 				//double erosion = perlin.octave2D_11(bpz.x * debug.continentalness_frequency, bpz.y * debug.continentalness_frequency, 6);
@@ -223,7 +221,7 @@ void GameWorld::World::generateWorld(const std::vector<types::loc>& new_chunks_l
 					
 					if (
 						bp > y_max && bp < y_max + 1 && bp > debug.sea_level && 
-						perlin.octave2D_01(x * debug.tree_frequency, z * debug.tree_frequency, 4) <= debug.tree_threshold
+						perlin.octave2D_01(bpz.x * debug.tree_frequency, bpz.y * debug.tree_frequency, 4) <= debug.tree_threshold
 						)
 					{
 

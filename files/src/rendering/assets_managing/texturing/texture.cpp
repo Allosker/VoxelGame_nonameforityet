@@ -4,7 +4,7 @@
 // Construction/Destruction
 // =====================
 
-Render::Texturing::Texture::Texture(const Path& tex_path, Type type)
+Render::Texturing::Texture::Texture(const types::path& tex_path, Type type)
 	: m_type{type}
 {
 	glGenTextures(1, &m_tex);
@@ -19,6 +19,24 @@ Render::Texturing::Texture::Texture(const Path& tex_path, Type type)
 	loadTexture(tex_path);
 }
 
+Render::Texturing::Texture::Texture(const Image& image, Type type)
+	: m_type{ type }, m_width{ image.getSize().x }, m_height{ image.getSize().y }
+{
+	glGenTextures(1, &m_tex);
+	glBindTexture(GL_TEXTURE_2D, m_tex);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+
+	glTexImage2D(m_type, 0, image.getFormat(), m_width, m_height, 0, image.getFormat(), GL_UNSIGNED_BYTE, image.getData().data());
+
+	glGenerateMipmap(m_type);
+}
+
 Render::Texturing::Texture::~Texture() noexcept
 {
 	deleteTexture();
@@ -29,7 +47,7 @@ Render::Texturing::Texture::~Texture() noexcept
 // Actors
 // =====================
 
-void Render::Texturing::Texture::loadTexture(const Path& tex_path)
+void Render::Texturing::Texture::loadTexture(const types::path& tex_path)
 {
 	std::int32_t nrChannels{};
 
@@ -44,7 +62,7 @@ void Render::Texturing::Texture::loadTexture(const Path& tex_path)
 		color_channel = GL_RED;
 		break;
 
-	case 2:
+	case 3:
 		color_channel = GL_RGB;
 		break;
 

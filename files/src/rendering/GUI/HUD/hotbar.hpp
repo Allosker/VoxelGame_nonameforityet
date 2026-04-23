@@ -40,6 +40,9 @@ namespace Render::GUI
 		std::vector<std::pair<Rectangle, GameWorld::Inventory::Item>>& getSlots() noexcept { return m_slots; }
 		const std::vector<std::pair<Rectangle, GameWorld::Inventory::Item>>& getSlots() const noexcept { return m_slots; }
 
+		std::vector<Rectangle>& getItemsRenders() noexcept { return m_items_slots; }
+		const std::vector<Rectangle>& getItemsRenders() const noexcept { return m_items_slots; }
+
 
 		// = Setters
 

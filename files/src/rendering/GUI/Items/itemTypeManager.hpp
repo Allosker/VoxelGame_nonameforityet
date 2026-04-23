@@ -44,14 +44,14 @@ namespace Render::GUI
 		static constexpr vec2f g_size_gui_block{ 66.f };
 	};
 
-	inline UvAtlas to_UvAtlas(types::type_id id, const ItemTypeManager& manager) noexcept
+	inline types::Rect<types::atlas_units> toAtlasUnits(types::type_id id, const ItemTypeManager& manager) noexcept
 	{
 		return { manager.getType(id).pos_in_atlas, ItemTypeManager::g_texture_size_item };
 	}
 
-	inline UvPixels mapTextureUvs(types::type_id id, const ItemTypeManager& manager) noexcept
+	inline types::Rect<types::uvs> mapTextureUvs(types::type_id id, const ItemTypeManager& manager) noexcept
 	{
-		return mapTextureUvs(to_UvAtlas(id, manager));
+		return fromAtlasToPixels(toAtlasUnits(id, manager));
 	}
 
 }

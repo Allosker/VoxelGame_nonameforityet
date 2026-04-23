@@ -27,6 +27,7 @@
 /* TODOLIST
 * 
 *	== Fix it when you go onto a block from a certain direction, you get teleported on the right or left. Only if there is an empty block on the left/right down of it.
+*	Also, when you go in diagonal into two blocks in a vertain direction you get telported on top
 *	== Fix it so that when you scroll the mouse wheel swiftly, it doesn't break the hotbar
 *
 */
@@ -37,11 +38,13 @@
 #include "physics/collisions/basicHitbox.hpp"
 #include "world/players/player/player.hpp"
 
-#include "rendering/GUI/Items/itemRenderers.hpp"
+#include "rendering/GUI/Items/itemRenderer.hpp"
 #include "rendering/GUI/Items/itemTypeManager.hpp"
 
 #include "rendering/GUI/HUD/hotbar.hpp"
 #include "rendering/GUI/HUD/inventory.hpp"
+
+#include "rendering/GUI/Items/itemRenderer.hpp"
 
 #include <fstream>
 
@@ -72,8 +75,6 @@ struct WorldOptions
 	uint64 rm{ 0 }, rma{ 8 };
 };
 
-
-inline bool G_WINDOW_WAS_RESIZED{false};
 
 int main()
 try
@@ -124,6 +125,8 @@ try
 
 	Render::Shader shader3Dworld{ SHADER_PATH"shader.vert", SHADER_PATH"shader.frag" };
 
+	Render::Shader shader3Ditem{ SHADER_PATH"shader3Ditem.vert", SHADER_PATH"shader3Ditem.frag" };
+
 	Render::Shader shaderCubeDisplay{ SHADER_PATH"shader.vert", SHADER_PATH"shader.frag" };
 
 	Render::Shader shader2Drectangle{ SHADER_PATH"meshTexture2D.vert", SHADER_PATH"meshTexture2D.frag" };
@@ -141,6 +144,8 @@ try
 
 	Render::Texturing::Texture texture_guiSlot{ ASSET_PATH"hud/slot.png" };
 
+
+	
 	Render::Texturing::Texture texture_guiInventorySlot{ ASSET_PATH"hud/slot_inventory.png" };
 	Render::Texturing::Texture texture_guiInventory{ ASSET_PATH"hud/inventory.png" };
 
@@ -160,10 +165,16 @@ try
 
 	Render::GUI::Inventory inventory{ texture_guiInventory, texture_guiInventorySlot };
 
-	Render::GUI::Rectangle test{ texture_guiInventory.getSize(), {texture_guiInventory.getSize().x / 2, texture_guiInventory.getSize().y / 2}, Render::UvPixels{{}, texture_guiInventory.getSize()} };
+	Render::GUI::Rectangle test{ texture_guiInventory.getSize(), {texture_guiInventory.getSize().x / 2, texture_guiInventory.getSize().y / 2}, types::Rect<types::uvs>{{}, texture_guiInventory.getSize()} };
+
+	// Test
+	Render::Image imageTest{ ASSET_PATH"blocks/gui/block_inventory_atlas.png" };
+	Render::Texturing::Texture textureTest{ imageTest };
+
+	Render::Item3DMesh ItemTest{ imageTest, { {33, 0}, {33, 33} } };
 
 
-	Render::GUI::Rectangle crossair{ {50, 50}, {0, 0}, Render::UvPixels{{0, 17}, {17, 17}} };
+	Render::GUI::Rectangle crossair{ {50, 50}, {0, 0}, types::Rect<types::uvs>{{0, 17}, {17, 17}} };
 	crossair.setPosition({ -crossair.getSize().x / 2, -crossair.getSize().y / 2 });
 
 	
@@ -230,6 +241,9 @@ try
 
 				if (window.isKeyPressedOnce(b::P))
 					hotbar.newPairOfSlots(texture_guiSlot);
+
+				if (window.isKeyPressedOnce(b::O))
+					inventory.newPairOfSlots(texture_guiInventorySlot);
 
 				if (window.isKeyPressedOnce(b::M))
 					hotbar.disable();
@@ -352,7 +366,9 @@ try
 		mat4f proj{ mpml::perspective(mpml::Angle<>::fromDegrees(90), window.getSize().x, window.getSize().y, 0.1f, 1000.f) };
 
 
+
 		{
+			// Chunks
 			shader3Dworld.use();
 
 			shader3Dworld.setValue("model", model);
@@ -362,6 +378,14 @@ try
 			//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 			world.update(player.getPos());
+
+			// 3 Item Renders
+
+			shader3Ditem.use();
+
+			shader3Ditem.setValue("model", model);
+			shader3Ditem.setValue("view", view);
+			shader3Ditem.setValue("proj", proj);
 		}
 		
 
@@ -422,9 +446,11 @@ try
 		glEnable(GL_DEPTH_TEST);
 
 		// World
+		shader3Dworld.use();
+
 		textureAtlas.bind();
 
-		shader3Dworld.use();
+		
 		world.draw_chunkGrid(GameWorld::Voxels::ChunkGrid::to_loc(player.getPos()));
 
 		// Cube Highlight
@@ -433,8 +459,23 @@ try
 		if(drawHighlight)
 			ch.draw();
 
+
 		// UI
 		glDisable(GL_CULL_FACE);
+
+		// draw test 
+
+		shader3Ditem.use();
+		//atlas_guiBlocks.bind();
+
+		/*model = mpml::scale(model, 0.5f);*/
+		model = mpml::scale(model, {100, 100, 500});
+		model = mpml::rotate(model, mpml::Angle<>::fromDegrees(90.f), { 1, 0, 0 });
+		model = mpml::translate(model, { 0, 0.01, 0 });
+
+		shader3Ditem.setValue("model", model);
+		ItemTest.draw(shader3Ditem, textureTest);
+
 		glDisable(GL_DEPTH_TEST);
 
 		shader2Drectangle.use();

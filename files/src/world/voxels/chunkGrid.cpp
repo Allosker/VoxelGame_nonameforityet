@@ -148,7 +148,12 @@ bool GameWorld::Voxels::ChunkGrid::is_empty(const types::pos& block_pos, const R
 	if (c == nullptr)
 		return true;
 
-	return !c->block_at(getVoxelIndex(block_pos)).id || !type_manager.getType(c->block_at(getVoxelIndex(block_pos)).id).is_destructible;
+	auto index = getVoxelIndex(block_pos);
+
+	if (!c->block_at_ptr(index))
+		return true;
+
+	return !c->block_at(index).id || !type_manager.getType(c->block_at(index).id).is_destructible;
 }
 
 

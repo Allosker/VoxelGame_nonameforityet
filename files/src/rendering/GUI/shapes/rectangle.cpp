@@ -4,34 +4,34 @@
 // Construction/Destruction
 // =====================
 
-Render::GUI::Rectangle::Rectangle(vec2f size, vec2f ori, const UvPixels& attributes)
+Render::GUI::Rectangle::Rectangle(vec2f size, vec2f ori, const types::Rect<types::uvs>& attributes)
 	: m_origin{ ori }, m_baseSize{size}, m_scale { 1.f, 1.f },
 	Mesh(std::array<Data::Vertex2D, 6>
 {
 	Render::Data::Vertex2D
 	{
 		{0, 0},
-		attributes.pos_in_texture
+		attributes.pos
 	},
 	{
 		{size.x, 0},
-		{attributes.pos_in_texture + types::uvs{ attributes.subset_size.x, 0}}
+		{attributes.pos + types::uvs{ attributes.size.x, 0}}
 	},
 	{
 		{size.x, size.y},
-		{attributes.pos_in_texture + types::uvs{ attributes.subset_size.x, attributes.subset_size.y}}
+		{attributes.pos + types::uvs{ attributes.size.x, attributes.size.y}}
 	},
 	{
 		{0, 0},
-		attributes.pos_in_texture
+		attributes.pos
 	},
 	{
 		{0, size.y},
-		{attributes.pos_in_texture + types::uvs{ 0, attributes.subset_size.y}}
+		{attributes.pos + types::uvs{ 0, attributes.size.y}}
 	},
 	{
 		{size.x, size.y},
-		{attributes.pos_in_texture + types::uvs{ attributes.subset_size.x, attributes.subset_size.y}}
+		{attributes.pos + types::uvs{ attributes.size.x, attributes.size.y}}
 	},
 })
 {
@@ -148,7 +148,7 @@ void Render::GUI::Rectangle::rotate(mpml::Angle<> theta) noexcept
 }
 
 
-void Render::GUI::Rectangle::updateSprite(const UvPixels& attributes) noexcept
+void Render::GUI::Rectangle::updateSprite(const types::Rect<types::uvs>& attributes) noexcept
 {
 	Mesh::updateBuffer<Render::Data::Vertex2D>
 		(
@@ -157,27 +157,27 @@ void Render::GUI::Rectangle::updateSprite(const UvPixels& attributes) noexcept
 	Render::Data::Vertex2D
 	{
 		{0, 0},
-		attributes.pos_in_texture
+		attributes.pos
 	},
 	{
 		{m_baseSize.x, 0},
-		{attributes.pos_in_texture + types::uvs{ attributes.subset_size.x, 0}}
+		{attributes.pos + types::uvs{ attributes.size.x, 0}}
 	},
 	{
 		{m_baseSize.x, m_baseSize.y},
-		{attributes.pos_in_texture + types::uvs{ attributes.subset_size.x, attributes.subset_size.y}}
+		{attributes.pos + types::uvs{ attributes.size.x, attributes.size.y}}
 	},
 	{
 		{0, 0},
-		attributes.pos_in_texture
+		attributes.pos
 	},
 	{
 		{0, m_baseSize.y},
-		{attributes.pos_in_texture + types::uvs{ 0, attributes.subset_size.y}}
+		{attributes.pos + types::uvs{ 0, attributes.size.y}}
 	},
 	{
 		{m_baseSize.x, m_baseSize.y},
-		{attributes.pos_in_texture + types::uvs{ attributes.subset_size.x, attributes.subset_size.y}}
+		{attributes.pos + types::uvs{ attributes.size.x, attributes.size.y}}
 	},
 	}, sizeof(Render::Data::Vertex2D), GL_STREAM_DRAW);
 }

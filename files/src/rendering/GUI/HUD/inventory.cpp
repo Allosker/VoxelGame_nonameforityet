@@ -2,8 +2,8 @@
 
 
 Render::GUI::Inventory::Inventory(const Texturing::Texture& texture_inventory, const Texturing::Texture& texture_slot)
-	: m_inventory{ g_size_inventory, {g_size_inventory.x / 2, g_size_inventory.y / 2}, UvPixels{{}, texture_inventory.getSize()} },
-	m_moving_item{ ItemTypeManager::g_size_gui_block, { ItemTypeManager::g_size_gui_block.x / 2, ItemTypeManager::g_size_gui_block.y / 2 }, UvPixels{} }
+	: m_inventory{ g_size_inventory, {g_size_inventory.x / 2, g_size_inventory.y / 2}, types::Rect<types::uvs>{{}, texture_inventory.getSize()} },
+	m_moving_item{ ItemTypeManager::g_size_gui_block, { ItemTypeManager::g_size_gui_block.x / 2, ItemTypeManager::g_size_gui_block.y / 2 }, types::Rect<types::uvs>{} }
 {
 	create_slots(texture_slot);
 	create_slots(texture_slot);
@@ -14,6 +14,9 @@ Render::GUI::Inventory::Inventory(const Texturing::Texture& texture_inventory, c
 
 void Render::GUI::Inventory::update(const Wai::Window& window, const ItemTypeManager& itm, Hotbar& hotbar, vec2f point) noexcept
 {
+	if (!m_activated)
+		return;
+
 	static int64 clicked_slot{-1};
 	bool isWithinSlot{ false };
 
@@ -35,9 +38,12 @@ void Render::GUI::Inventory::update(const Wai::Window& window, const ItemTypeMan
 		if (hotbar.getSlots()[i].first.contains(point))
 		{
 			m_cursor = i;
+			hotbar.getItemsRenders()[i].setScale(1.3);
 			isWithinHotbar = true;
 			isWithinSlot = true;
 		}
+		else
+			hotbar.getItemsRenders()[i].setScale(1);
 
 
 	if (window.isMouseButtonPressedOnce(Wai::Buttons::Mouse::Left))
@@ -73,6 +79,12 @@ void Render::GUI::Inventory::update(const Wai::Window& window, const ItemTypeMan
 			m_moving_item.setPosition(point);
 		}
 	}
+}
+
+void Render::GUI::Inventory::newPairOfSlots(const Texturing::Texture& texture_slot) noexcept
+{
+	if (m_slots.size() < g_max_nb_slots)
+		create_slots(texture_slot);
 }
 
 void Render::GUI::Inventory::enable(Wai::Window& window, Hotbar& hotbar) noexcept
@@ -132,14 +144,14 @@ void Render::GUI::Inventory::draw(const Shader& shader, const Texturing::Texture
 	(std::pair<Rectangle, GameWorld::Inventory::Item> 
 	{
 		{
-			g_slot_size, { g_slot_size.x / 2, g_slot_size.y / 2 }, UvPixels{ {}, texture_slot.getSize() }
-		}, {1}
+			g_slot_size, { g_slot_size.x / 2, g_slot_size.y / 2 }, types::Rect<types::uvs>{ {}, texture_slot.getSize() }
+		}, {}
 	});
 	m_slots.back().first.setPosition({
 		173,
 		336 - g_slot_size.y * size_mult });
 	// Create corresponding item
-	m_items_slots.emplace_back(Rectangle{ ItemTypeManager::g_size_gui_block, { ItemTypeManager::g_size_gui_block.x / 2, ItemTypeManager::g_size_gui_block.y / 2 }, UvPixels{} });
+	m_items_slots.emplace_back(Rectangle{ ItemTypeManager::g_size_gui_block, { ItemTypeManager::g_size_gui_block.x / 2, ItemTypeManager::g_size_gui_block.y / 2 }, types::Rect<types::uvs>{} });
 	m_items_slots.back().setPosition(m_slots.back().first.getPosition());
 
 	// Create second slot right
@@ -147,13 +159,13 @@ void Render::GUI::Inventory::draw(const Shader& shader, const Texturing::Texture
 	(std::pair<Rectangle, GameWorld::Inventory::Item>
 	{	
 		{
-			g_slot_size, { g_slot_size.x / 2, g_slot_size.y / 2 }, UvPixels{ {}, texture_slot.getSize() }
+			g_slot_size, { g_slot_size.x / 2, g_slot_size.y / 2 }, types::Rect<types::uvs>{ {}, texture_slot.getSize() }
 		}, {}
 	});
 	m_slots.back().first.setPosition({
 		173 + g_slot_size.x,
 		336 - g_slot_size.y * size_mult });
 	// Create corresponding item
-	m_items_slots.emplace_back(Rectangle{ ItemTypeManager::g_size_gui_block, { ItemTypeManager::g_size_gui_block.x / 2, ItemTypeManager::g_size_gui_block.y / 2 }, UvPixels{} });
+	m_items_slots.emplace_back(Rectangle{ ItemTypeManager::g_size_gui_block, { ItemTypeManager::g_size_gui_block.x / 2, ItemTypeManager::g_size_gui_block.y / 2 }, types::Rect<types::uvs>{} });
 	m_items_slots.back().setPosition(m_slots.back().first.getPosition());
 }

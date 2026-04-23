@@ -90,7 +90,6 @@ void Render::GUI::Hotbar::disable() noexcept
 	for (size_t i{}; i < m_slots.size(); i++)
 	{
 		m_slots[i].first.setScale(1.3);
-		m_items_slots[i].setScale(1.3);
 	}
 }
 
@@ -162,14 +161,14 @@ void Render::GUI::Hotbar::draw(
 	(std::pair<Rectangle, GameWorld::Inventory::Item>
 	{
 		{
-			g_slot_size, { g_slot_size.x / 2, g_slot_size.y / 2 }, UvPixels{ {}, texture_slot.getSize() }
+			g_slot_size, { g_slot_size.x / 2, g_slot_size.y / 2 }, types::Rect<types::uvs>{ {}, texture_slot.getSize() }
 		}, {}
 	});
 	m_slots.back().first.setPosition({
 		static_cast<float>(-g_slot_size.x / 2) * size_mult - g_slot_size.x * size_mult,
 		-Wai::Window::g_guiViewSize.y / 2 + g_slot_size.y / 1.5 });
 	// Set its corresponding item
-	m_items_slots.emplace_back(Rectangle{ {ItemTypeManager::g_size_gui_block}, {ItemTypeManager::g_size_gui_block.x / 2, ItemTypeManager::g_size_gui_block.y / 2 }, UvPixels{} });
+	m_items_slots.emplace_back(Rectangle{ {ItemTypeManager::g_size_gui_block}, {ItemTypeManager::g_size_gui_block.x / 2, ItemTypeManager::g_size_gui_block.y / 2 }, types::Rect<types::uvs>{} });
 	m_items_slots.back().setPosition(m_slots.back().first.getPosition());
 
 
@@ -178,14 +177,14 @@ void Render::GUI::Hotbar::draw(
 	(std::pair<Rectangle, GameWorld::Inventory::Item>
 	{
 		{
-			g_slot_size, { g_slot_size.x / 2, g_slot_size.y / 2}, UvPixels{ {}, texture_slot.getSize() }
+			g_slot_size, { g_slot_size.x / 2, g_slot_size.y / 2}, types::Rect<types::uvs>{ {}, texture_slot.getSize() }
 		}, {}
 	});
 	m_slots.back().first.setPosition({
 		static_cast<float>(g_slot_size.x / 2) * size_mult + g_slot_size.x * size_mult,
 		-Wai::Window::g_guiViewSize.y / 2 + g_slot_size.y / 1.5 });
 	// Set its corresponding item
-	m_items_slots.emplace_back(Rectangle{ {ItemTypeManager::g_size_gui_block}, {ItemTypeManager::g_size_gui_block.x / 2, ItemTypeManager::g_size_gui_block.y / 2 }, UvPixels{} });
+	m_items_slots.emplace_back(Rectangle{ {ItemTypeManager::g_size_gui_block}, {ItemTypeManager::g_size_gui_block.x / 2, ItemTypeManager::g_size_gui_block.y / 2 }, types::Rect<types::uvs>{} });
 	m_items_slots.back().setPosition(m_slots.back().first.getPosition());
 
 

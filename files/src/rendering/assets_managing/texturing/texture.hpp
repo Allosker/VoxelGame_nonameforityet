@@ -6,14 +6,15 @@
 // ---------------------------------------
 
 #include "uHeaders/opengl.hpp"
+#include "uHeaders/types.hpp"
 #include <filesystem>
 #include "STB/stb_image.h"
 
 #include "rendering/shader.hpp"
+#include "rendering/assets_managing/image.hpp"
 
 namespace Render::Texturing
 {
-	using Path = std::filesystem::path;
 
 	class Texture
 	{
@@ -30,13 +31,16 @@ namespace Render::Texturing
 
 	// = Construction/Destruction
 
-		Texture(const Path& tex_path, Type type = tex2D);
+		Texture(const types::path& tex_path, Type type = tex2D);
+
+		Texture(const Image& image, Type type = tex2D);
 
 		~Texture() noexcept;
 
+
 	// = Actors
 
-		void loadTexture(const Path& tex_path);
+		void loadTexture(const types::path& tex_path);
 
 		void deleteTexture() const noexcept;
 

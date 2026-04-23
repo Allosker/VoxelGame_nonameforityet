@@ -32,6 +32,8 @@ namespace Render
 
 		Mesh(const std::vector<vec3f>& positions, const std::vector<vec2f>& uvs, GLenum draw_mode = GL_STATIC_DRAW);
 
+		Mesh() = default;
+
 		Mesh(const Mesh&) = delete;
 		Mesh(Mesh&& other) noexcept;
 
@@ -56,15 +58,20 @@ namespace Render
 		virtual void draw_transparent(GLenum mode = GL_TRIANGLES) const noexcept;
 
 
-	private:
-
-		std::vector<Data::Vertex> makeVertices(const std::vector<vec3f>& positions, const std::vector<vec2f>& uvs) const;
+		// = Initialization Helpers
 
 		template<typename T>
 		void createBuffers(const std::vector<T>& vertices, GLenum draw_mode, vec2i components) noexcept;
 
 		template<typename T, std::size_t SIZE>
 		void createBuffers(const std::array < T, SIZE>& vertices, GLenum draw_mode, vec2i components) noexcept;
+
+
+	private:
+
+		std::vector<Data::Vertex> makeVertices(const std::vector<vec3f>& positions, const std::vector<vec2f>& uvs) const;
+
+		
 
 		GLuint m_vao{};
 		GLuint m_vbo{};
@@ -107,7 +114,7 @@ namespace Render
 		glBindVertexArray(0);
 	}
 
-	// Private Init
+	// Init
 
 	template<typename T>
 	inline void Mesh::createBuffers(const std::vector<T>& vertices, GLenum draw_mode, vec2i components) noexcept

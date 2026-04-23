@@ -81,7 +81,7 @@ namespace GameWorld
 
 	private:
 
-		Render::Utils::Camera m_camera{ {641, 88, -543} };
+		Render::Utils::Camera m_camera{};
 		Physics::Collisions::BasicHitbox m_hitbox{};
 
 		vec3f m_velocity{};

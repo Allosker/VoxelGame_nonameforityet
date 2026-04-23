@@ -31,6 +31,8 @@ namespace Render::GUI
 
 		void update(const Wai::Window& window, const ItemTypeManager& itm, Hotbar& hotbar, vec2f point) noexcept;
 
+		void newPairOfSlots(const Texturing::Texture& texture_slot) noexcept;
+
 
 		void enable(Wai::Window& window, Hotbar& hotbar) noexcept;
 		void disable(Wai::Window& window, Hotbar& hotbar) noexcept;
@@ -60,7 +62,7 @@ namespace Render::GUI
 
 		std::size_t m_cursor{};
 
-		bool m_activated{ true };
+		bool m_activated{ false };
 
 	};
 

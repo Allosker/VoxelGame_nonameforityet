@@ -6,6 +6,7 @@
 // ---------------------------------------
 
 #include <cstdint>
+#include <filesystem>
 #include <mpml/vectors/vectors.hpp>
 
 
@@ -19,8 +20,11 @@ using uint16 = std::uint16_t;
 using uint32 = std::uint32_t;
 using uint64 = std::uint64_t;
 
+
 namespace types
 {
+	using path = std::filesystem::path;
+
 	using pos = mpml::Vector3<float>;
 	using loc = mpml::Vector3<int64>;
 	using chunk_loc = mpml::Vector3<uint64>;
@@ -33,4 +37,12 @@ namespace types
 	using uvs = mpml::Vector2<float>;
 	using atlas_units = mpml::Vector2<float>;
 	using pixels = mpml::Vector2<float>;
-}
+
+	template<typename T>
+	struct Rect
+	{
+		T pos;
+		T size;
+	};
+
+} // types

@@ -23,7 +23,7 @@ namespace Render::GUI
 
 		// = Construction/Destruction
 
-		Rectangle(vec2f size, vec2f ori, const UvPixels& attributes);
+		Rectangle(vec2f size, vec2f ori, const types::Rect<types::uvs>& attributes);
 
 
 		Rectangle(Rectangle&& other) noexcept;
@@ -60,7 +60,7 @@ namespace Render::GUI
 
 
 
-		void updateSprite(const UvPixels& attributes) noexcept;
+		void updateSprite(const types::Rect<types::uvs>& attributes) noexcept;
 
 
 		// = Predicates

@@ -12,27 +12,14 @@
 
 namespace Render
 {
-	struct UvAtlas
-	{
-		types::atlas_units pos_in_atlas{};
-		types::pixels subset_size{};
-	};
-
-	struct UvPixels
-	{
-		types::pixels pos_in_texture{};
-		types::pixels subset_size{};
-	};
-
-
-	inline types::uvs mapTextureUvs(vec2f point, vec2f unitSize) noexcept
+	inline types::uvs fromAtlasToPixels(vec2f point, vec2f unitSize) noexcept
 	{
 		return { point.x * unitSize.x, point.y * unitSize.y };
 	}
 
-	inline UvPixels mapTextureUvs(const UvAtlas& atlas) noexcept
+	inline types::Rect<types::uvs> fromAtlasToPixels(const types::Rect<types::atlas_units>& atlas) noexcept
 	{
-		return { { atlas.pos_in_atlas.x * atlas.subset_size.x, atlas.pos_in_atlas.y * atlas.subset_size.y }, atlas.subset_size };
+		return { { atlas.pos.x * atlas.size.x, atlas.pos.y * atlas.size.y }, atlas.size };
 	}
 
 }
