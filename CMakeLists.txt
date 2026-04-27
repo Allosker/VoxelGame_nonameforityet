@@ -10,19 +10,19 @@ project (
 	MYPROJECT
 	VERSION 0.0.0
 	LANGUAGES C CXX
-) 
+)  
  
 # Directories   
 
-set(SRC_DIR "${PROJECT_SOURCE_DIR}/files/src/") 
-set(INCLUDE_DIR "${PROJECT_SOURCE_DIR}/files/src/") 
-set(LIB_DIR "${PROJECT_SOURCE_DIR}/files/libs/") 
+set(SRC_DIR "${PROJECT_SOURCE_DIR}/src/") 
+set(INCLUDE_DIR "${PROJECT_SOURCE_DIR}/src/") 
+set(LIB_DIR "${PROJECT_SOURCE_DIR}/libs/") 
  
-set(IMGUI_DIR "${PROJECT_SOURCE_DIR}/files/libs/imgui")
-set(IMGUI_BACKENDS_DIR "${PROJECT_SOURCE_DIR}/files/libs/imgui/backends")
-set(IMGUI_MISC_DIR "${PROJECT_SOURCE_DIR}/files/libs/imgui/misc")
+set(IMGUI_DIR "${PROJECT_SOURCE_DIR}/libs/imgui")
+set(IMGUI_BACKENDS_DIR "${PROJECT_SOURCE_DIR}/libs/imgui/backends")
+set(IMGUI_MISC_DIR "${PROJECT_SOURCE_DIR}/libs/imgui/misc")
 
-set(IMPLOT_DIR "${PROJECT_SOURCE_DIR}/files/libs/implot")    
+set(IMPLOT_DIR "${PROJECT_SOURCE_DIR}/libs/implot")    
   
 # Fetch files   
  
@@ -85,10 +85,10 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
  
 # Other Paths    
 
-set(SHADER_DIR "${CMAKE_SOURCE_DIR}/files/shaders/")     
+set(SHADER_DIR "${CMAKE_SOURCE_DIR}/shaders/")     
 target_compile_definitions(MYPROJECT PRIVATE SHADER_PATH="${SHADER_DIR}")
 
-set(ASSET_DIR "${CMAKE_SOURCE_DIR}/files/assets/")
+set(ASSET_DIR "${CMAKE_SOURCE_DIR}/assets/")
 target_compile_definitions(MYPROJECT PRIVATE ASSET_PATH="${ASSET_DIR}")
 
 

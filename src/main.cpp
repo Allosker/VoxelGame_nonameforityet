@@ -79,7 +79,6 @@ struct WorldOptions
 int main()
 try
 {
-
 	if (!glfwInit())
 		return -1;
 
@@ -113,9 +112,7 @@ try
 	//glfwSetKeyCallback(window.get(), key_callback);
 
 	glfwSetFramebufferSizeCallback(window.get(), framebuffersize_callback);
-
 	glfwSetCursorPosCallback(window.get(), mouse_callback);
-
 	glfwSetScrollCallback(window.get(), scroll_callback);
 
 
@@ -469,7 +466,6 @@ try
 		//atlas_guiBlocks.bind();
 
 		/*model = mpml::scale(model, 0.5f);*/
-		model = mpml::scale(model, {100, 100, 500});
 		model = mpml::rotate(model, mpml::Angle<>::fromDegrees(90.f), { 1, 0, 0 });
 		model = mpml::translate(model, { 0, 0.01, 0 });
 
