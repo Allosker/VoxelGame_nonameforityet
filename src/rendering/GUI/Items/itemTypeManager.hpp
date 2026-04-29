@@ -49,6 +49,16 @@ namespace Render::GUI
 		return { manager.getType(id).pos_in_atlas, ItemTypeManager::g_texture_size_item };
 	}
 
+	inline types::Rect<types::atlas_units> toPixelUnits(types::type_id id, const ItemTypeManager& manager) noexcept
+	{
+		vec2f pos_atlas{ manager.getType(id).pos_in_atlas };
+
+		return { 
+			{ pos_atlas.x * ItemTypeManager::g_texture_size_item.x, pos_atlas.y * ItemTypeManager::g_texture_size_item.y},
+			ItemTypeManager::g_texture_size_item
+		};
+	}
+
 	inline types::Rect<types::uvs> mapTextureUvs(types::type_id id, const ItemTypeManager& manager) noexcept
 	{
 		return fromAtlasToPixels(toAtlasUnits(id, manager));

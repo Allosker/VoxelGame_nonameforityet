@@ -26,8 +26,6 @@
 
 /* TODOLIST
 * 
-*	== Fix it when you go onto a block from a certain direction, you get teleported on the right or left. Only if there is an empty block on the left/right down of it.
-*	Also, when you go in diagonal into two blocks in a vertain direction you get telported on top
 *	== Fix it so that when you scroll the mouse wheel swiftly, it doesn't break the hotbar
 *
 */
@@ -66,9 +64,6 @@ struct WorldOptions
 	uint64 rayDist{ 5 };
 	int64 rayDist_min{ 1 };
 	int64 rayDist_max{ 2000 };
-
-	double y_minMin{ -2000 };
-	double y_minMax{ 10 };
 
 	bool instant_voxel_breaking{ false }, instant_voxel_placing{ false };
 
@@ -168,13 +163,14 @@ try
 	Render::Image imageTest{ ASSET_PATH"blocks/gui/block_inventory_atlas.png" };
 	Render::Texturing::Texture textureTest{ imageTest };
 
-	Render::Item3DMesh ItemTest{ imageTest, { {33, 0}, {33, 33} } };
+	Render::Item3DMesh ItemTest{ imageTest, Render::GUI::toPixelUnits(4, itemTypeManager) };
 
 
 	Render::GUI::Rectangle crossair{ {50, 50}, {0, 0}, types::Rect<types::uvs>{{0, 17}, {17, 17}} };
 	crossair.setPosition({ -crossair.getSize().x / 2, -crossair.getSize().y / 2 });
 
 	
+	std::vector<Render::Item3DMesh> itemsTest;
 
 
 	float lastFrame{};
@@ -293,7 +289,7 @@ try
 			}
 
 			
-			/*{
+			/* {
 				const double c_mi{ 0.00001 }, c_ma{ 1 };
 
 				const double s_mi{ 0 }, s_ma{ 1000 };
@@ -349,7 +345,6 @@ try
 			ImGui::Checkbox("Instant Vox. Place", &WO.instant_voxel_placing);
 
 			ImGui::VSliderScalar("Render Distance", { 15, 100 }, ImGuiDataType_S64, &GameWorld::Voxels::ChunkSettings::world_render_distance, &WO.rm, &WO.rma);
-			ImGui::VSliderScalar("World Depth", { 15, 100 }, ImGuiDataType_::ImGuiDataType_Double, &world.y_min, &WO.y_minMin, &WO.y_minMax);
 
 			ImGui::End(); // Window end
 		}
@@ -399,7 +394,7 @@ try
 
 				if (window.isMouseButtonPressedOnce(Wai::Buttons::Mouse::Middle))
 				{
-					auto& id{ world.block_at(ray_result->pos)->id };
+					auto id{ world.block_at(ray_result->pos)->id };
 
 					hotbar.setCurrentSlot({ id }, itemTypeManager);
 					hotbar.setCurrentSlot({ id }, itemTypeManager);
@@ -408,7 +403,12 @@ try
 				if (!WO.instant_voxel_breaking)
 				{
 					if (window.isMouseButtonPressedOnce(Wai::Buttons::Mouse::Left))
+					{
 						world.set_voxel_at(ray_result->pos, 0);
+
+						auto id{ world.block_at(ray_result->pos)->id };
+						itemsTest.emplace_back(Render::Item3DMesh{ imageTest, Render::GUI::toPixelUnits(id, itemTypeManager) });
+					}
 				}
 				else
 				{

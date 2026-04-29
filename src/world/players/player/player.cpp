@@ -60,7 +60,7 @@ void GameWorld::Player::resolve_collisions(const GameWorld::World& world) noexce
 		{
 			Physics::Collisions::BasicHitbox cube{ static_cast<vec3f>(pos), static_cast<vec3f>(pos + types::loc{1}) };
 
-			if (m_hitbox.intersect(cube))
+			if (m_hitbox.intersects(cube))
 			{
 
 				auto offset = m_hitbox.findIntersection(cube, world, pos);
