@@ -166,8 +166,7 @@ try
 	Render::Texturing::Texture textureTest{ imageTest };
 
 	Render::Item3DMesh ItemTest{ imageTest, Render::GUI::toPixelUnits(2, itemTypeManager) };
-	ItemTest.rotate(mpml::Angle<>::fromDegrees(90.f), { 1, 0, 0 });
-	ItemTest.setPosition({ 0, 0.01, 0 });
+	ItemTest.setPosition({ 10, 50, 10 });
 
 
 	Render::GUI::Rectangle crossair{ {50, 50}, {0, 0}, types::Rect<types::uvs>{{0, 17}, {17, 17}} };
@@ -411,8 +410,11 @@ try
 				{
 					if (window.isMouseButtonPressedOnce(Wai::Buttons::Mouse::Left))
 					{
-						/*auto id{ world.block_at(ray_result->pos)->id };
-						itemsTest.emplace_back(Render::Item3DMesh{ imageTest, Render::GUI::toPixelUnits(id, itemTypeManager) });*/
+						auto id{ world.block_at(ray_result->pos)->id };
+
+						itemsTest.emplace_back(Render::Item3DMesh{ imageTest, Render::GUI::toPixelUnits(id, itemTypeManager) });
+						itemsTest.back().rotate(mpml::Quaternion<float>::fromAxis(vec3f{1, 0, 0}, mpml::Angle<>::fromDegrees(90.f)));
+						itemsTest.back().setPosition(mpml::floor(ray_result->pos) + vec3f{ 0.5, 0.01, 0.5 });
 
 						world.set_voxel_at(ray_result->pos, 0);
 					}
@@ -464,15 +466,16 @@ try
 			ch.draw();
 
 
-		// UI
-		glDisable(GL_CULL_FACE);
+		
 
 		// draw test 
 		ItemTest.draw(shader3Ditem, textureTest);
 
-		/*for(auto& i : itemsTest)
-			i.draw(shader3Ditem, textureTest);*/
+		for(auto& i : itemsTest)
+			i.draw(shader3Ditem, textureTest);
 
+		// UI
+		glDisable(GL_CULL_FACE);
 		glDisable(GL_DEPTH_TEST);
 
 		shader2Drectangle.use();

@@ -55,13 +55,13 @@ namespace GameWorld::Entities
 
 		void setSize(vec3f size) noexcept;
 
-		void setRotation(mpml::Angle<> rotation, const vec3f& axis) noexcept;
+		void setRotation(const mpml::Quaternion<float>& q) noexcept;
 
 		void move(vec3f offset) noexcept;
 
 		void scale(vec3f factor) noexcept;
 
-		void rotate(mpml::Angle<> theta, const vec3f& axis) noexcept;
+		void rotate(const mpml::Quaternion<float>& q) noexcept;
 
 
 		// = Predicates
@@ -88,8 +88,7 @@ namespace GameWorld::Entities
 		vec3f								m_origin				{};
 		vec3f								m_position				{};
 
-		vec3f								m_rotation_axis			{};
-		mpml::Angle<>						m_rotation				{ mpml::Angle<>::fromRadians(0) };
+		mpml::Quaternion<float>				m_rotation				{ 1.f, 0, 0, 0 };
 
 		bool								m_transformNeedUpdate	{ false };
 

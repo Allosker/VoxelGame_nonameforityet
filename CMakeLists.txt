@@ -76,14 +76,14 @@ target_include_directories(MYPROJECT PUBLIC ${LIB_DIR})
 target_include_directories(MYPROJECT PUBLIC ${IMGUI_DIR})
 target_include_directories(MYPROJECT PUBLIC ${IMGUI_BACKENDS_DIR})
 target_include_directories(MYPROJECT PUBLIC ${IMPLOT_DIR})
-   
+    
 # Other Settings
- 
-set_property(TARGET MYPROJECT PROPERTY CXX_STANDARD 20)
+  
+set_property(TARGET MYPROJECT PROPERTY CXX_STANDARD 20) 
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
  
-# Other Paths    
+# Other Paths     
 
 set(SHADER_DIR "${CMAKE_SOURCE_DIR}/shaders/")     
 target_compile_definitions(MYPROJECT PRIVATE SHADER_PATH="${SHADER_DIR}")

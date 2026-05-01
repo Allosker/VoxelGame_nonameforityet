@@ -181,25 +181,27 @@ void Render::Item3DMesh::draw(const Shader& shader, const Texturing::Texture& it
 								vec2f{x, y}
 							},
 							{
+								(vec3f{g_size_item_wall.x, g_size_item_wall.y, g_size_item_wall.z} + vec3f{pos.x, pos.y - 1, 0}) / static_cast<float>(image.getSize().y),
+								vec2f{p, y}
+							},
+							{
 								(vec3f{g_size_item_wall.x, g_size_item_wall.y, 0} + vec3f{pos.x, pos.y - 1, 0}) / static_cast<float>(image.getSize().y),
 								vec2f{p, p2} 
 							}, 
-							{
-								(vec3f{g_size_item_wall.x, g_size_item_wall.y, g_size_item_wall.z} + vec3f{pos.x, pos.y - 1, 0}) / static_cast<float>(image.getSize().y),
-								vec2f{p, y} 
-							},
+							
 							{
 								(vec3f{0, g_size_item_wall.y, 0} + vec3f{pos.x, pos.y - 1, 0}) / static_cast<float>(image.getSize().y),
 								vec2f{x, y} 
 							},
 							{
+								(vec3f{0, g_size_item_wall.y, g_size_item_wall.z} + vec3f{pos.x, pos.y - 1, 0}) / static_cast<float>(image.getSize().y),
+								vec2f{x, p2}
+							},
+							{
 								(vec3f{g_size_item_wall.x, g_size_item_wall.y, g_size_item_wall.z} + vec3f{pos.x, pos.y - 1, 0}) / static_cast<float>(image.getSize().y),
 								vec2f{p, p2} 
 							},
-							{
-								(vec3f{0, g_size_item_wall.y, g_size_item_wall.z} + vec3f{pos.x, pos.y - 1, 0}) / static_cast<float>(image.getSize().y),
-								vec2f{x, p2} 
-							},
+							
 						});
 
 				if (up == 0 && down != 0)
@@ -210,25 +212,27 @@ void Render::Item3DMesh::draw(const Shader& shader, const Texturing::Texture& it
 								vec2f{x, y}
 							},
 							{
+								(vec3f{g_size_item_wall.x, g_size_item_wall.y, 0} + vec3f{pos.x, pos.y, 0}) / static_cast<float>(image.getSize().y),
+								vec2f{p, p2}
+							},
+							{
 								(vec3f{g_size_item_wall.x, g_size_item_wall.y, g_size_item_wall.z} + vec3f{pos.x, pos.y, 0}) / static_cast<float>(image.getSize().y),
 								vec2f{p, y} 
 							},
-							{
-								(vec3f{g_size_item_wall.x, g_size_item_wall.y, 0} + vec3f{pos.x, pos.y, 0}) / static_cast<float>(image.getSize().y),
-								vec2f{p, p2} 
-							},
+							
 							{
 								(vec3f{0, g_size_item_wall.y, 0} + vec3f{pos.x, pos.y, 0}) / static_cast<float>(image.getSize().y),
 								vec2f{x, y}
 							},
 							{
-								(vec3f{0, g_size_item_wall.y, g_size_item_wall.z} + vec3f{pos.x, pos.y, 0}) / static_cast<float>(image.getSize().y),
-								vec2f{x, p2}
-							},
-							{
 								(vec3f{g_size_item_wall.x, g_size_item_wall.y, g_size_item_wall.z} + vec3f{pos.x, pos.y, 0}) / static_cast<float>(image.getSize().y),
 								vec2f{p, p2}
 							},
+							{
+								(vec3f{0, g_size_item_wall.y, g_size_item_wall.z} + vec3f{pos.x, pos.y, 0}) / static_cast<float>(image.getSize().y),
+								vec2f{x, p2}
+							},
+							
 						});
 			}
 

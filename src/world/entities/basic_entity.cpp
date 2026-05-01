@@ -62,7 +62,7 @@ const mpml::Matrix4<float>& GameWorld::Entities::BasicEntity::getTransformation(
 		mpml::Matrix4<float> transforms{ mpml::Identity4<float> };
 		
 		transforms = mpml::scale(transforms, m_scale);
-		transforms = mpml::rotate(transforms, m_rotation, m_rotation_axis);
+		transforms = mpml::rotate(transforms, m_rotation);
 		transforms = mpml::translate(transforms, m_position);
 
 
@@ -96,10 +96,9 @@ void GameWorld::Entities::BasicEntity::setSize(vec3f size) noexcept
 	setScale({ size.x / m_baseSize.x, size.y / m_baseSize.y, size.z / m_baseSize.z });
 }
 
-void GameWorld::Entities::BasicEntity::setRotation(mpml::Angle<> rotation, const vec3f& axis) noexcept
+void GameWorld::Entities::BasicEntity::setRotation(const mpml::Quaternion<float>& q) noexcept
 {
-	m_rotation = rotation;
-	m_rotation_axis = axis;
+	m_rotation = q;
 	m_transformNeedUpdate = true;
 }
 
@@ -114,13 +113,13 @@ void GameWorld::Entities::BasicEntity::scale(vec3f factor) noexcept
 	setScale({ m_scale.x * factor.x,  m_scale.y * factor.y, m_scale.z * factor.z });
 }
 
-void GameWorld::Entities::BasicEntity::rotate(mpml::Angle<> theta, const vec3f& axis) noexcept
+void GameWorld::Entities::BasicEntity::rotate(const mpml::Quaternion<float>& q) noexcept
 {
-	setRotation(mpml::Angle<>::fromRadians(m_rotation.asRadians() + theta.asRadians()), axis);
+	setRotation(m_rotation * q);
 }
 
 
-// =====================
+// =====================S
 // Predicates
 // =====================
 
@@ -138,7 +137,7 @@ void GameWorld::Entities::BasicEntity::draw(const Render::Shader& shader, GLenum
 {
 	shader.use();
 
-	shader.setValue("model", getTransformation().transpose());
+	shader.setValue("model", getTransformation());
 
 	Mesh::draw(mode);
 }
@@ -147,7 +146,7 @@ void GameWorld::Entities::BasicEntity::draw_transparent(const Render::Shader& sh
 {
 	shader.use();
 
-	shader.setValue("model", getTransformation().transpose());
+	shader.setValue("model", getTransformation());
 
 	Mesh::draw_transparent(mode);
 }
