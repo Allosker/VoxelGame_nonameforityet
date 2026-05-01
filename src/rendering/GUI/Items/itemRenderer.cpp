@@ -1,8 +1,9 @@
 #include "itemRenderer.hpp"
 
 Render::Item3DMesh::Item3DMesh(const Image& constructor, const types::Rect<types::pixels>& uv_rect_pixels)
+	: GameWorld::Entities::BasicEntity{ types::Rect<vec3f>{{}, g_size_item}, types::Rect<vec3f>{{}, g_hitbox_item} }
 {
-	m_mesh.createBuffers(create_data(constructor, uv_rect_pixels), GL_STREAM_DRAW, {3, 2});
+	createBuffers(create_data(constructor, uv_rect_pixels), GL_STREAM_DRAW, { 3, 2 });
 }
 
 void Render::Item3DMesh::draw(const Shader& shader, const Texturing::Texture& item_texture) noexcept
@@ -10,7 +11,7 @@ void Render::Item3DMesh::draw(const Shader& shader, const Texturing::Texture& it
 	shader.use();
 	item_texture.bind();
 
-	m_mesh.draw();
+	GameWorld::Entities::BasicEntity::draw(shader);
 }
 
 /*private*/ std::vector<Render::Data::Vertex> Render::Item3DMesh::create_data(const Image& image, const types::Rect<types::pixels>& uv_rect_pixels)

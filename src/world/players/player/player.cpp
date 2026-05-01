@@ -62,8 +62,10 @@ void GameWorld::Player::resolve_collisions(const GameWorld::World& world) noexce
 
 			if (m_hitbox.intersects(cube))
 			{
+				auto offset = m_hitbox.findIntersection(cube);
 
-				auto offset = m_hitbox.findIntersection(cube, world, pos);
+				if (world.block_at(pos - types::loc{ offset.normal() }))
+					offset = {};
 
 				if (offset.y != 0)
 					m_velocity.y = 0;

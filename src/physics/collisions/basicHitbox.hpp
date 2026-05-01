@@ -39,7 +39,7 @@ namespace Physics::Collisions
 				min.z < outer.max.z && max.z > outer.min.z;
 		}
 
-		constexpr vec3f findIntersection(const BasicHitbox& outer, const GameWorld::World& world, const types::loc& block_loc) const noexcept
+		constexpr vec3f findIntersection(const BasicHitbox& outer) const noexcept
 		{
 			const float right	{ max.x - outer.min.x };
 			const float down	{ max.y - outer.min.y };
@@ -55,63 +55,39 @@ namespace Physics::Collisions
 			if (left > 0 && (left < bestDist || bestDist < 0))
 			{
 				bestDist = left;
-
-				if (!world.block_at(block_loc + types::loc{ 1, 0, 0 }))
-					result = -vec3f{ left, 0, 0 };
-				else
-					result = {};
+				result = -vec3f{ left, 0, 0 };
 			}
 
 			if (right > 0 && (right < bestDist || bestDist < 0))
 			{
 				bestDist = right;
-
-				if (!world.block_at(block_loc + types::loc{ -1, 0, 0 }))
-					result = vec3f{ right, 0, 0 };
-				else
-					result = {};
+				result = vec3f{ right, 0, 0 };
 			}
 
 
 			if (up > 0 && (up < bestDist || bestDist < 0))
 			{
 				bestDist = up;
-
-				if (!world.block_at(block_loc + types::loc{ 0, 1, 0 }))
-    				result = -vec3f{ 0, up, 0 };
-				else
-					result = {};
+    			result = -vec3f{ 0, up, 0 };
 			}
 
 			if (down > 0 && (down < bestDist || bestDist < 0))
 			{
 				bestDist = down;
-
-				if (!world.block_at(block_loc + types::loc{ 0, -1, 0 }))
-					result = vec3f{ 0, down, 0 };
-				else
-					result = {};
+				result = vec3f{ 0, down, 0 };
 			}
 
 
 			if (front > 0 && (front < bestDist || bestDist < 0))
 			{
 				bestDist = front;
-
-				if (!world.block_at(block_loc + types::loc{ 0, 0, 1 }))
-					result = -vec3f{ 0, 0, front };
-				else
-					result = {};
+				result = -vec3f{ 0, 0, front };
 			}
 
 			if (back > 0 && (back < bestDist || bestDist < 0))
 			{
 				bestDist = back;
-
-				if (!world.block_at(block_loc + types::loc{ 0, 0, -1 }))
- 					result = vec3f{ 0, 0, back };
-				else
-					result = {};
+ 				result = vec3f{ 0, 0, back };
 			}
 
 

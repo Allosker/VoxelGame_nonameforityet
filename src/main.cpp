@@ -24,6 +24,8 @@
 
 #include "rendering/GUI/shapes/rectangle.hpp"
 
+#include "world/entities/basic_entity.hpp"
+
 /* TODOLIST
 * 
 *	== Fix it so that when you scroll the mouse wheel swiftly, it doesn't break the hotbar
@@ -163,7 +165,9 @@ try
 	Render::Image imageTest{ ASSET_PATH"blocks/gui/block_inventory_atlas.png" };
 	Render::Texturing::Texture textureTest{ imageTest };
 
-	Render::Item3DMesh ItemTest{ imageTest, Render::GUI::toPixelUnits(4, itemTypeManager) };
+	Render::Item3DMesh ItemTest{ imageTest, Render::GUI::toPixelUnits(2, itemTypeManager) };
+	ItemTest.rotate(mpml::Angle<>::fromDegrees(90.f), { 1, 0, 0 });
+	ItemTest.setPosition({ 0, 0.01, 0 });
 
 
 	Render::GUI::Rectangle crossair{ {50, 50}, {0, 0}, types::Rect<types::uvs>{{0, 17}, {17, 17}} };
@@ -178,6 +182,9 @@ try
 	{
 		deltaTime = glfwGetTime() - lastFrame;
 		lastFrame = glfwGetTime();
+
+		deltaTime = std::min(deltaTime, 1.F / 30.f);
+
 
 		window.clearEvents();
 
@@ -404,10 +411,10 @@ try
 				{
 					if (window.isMouseButtonPressedOnce(Wai::Buttons::Mouse::Left))
 					{
-						world.set_voxel_at(ray_result->pos, 0);
+						/*auto id{ world.block_at(ray_result->pos)->id };
+						itemsTest.emplace_back(Render::Item3DMesh{ imageTest, Render::GUI::toPixelUnits(id, itemTypeManager) });*/
 
-						auto id{ world.block_at(ray_result->pos)->id };
-						itemsTest.emplace_back(Render::Item3DMesh{ imageTest, Render::GUI::toPixelUnits(id, itemTypeManager) });
+						world.set_voxel_at(ray_result->pos, 0);
 					}
 				}
 				else
@@ -461,16 +468,10 @@ try
 		glDisable(GL_CULL_FACE);
 
 		// draw test 
-
-		shader3Ditem.use();
-		//atlas_guiBlocks.bind();
-
-		/*model = mpml::scale(model, 0.5f);*/
-		model = mpml::rotate(model, mpml::Angle<>::fromDegrees(90.f), { 1, 0, 0 });
-		model = mpml::translate(model, { 0, 0.01, 0 });
-
-		shader3Ditem.setValue("model", model);
 		ItemTest.draw(shader3Ditem, textureTest);
+
+		/*for(auto& i : itemsTest)
+			i.draw(shader3Ditem, textureTest);*/
 
 		glDisable(GL_DEPTH_TEST);
 

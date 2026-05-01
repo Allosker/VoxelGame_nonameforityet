@@ -16,17 +16,19 @@
 #include "physics/collisions/basicHitbox.hpp"
 
 
-namespace Render::GUI
+namespace GameWorld::Entities
 {
 	
 	class BasicEntity
-		: protected Mesh
+		: public Render::Mesh
 	{
 	public:
 
 		// = Construction/Destruction
 
-		BasicEntity(const types::Rect<vec3f>& entity_rect, const types::Rect<vec3f>& hitbox, const types::Rect<types::uvs>& attributes);
+		BasicEntity(
+			const types::Rect<vec3f>& entity_rect, 
+			const types::Rect<vec3f>& hitbox);
 
 
 		BasicEntity(BasicEntity&& other) noexcept;
@@ -53,17 +55,13 @@ namespace Render::GUI
 
 		void setSize(vec3f size) noexcept;
 
-		void setRotation(mpml::Angle<> rotation) noexcept;
+		void setRotation(mpml::Angle<> rotation, const vec3f& axis) noexcept;
 
 		void move(vec3f offset) noexcept;
 
 		void scale(vec3f factor) noexcept;
 
-		void rotate(mpml::Angle<> theta) noexcept;
-
-
-
-		void updateSprite(const types::Rect<types::uvs>& attributes) noexcept;
+		void rotate(mpml::Angle<> theta, const vec3f& axis) noexcept;
 
 
 		// = Predicates
@@ -73,9 +71,9 @@ namespace Render::GUI
 		
 		// = Actors
 
-		void draw(const Shader& shader, GLenum mode = GL_TRIANGLES) noexcept;
+		void draw(const Render::Shader& shader, GLenum mode = GL_TRIANGLES) noexcept;
 
-		void draw_transparent(const Shader& shader, GLenum mode = GL_TRIANGLES) noexcept;
+		void draw_transparent(const Render::Shader& shader, GLenum mode = GL_TRIANGLES) noexcept;
 
 
 	private:
@@ -90,6 +88,7 @@ namespace Render::GUI
 		vec3f								m_origin				{};
 		vec3f								m_position				{};
 
+		vec3f								m_rotation_axis			{};
 		mpml::Angle<>						m_rotation				{ mpml::Angle<>::fromRadians(0) };
 
 		bool								m_transformNeedUpdate	{ false };

@@ -4,43 +4,20 @@
 // Construction/Destruction
 // =====================
 
-Render::GUI::BasicEntity::BasicEntity(const types::Rect<vec3f>& entity_rect, const types::Rect<vec3f>& hitbox, const types::Rect<types::uvs>& attributes)
-	: m_origin{ entity_rect.pos }, m_baseSize{ entity_rect.size }, m_scale { 1.f, 1.f },
-	m_hitbox{ hitbox.pos, -hitbox.size / 2.f, hitbox.size / 2.f },
-	Mesh(std::array<Data::Vertex2D, 6>
-{
-	Render::Data::Vertex2D
-	{
-		{0, 0},
-		attributes.pos
-	},
-	{
-		{m_baseSize.x, 0},
-		{attributes.pos + types::uvs{ attributes.size.x, 0}}
-	},
-	{
-		{m_baseSize.x, m_baseSize.y},
-		{attributes.pos + types::uvs{ attributes.size.x, attributes.size.y}}
-	},
-	{
-		{0, 0},
-		attributes.pos
-	},
-	{
-		{0, m_baseSize.y},
-		{attributes.pos + types::uvs{ 0, attributes.size.y}}
-	},
-	{
-		{m_baseSize.x, m_baseSize.y},
-		{attributes.pos + types::uvs{ attributes.size.x, attributes.size.y}}
-	},
-})
+GameWorld::Entities::BasicEntity::BasicEntity(
+	const types::Rect<vec3f>& entity_rect,
+	const types::Rect<vec3f>& hitbox)
+	:
+	  m_origin{ entity_rect.pos }
+	, m_baseSize{ entity_rect.size }
+	, m_scale { 1.f, 1.f }
+	, m_hitbox{ hitbox.pos, -hitbox.size / 2.f, hitbox.size / 2.f }
 {
 	if (m_origin.x != 0 || m_origin.y != 0)
 		m_transformNeedUpdate = true;
 }
 
-Render::GUI::BasicEntity::BasicEntity(BasicEntity&& other) noexcept
+GameWorld::Entities::BasicEntity::BasicEntity(BasicEntity&& other) noexcept
 	: Mesh(std::move(other))
 	, m_transformations		{ other.m_transformations }
 	, m_scale{ other.m_scale }
@@ -53,7 +30,7 @@ Render::GUI::BasicEntity::BasicEntity(BasicEntity&& other) noexcept
 {
 }
 
-Render::GUI::BasicEntity& Render::GUI::BasicEntity::operator=(BasicEntity&& other) noexcept
+GameWorld::Entities::BasicEntity& GameWorld::Entities::BasicEntity::operator=(BasicEntity&& other) noexcept
 {
 	if (this == &other)
 		return *this;
@@ -77,28 +54,19 @@ Render::GUI::BasicEntity& Render::GUI::BasicEntity::operator=(BasicEntity&& othe
 // Getters
 // =====================
 
-const mpml::Matrix4<float>& Render::GUI::BasicEntity::getTransformation() noexcept
+const mpml::Matrix4<float>& GameWorld::Entities::BasicEntity::getTransformation() noexcept
 {
 	// Recompute the combined transform if needed
 	if (m_transformNeedUpdate)
 	{
-		const float angle = -m_rotation.asRadians();
-		const float cosine = std::cos(angle);
-		const float sine = std::sin(angle);
-		const float sxc = m_scale.x * cosine;
-		const float syc = m_scale.y * cosine;
-		const float sxs = m_scale.x * sine;
-		const float sys = m_scale.y * sine;
-		const float tx = -m_origin.x * sxc - m_origin.y * sys + m_position.x;
-		const float ty = m_origin.x * sxs - m_origin.y * syc + m_position.y;
+		mpml::Matrix4<float> transforms{ mpml::Identity4<float> };
+		
+		transforms = mpml::scale(transforms, m_scale);
+		transforms = mpml::rotate(transforms, m_rotation, m_rotation_axis);
+		transforms = mpml::translate(transforms, m_position);
 
-		m_transformations = mpml::Matrix4<float>
-		{
-			sxc, -sys, 0.f, tx,
-			sxs, syc, 0.f, ty,
-			0.f, 0.f, 1.f, 0.f,
-			0.f, 0.f, 0.f, 1.f
-		};
+
+		m_transformations = transforms;
 
 		m_transformNeedUpdate = false;
 	}
@@ -111,78 +79,44 @@ const mpml::Matrix4<float>& Render::GUI::BasicEntity::getTransformation() noexce
 // Setters
 // =====================
 
-void Render::GUI::BasicEntity::setPosition(vec3f pos) noexcept
+void GameWorld::Entities::BasicEntity::setPosition(vec3f pos) noexcept
 {
 	m_position = pos;
 	m_transformNeedUpdate = true;
 }
 
-void Render::GUI::BasicEntity::setScale(vec3f scale) noexcept
+void GameWorld::Entities::BasicEntity::setScale(vec3f scale) noexcept
 {
 	m_scale = scale;
 	m_transformNeedUpdate = true;
 }
 
-void Render::GUI::BasicEntity::setSize(vec3f size) noexcept
+void GameWorld::Entities::BasicEntity::setSize(vec3f size) noexcept
 {
 	setScale({ size.x / m_baseSize.x, size.y / m_baseSize.y, size.z / m_baseSize.z });
 }
 
-void Render::GUI::BasicEntity::setRotation(mpml::Angle<> rotation) noexcept
+void GameWorld::Entities::BasicEntity::setRotation(mpml::Angle<> rotation, const vec3f& axis) noexcept
 {
 	m_rotation = rotation;
+	m_rotation_axis = axis;
 	m_transformNeedUpdate = true;
 }
 
 
-void Render::GUI::BasicEntity::move(vec3f offset) noexcept
+void GameWorld::Entities::BasicEntity::move(vec3f offset) noexcept
 {
 	setPosition(m_position + offset);
 }
 
-void Render::GUI::BasicEntity::scale(vec3f factor) noexcept
+void GameWorld::Entities::BasicEntity::scale(vec3f factor) noexcept
 {
 	setScale({ m_scale.x * factor.x,  m_scale.y * factor.y, m_scale.z * factor.z });
 }
 
-void Render::GUI::BasicEntity::rotate(mpml::Angle<> theta) noexcept
+void GameWorld::Entities::BasicEntity::rotate(mpml::Angle<> theta, const vec3f& axis) noexcept
 {
-	setRotation(mpml::Angle<>::fromRadians(m_rotation.asRadians() + theta.asRadians()));
-}
-
-// 3D CUBE
-void Render::GUI::BasicEntity::updateSprite(const types::Rect<types::uvs>& attributes) noexcept
-{
-	Mesh::updateBuffer<Render::Data::Vertex>
-		(
-			std::array<Data::Vertex, 6>
-	{
-	Render::Data::Vertex
-	{
-		{0, 0, 0},
-		attributes.pos
-	},
-	{
-		{m_baseSize.x, 0, 0},
-		{attributes.pos + types::uvs{ attributes.size.x, 0}}
-	},
-	{
-		{m_baseSize.x, m_baseSize.y},
-		{attributes.pos + types::uvs{ attributes.size.x, attributes.size.y}}
-	},
-	{
-		{0, 0, 0},
-		attributes.pos
-	},
-	{
-		{0, m_baseSize.y, 0},
-		{attributes.pos + types::uvs{ 0, attributes.size.y}}
-	},
-	{
-		{m_baseSize.x, m_baseSize.y, 0},
-		{attributes.pos + types::uvs{ attributes.size.x, attributes.size.y}}
-	},
-	}, sizeof(Render::Data::Vertex2D), GL_STREAM_DRAW);
+	setRotation(mpml::Angle<>::fromRadians(m_rotation.asRadians() + theta.asRadians()), axis);
 }
 
 
@@ -190,9 +124,9 @@ void Render::GUI::BasicEntity::updateSprite(const types::Rect<types::uvs>& attri
 // Predicates
 // =====================
 
-bool Render::GUI::BasicEntity::isWithin(const Physics::Collisions::BasicHitbox& container) const noexcept
+bool GameWorld::Entities::BasicEntity::isWithin(const Physics::Collisions::BasicHitbox& container) const noexcept
 {
-	return container.intersects(m_hitbox);
+	return m_hitbox.intersects(container);
 }
 
 
@@ -200,7 +134,7 @@ bool Render::GUI::BasicEntity::isWithin(const Physics::Collisions::BasicHitbox& 
 // Actors
 // =====================
 
-void Render::GUI::BasicEntity::draw(const Shader& shader, GLenum mode) noexcept
+void GameWorld::Entities::BasicEntity::draw(const Render::Shader& shader, GLenum mode) noexcept
 {
 	shader.use();
 
@@ -209,7 +143,7 @@ void Render::GUI::BasicEntity::draw(const Shader& shader, GLenum mode) noexcept
 	Mesh::draw(mode);
 }
 
-void Render::GUI::BasicEntity::draw_transparent(const Shader& shader, GLenum mode) noexcept
+void GameWorld::Entities::BasicEntity::draw_transparent(const Render::Shader& shader, GLenum mode) noexcept
 {
 	shader.use();
 

@@ -8,7 +8,7 @@
 
 #include "rendering/assets_managing/image.hpp"
 #include "rendering/assets_managing/texturing/texture.hpp"
-#include "rendering/mesh/mesh.hpp"
+#include "world/entities/basic_entity.hpp"
 
 #include "rendering/GUI/items/itemTypeManager.hpp"
 #include "world/items/item.hpp"
@@ -17,6 +17,7 @@ namespace Render
 {
 
 	class Item3DMesh
+		: public GameWorld::Entities::BasicEntity
 	{
 	public:
 
@@ -33,11 +34,11 @@ namespace Render
 		std::vector<Data::Vertex> create_data(const Image& item, const types::Rect<types::pixels>& uv_rect_pixels);
 
 
-		Mesh m_mesh{};
-
 		//static constexpr vec3f g_size_item{ 1, 1, 0.1 };
 		static constexpr vec3f g_size_item{ 33, 33, 16 };
 		static constexpr vec3f g_size_item_wall{ 1, 1, -1 };
+
+		static constexpr vec3f g_hitbox_item{ 0.2, 0.2, 0.2 };
 
 	};
 
