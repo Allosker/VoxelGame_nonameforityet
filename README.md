@@ -1,3 +1,4 @@
 # VoxelGame_nonameforityet
 
-miust say: this project uses freetype
+This product uses the FreeType library.
+FreeType is © The FreeType Project and is used under the FreeType License.
