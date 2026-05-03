@@ -91,6 +91,9 @@ target_compile_definitions(MYPROJECT PRIVATE SHADER_PATH="${SHADER_DIR}")
 set(ASSET_DIR "${CMAKE_SOURCE_DIR}/assets/")
 target_compile_definitions(MYPROJECT PRIVATE ASSET_PATH="${ASSET_DIR}")
 
+set(ASSET_DIR "${CMAKE_SOURCE_DIR}/fonts/")
+target_compile_definitions(MYPROJECT PRIVATE FONT_PATH="${ASSET_DIR}")
+
 
 # Include Libraries
  
@@ -126,4 +129,20 @@ FetchContent_MakeAvailable(MPML)
 
 target_link_libraries(MYPROJECT PRIVATE MPML::MPML)
 
+
+# FREETYPE - Font Rendering Lib
+cmake_minimum_required(VERSION 3.20)
+
+set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
+
+
+FetchContent_Declare(
+	freetype
+	GIT_REPOSITORY https://gitlab.freedesktop.org/freetype/freetype.git
+    GIT_TAG VER-2-13-2
+)
+ 
+FetchContent_MakeAvailable(freetype) 
+
+target_link_libraries(MYPROJECT PRIVATE freetype)
 

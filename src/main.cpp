@@ -49,6 +49,10 @@
 #include <fstream>
 
 
+#include <ft2build.h>
+#include FT_FREETYPE_H
+
+
 static void framebuffersize_callback(GLFWwindow* window, int width, int height) noexcept;
 
 static void mouse_callback(GLFWwindow* window, double xpos, double ypos) noexcept;
@@ -73,11 +77,163 @@ struct WorldOptions
 };
 
 
+struct Character
+{
+	GLuint id{};
+	vec2iu size{};
+	vec2i bearing{};
+	uint32 advance{};
+};
+
+
+class Text
+{
+public:
+
+	Text()
+	{
+		// Create Bitmap
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+		FT_Library ft;
+		if (FT_Init_FreeType(&ft))
+			throw std::runtime_error("ERROR::FREETYPE: Could not init FreeType Library");
+
+		FT_Face face;
+		if (FT_New_Face(ft, FONT_PATH"arial.ttf", 0, &face))
+			throw std::runtime_error("ERROR::FREETYPE: Failed to load");
+
+		FT_Set_Pixel_Sizes(face, 0, 48);
+
+		for (uint8 c{}; c < 128; c++)
+		{
+			if (FT_Load_Char(face, c, FT_LOAD_RENDER))
+			{
+				std::println("ERROR::FREETYPE: Failed to load Glyph");
+				continue;
+			}
+
+			GLuint texture{};
+
+			glGenTextures(1, &texture);
+			glBindTexture(GL_TEXTURE_2D, texture);
+			glTexImage2D(
+				GL_TEXTURE_2D,
+				0,
+				GL_RED,
+				face->glyph->bitmap.width,
+				face->glyph->bitmap.rows,
+				0,
+				GL_RED,
+				GL_UNSIGNED_BYTE,
+				face->glyph->bitmap.buffer
+			);
+
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+			Character character{
+				texture,
+				vec2iu{face->glyph->bitmap.width, face->glyph->bitmap.rows},
+				vec2i{face->glyph->bitmap_left, face->glyph->bitmap_top},
+				face->glyph->advance.x
+			};
+			characters.insert(std::pair<uint8, Character>{c, character});
+		}
+
+		FT_Done_Face(face);
+		FT_Done_FreeType(ft);
+		// create GPU data
+
+		glGenVertexArrays(1, &m_vao);
+		glGenBuffers(1, &m_vbo);
+
+		glBindVertexArray(m_vao);
+		glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
+
+		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 6 * 4, nullptr, GL_DYNAMIC_DRAW);
+		glEnableVertexAttribArray(0);
+
+		glVertexAttribPointer(0, 4, GL_FLOAT, false, 4 * sizeof(float), 0);
+
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glBindVertexArray(0);
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+	}
+
+	void setText(const std::string& str) noexcept { m_text = str; }
+
+	void draw(const Render::Shader& shader)
+	{
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); 
+
+		shader.use();
+
+		shader.setValue("texColor", m_color);
+
+		glBindVertexArray(m_vao);
+		vec2f tPos{ m_pos };
+
+		std::string::const_iterator c{};
+		for (c = m_text.begin(); c != m_text.end(); c++)
+		{
+			Character ch{ characters[*c] };
+
+			vec2f pos{ tPos.x + ch.bearing.x * m_scale, tPos.y - (ch.size.y - ch.bearing.y) * m_scale };
+			vec2f size{ ch.size.x * m_scale, ch.size.y * m_scale };
+
+			float vertices[6][4]
+			{
+				{ pos.x,			pos.y + size.y,		0, 0 },
+				{ pos.x,			pos.y,				0, 1 },
+				{ pos.x + size.x,	pos.y,				1, 1 },
+
+				{ pos.x,			pos.y + size.y,		0, 0 },
+				{ pos.x + size.x,	pos.y,				1, 1 },
+				{ pos.x + size.x,	pos.y + size.y,		1, 0 },
+			};
+
+			glBindTexture(GL_TEXTURE_2D, ch.id);
+
+			glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
+			glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
+			
+			glBindBuffer(GL_ARRAY_BUFFER, 0); 
+			glDrawArrays(GL_TRIANGLES, 0, 6);
+
+			tPos.x += (ch.advance >> 6) * m_scale;
+		}
+
+		glBindVertexArray(0);
+		glBindTexture(GL_TEXTURE_2D, 0);
+		glDisable(GL_BLEND);
+	}
+
+private:
+
+	std::string m_text{ "This is sample text" };
+	
+
+	std::map<uint8, Character> characters{};
+
+	vec3f m_color{ 0.5, 0.8f, 0.2f };
+	vec2f m_pos  {25.f, 25.f};
+	float m_scale{ 1.f };
+
+	GLuint m_vao{};
+	GLuint m_vbo{};
+
+};
+
 int main()
 try
 {
 	if (!glfwInit())
 		return -1;
+
 
 	glfwWindowHint(GLFW_CONTEXT_DEBUG, true);
 
@@ -125,10 +281,9 @@ try
 
 	Render::Shader shader2Drectangle{ SHADER_PATH"meshTexture2D.vert", SHADER_PATH"meshTexture2D.frag" };
 
+	Render::Shader shader2Dtext{ SHADER_PATH"text_render/text2D.vert", SHADER_PATH"text_render/text2D.frag" };
 
-	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_CULL_FACE);
-	//glEnable(GL_MULTISAMPLE);
+
 
 	Render::Texturing::Texture textureAtlas{ ASSET_PATH"blocks/world/atlas.png"};
 
@@ -175,7 +330,7 @@ try
 	
 	std::vector<Render::Item3DMesh> itemsTest;
 
-
+	Text text{};
 	float lastFrame{};
 	while (window.isOpen())
 	{
@@ -464,8 +619,6 @@ try
 		ch.useShader();
 		if(drawHighlight)
 			ch.draw();
-
-
 		
 
 		// draw test 
@@ -477,14 +630,18 @@ try
 		// UI
 		glDisable(GL_CULL_FACE);
 		glDisable(GL_DEPTH_TEST);
-
-		shader2Drectangle.use();
 		
 
 
 		mat4f proj2D{ mpml::orthographic_projection(Wai::Window::g_guiViewSize.x, Wai::Window::g_guiViewSize.y, 0.f, 1.f) };
 		//proj2D = mpml::translate(proj2D, { -Wai::Window::g_guiViewSize.x / 2, Wai::Window::g_guiViewSize.y / 2, 0 });
+
+		shader2Dtext.use();
+		shader2Dtext.setValue("proj", proj2D);
+
+		shader2Drectangle.use();
 		shader2Drectangle.setValue("proj", proj2D);
+		
 
 
 		crossAirAtlas.bind();
@@ -497,6 +654,7 @@ try
 
 		inventory.draw(shader2Drectangle, texture_guiInventory, texture_guiInventorySlot, atlas_guiBlocks, itemTypeManager);
 
+		text.draw(shader2Dtext);
 
 		glEnable(GL_CULL_FACE);
 
