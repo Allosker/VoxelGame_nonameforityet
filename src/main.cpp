@@ -79,7 +79,6 @@ struct WorldOptions
 
 struct Character
 {
-	GLuint id{};
 	vec2iu size{};
 	vec2i bearing{};
 	uint32 advance{};
@@ -105,6 +104,8 @@ public:
 
 		FT_Set_Pixel_Sizes(face, 0, 48);
 
+		std::vector<unsigned char> buffer{};
+
 		for (uint8 c{}; c < 128; c++)
 		{
 			if (FT_Load_Char(face, c, FT_LOAD_RENDER))
@@ -112,36 +113,41 @@ public:
 				std::println("ERROR::FREETYPE: Failed to load Glyph");
 				continue;
 			}
+			
+			buffer.insert(buffer.end(),
+				face->glyph->bitmap.buffer,
+				face->glyph->bitmap.buffer + static_cast<size_t>(face->glyph->bitmap.width) * static_cast<size_t>(face->glyph->bitmap.rows)
+				);
 
-			GLuint texture{};
-
-			glGenTextures(1, &texture);
-			glBindTexture(GL_TEXTURE_2D, texture);
-			glTexImage2D(
-				GL_TEXTURE_2D,
-				0,
-				GL_RED,
-				face->glyph->bitmap.width,
-				face->glyph->bitmap.rows,
-				0,
-				GL_RED,
-				GL_UNSIGNED_BYTE,
-				face->glyph->bitmap.buffer
-			);
-
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 			Character character{
-				texture,
 				vec2iu{face->glyph->bitmap.width, face->glyph->bitmap.rows},
 				vec2i{face->glyph->bitmap_left, face->glyph->bitmap_top},
 				face->glyph->advance.x
 			};
 			characters.insert(std::pair<uint8, Character>{c, character});
 		}
+
+		glGenTextures(1, &m_texture_id);
+		glBindTexture(GL_TEXTURE_2D, m_texture_id);
+		glTexImage2D(
+			GL_TEXTURE_2D,
+			0,
+			GL_RED,
+			m_texture_size.x,
+			m_texture_size.y,
+			0,
+			GL_RED,
+			GL_UNSIGNED_BYTE,
+			buffer.data()
+		);
+			
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
 
 		FT_Done_Face(face);
 		FT_Done_FreeType(ft);
@@ -171,10 +177,13 @@ public:
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); 
 
 		shader.use();
+		glBindTexture(GL_TEXTURE_2D, m_texture_id);
 
 		shader.setValue("texColor", m_color);
 
 		glBindVertexArray(m_vao);
+		
+
 		vec2f tPos{ m_pos };
 
 		std::string::const_iterator c{};
@@ -196,7 +205,7 @@ public:
 				{ pos.x + size.x,	pos.y + size.y,		1, 0 },
 			};
 
-			glBindTexture(GL_TEXTURE_2D, ch.id);
+			
 
 			glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
 			glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
@@ -221,10 +230,14 @@ private:
 
 	vec3f m_color{ 0.5, 0.8f, 0.2f };
 	vec2f m_pos  {25.f, 25.f};
+
+	vec2iu m_texture_size{};
 	float m_scale{ 1.f };
 
 	GLuint m_vao{};
 	GLuint m_vbo{};
+
+	GLuint m_texture_id{};
 
 };
 

@@ -28,7 +28,7 @@ namespace Render
 		std::vector<uint8>& getData() noexcept { return m_data; }
 		const std::vector<uint8>& getData() const noexcept { return m_data; }
 
-		vec2i getSize() const noexcept { return m_size; }
+		vec2iu getSize() const noexcept { return m_size; }
 
 		GLenum getFormat() const noexcept;
 
@@ -38,6 +38,8 @@ namespace Render
 		// = Setters
 
 		std::vector<uint8> crop(vec2iu subset_ori, vec2iu subset_size) noexcept;
+
+		void insert(vec2iu pos, const Image& other) noexcept;
 
 
 
@@ -52,7 +54,7 @@ namespace Render
 	private:
 
 		std::vector<uint8> m_data{};
-		vec2i m_size{};
+		vec2iu m_size{};
 
 		GLenum m_format{};
 		int32 m_nrChannels{};

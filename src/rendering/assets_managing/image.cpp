@@ -45,6 +45,23 @@ std::vector<uint8> Render::Image::crop(vec2iu subset_ori, vec2iu subset_size) no
 	return new_data;
 }
 
+void Render::Image::insert(vec2iu pos, const Image& other) noexcept
+{
+	vec2iu subset_place{ pos + other.getSize() };
+	if ((other.getSize().x > m_size.x || other.getSize().y > m_size.y) || (subset_place.x > m_size.x || subset_place.y > m_size.y))
+		throw std::runtime_error("ERROR::Subset out of bounds");
+
+	for (uint32 y{ pos.y }; y < subset_place.y; y++)
+	{
+		for (uint32 x{ pos.x }; x < subset_place.x; x++)
+		{
+			for (uint32 p{}; p < m_nrChannels; p++)
+				m_data[(x + y * m_size.x) * m_nrChannels + p] = other.getData()[(x + y * other.getSize().x) * m_nrChannels + p];
+		}
+	}
+
+}
+
 
 /*private*/ void Render::Image::load_image(const types::path& path)
 {
