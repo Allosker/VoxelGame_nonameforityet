@@ -22,6 +22,10 @@ namespace Render
 
 		Image(const types::path& path_to_image);
 
+		Image(vec2iu size, uint8* first, uint8* last);
+
+		Image(vec2iu allocate_size);
+
 
 		// = Getters 
 
@@ -34,13 +38,21 @@ namespace Render
 
 		int32 getBytesPerPixel() const noexcept { return m_nrChannels; }
 
+		uint8* data() noexcept { return m_data.data(); }
+		const uint8* data() const noexcept { return m_data.data(); }
+
 
 		// = Setters
+
+		void resize(vec2iu new_size) noexcept 
+		{
+			m_data.resize(new_size.x * new_size.y); 
+			m_size = new_size;
+		}
 
 		std::vector<uint8> crop(vec2iu subset_ori, vec2iu subset_size) noexcept;
 
 		void insert(vec2iu pos, const Image& other) noexcept;
-
 
 
 

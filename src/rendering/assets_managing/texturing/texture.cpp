@@ -20,7 +20,7 @@ Render::Texturing::Texture::Texture(const types::path& tex_path, Type type)
 }
 
 Render::Texturing::Texture::Texture(const Image& image, Type type)
-	: m_type{ type }, m_width{ image.getSize().x }, m_height{ image.getSize().y }
+	: m_type{ type }, m_width{ static_cast<int32>(image.getSize().x) }, m_height{ static_cast<int32>(image.getSize().y) }
 {
 	glGenTextures(1, &m_tex);
 	glBindTexture(GL_TEXTURE_2D, m_tex);

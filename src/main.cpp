@@ -79,6 +79,7 @@ struct WorldOptions
 
 struct Character
 {
+	vec2iu pos{};
 	vec2iu size{};
 	vec2i bearing{};
 	uint32 advance{};
@@ -104,23 +105,28 @@ public:
 
 		FT_Set_Pixel_Sizes(face, 0, 48);
 
-		std::vector<unsigned char> buffer{};
+		Render::Image bitmap{ vec2iu{48, 48 } };
 
-		for (uint8 c{}; c < 128; c++)
+		for (uint8 c{}; c < 1; c++)
 		{
 			if (FT_Load_Char(face, c, FT_LOAD_RENDER))
 			{
 				std::println("ERROR::FREETYPE: Failed to load Glyph");
 				continue;
 			}
-			
-			buffer.insert(buffer.end(),
+
+			Render::Image glyph{
+				{ face->glyph->bitmap.width, face->glyph->bitmap.rows },
 				face->glyph->bitmap.buffer,
 				face->glyph->bitmap.buffer + static_cast<size_t>(face->glyph->bitmap.width) * static_cast<size_t>(face->glyph->bitmap.rows)
-				);
+			};
+			
+			bitmap.insert({0, 0}, glyph);
+			
 
 
 			Character character{
+				vec2iu{c, size_glyphs },
 				vec2iu{face->glyph->bitmap.width, face->glyph->bitmap.rows},
 				vec2i{face->glyph->bitmap_left, face->glyph->bitmap_top},
 				face->glyph->advance.x
@@ -134,12 +140,12 @@ public:
 			GL_TEXTURE_2D,
 			0,
 			GL_RED,
-			m_texture_size.x,
-			m_texture_size.y,
+			bitmap.getSize().x,
+			bitmap.getSize().y,
 			0,
 			GL_RED,
 			GL_UNSIGNED_BYTE,
-			buffer.data()
+			bitmap.data()
 		);
 			
 
@@ -173,8 +179,8 @@ public:
 
 	void draw(const Render::Shader& shader)
 	{
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); 
+		/*glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); */
 
 		shader.use();
 		glBindTexture(GL_TEXTURE_2D, m_texture_id);
@@ -184,25 +190,26 @@ public:
 		glBindVertexArray(m_vao);
 		
 
-		vec2f tPos{ m_pos };
+		/*vec2f tPos{ m_pos };
 
 		std::string::const_iterator c{};
 		for (c = m_text.begin(); c != m_text.end(); c++)
 		{
 			Character ch{ characters[*c] };
 
-			vec2f pos{ tPos.x + ch.bearing.x * m_scale, tPos.y - (ch.size.y - ch.bearing.y) * m_scale };
+			vec2f pos{ tPos.x + ch.bearing.x * m_scale, tPos.x - (ch.size.y - ch.bearing.y) * m_scale };
 			vec2f size{ ch.size.x * m_scale, ch.size.y * m_scale };
+
 
 			float vertices[6][4]
 			{
-				{ pos.x,			pos.y + size.y,		0, 0 },
-				{ pos.x,			pos.y,				0, 1 },
-				{ pos.x + size.x,	pos.y,				1, 1 },
+				{ pos.x,			pos.y + size.y,			0,			0 },
+				{ pos.x,			pos.y,					0,			ch.pos.y },
+				{ pos.x + size.x,	pos.y,					ch.pos.x,	ch.pos.y },
 
-				{ pos.x,			pos.y + size.y,		0, 0 },
-				{ pos.x + size.x,	pos.y,				1, 1 },
-				{ pos.x + size.x,	pos.y + size.y,		1, 0 },
+				{ pos.x,			pos.y + size.y,			0,			0 },
+				{ pos.x + size.x,	pos.y,					ch.pos.x,	ch.pos.y },
+				{ pos.x + size.x,	pos.y + size.y,			ch.pos.x,	0 },
 			};
 
 			
@@ -214,7 +221,24 @@ public:
 			glDrawArrays(GL_TRIANGLES, 0, 6);
 
 			tPos.x += (ch.advance >> 6) * m_scale;
-		}
+		}*/
+
+		float vertices[6][4]
+		{
+			{ 0,			48,			0,	0 },
+			{ 0,			0,							0,	1 },
+			{ 48,0,				1,	1 },
+
+			{ 0,			48,			0,	0 },
+			{ 48,		0,			1,	1 },
+			{ 48,48,	1,	0 },
+		};
+
+		glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
+		glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
+
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
 
 		glBindVertexArray(0);
 		glBindTexture(GL_TEXTURE_2D, 0);
@@ -238,6 +262,12 @@ private:
 	GLuint m_vbo{};
 
 	GLuint m_texture_id{};
+
+	static constexpr size_t nb_glyphs{ 128 };
+	static constexpr size_t size_glyph_squared{ 512 * 512 };
+	static constexpr size_t size_glyphs{ 48 };
+
+	static constexpr size_t padding_pixels{ 2 };
 
 };
 
@@ -330,8 +360,12 @@ try
 	Render::GUI::Rectangle test{ texture_guiInventory.getSize(), {texture_guiInventory.getSize().x / 2, texture_guiInventory.getSize().y / 2}, types::Rect<types::uvs>{{}, texture_guiInventory.getSize()} };
 
 	// Test
-	Render::Image imageTest{ ASSET_PATH"blocks/gui/block_inventory_atlas.png" };
+	Render::Image imageTest{ ASSET_PATH"apple_test.png" };
+
 	Render::Texturing::Texture textureTest{ imageTest };
+
+	Render::GUI::Rectangle rectTest{ {500, 500}, {}, { {}, imageTest.getSize()} };
+
 
 	Render::Item3DMesh ItemTest{ imageTest, Render::GUI::toPixelUnits(2, itemTypeManager) };
 	ItemTest.setPosition({ 10, 50, 10 });
@@ -655,6 +689,8 @@ try
 		shader2Drectangle.use();
 		shader2Drectangle.setValue("proj", proj2D);
 		
+		/*textureTest.bind();
+		rectTest.draw(shader2Drectangle);*/
 
 
 		crossAirAtlas.bind();

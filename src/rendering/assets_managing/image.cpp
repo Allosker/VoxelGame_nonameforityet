@@ -6,6 +6,22 @@ Render::Image::Image(const types::path& path_to_image)
 	load_image(path_to_image);
 }
 
+Render::Image::Image(vec2iu size, uint8* first, uint8* last)
+	: m_size{size}
+{
+	m_data.insert(m_data.end(),
+		first,
+		last
+	);
+}
+
+Render::Image::Image(vec2iu allocate_size)
+	:m_size{ allocate_size }
+{
+	m_data.resize(allocate_size.x * allocate_size.y);
+}
+
+
 GLenum Render::Image::getFormat() const noexcept
 {
 	switch (m_nrChannels)
@@ -56,7 +72,7 @@ void Render::Image::insert(vec2iu pos, const Image& other) noexcept
 		for (uint32 x{ pos.x }; x < subset_place.x; x++)
 		{
 			for (uint32 p{}; p < m_nrChannels; p++)
-				m_data[(x + y * m_size.x) * m_nrChannels + p] = other.getData()[(x + y * other.getSize().x) * m_nrChannels + p];
+				m_data[(x + y * m_size.x) * m_nrChannels + p] = other.getData()[((x - pos.y) + (y - pos.x) * other.getSize().x) * m_nrChannels + p];
 		}
 	}
 
@@ -67,8 +83,10 @@ void Render::Image::insert(vec2iu pos, const Image& other) noexcept
 {
 	stbi_set_flip_vertically_on_load(true);
 
-	std::uint8_t* data{ stbi_load(path.string().c_str(), &m_size.x, &m_size.y, &m_nrChannels, 0) };
-	int32 size{ m_size.x * m_size.y * m_nrChannels };
+	vec2i size_truncated{};
+	std::uint8_t* data{ stbi_load(path.string().c_str(), &size_truncated.x, &size_truncated.y, &m_nrChannels, 0) };
+	m_size = size_truncated;
+	uint32 size{ m_size.x * m_size.y * m_nrChannels };
 
 	m_data.assign(data, data + size);
 
