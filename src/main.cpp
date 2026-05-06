@@ -46,11 +46,9 @@
 
 #include "rendering/GUI/Items/itemRenderer.hpp"
 
+#include "rendering/GUI/shapes/text.hpp"
+
 #include <fstream>
-
-
-#include <ft2build.h>
-#include FT_FREETYPE_H
 
 
 static void framebuffersize_callback(GLFWwindow* window, int width, int height) noexcept;
@@ -74,201 +72,6 @@ struct WorldOptions
 	bool instant_voxel_breaking{ false }, instant_voxel_placing{ false };
 
 	uint64 rm{ 0 }, rma{ 8 };
-};
-
-
-struct Character
-{
-	vec2iu pos{};
-	vec2iu size{};
-	vec2i bearing{};
-	uint32 advance{};
-};
-
-
-class Text
-{
-public:
-
-	Text()
-	{
-		// Create Bitmap
-		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-
-		FT_Library ft;
-		if (FT_Init_FreeType(&ft))
-			throw std::runtime_error("ERROR::FREETYPE: Could not init FreeType Library");
-
-		FT_Face face;
-		if (FT_New_Face(ft, FONT_PATH"arial.ttf", 0, &face))
-			throw std::runtime_error("ERROR::FREETYPE: Failed to load");
-
-		FT_Set_Pixel_Sizes(face, 0, 48);
-
-		Render::Image bitmap{ vec2iu{48, 48 } };
-
-		for (uint8 c{}; c < 1; c++)
-		{
-			if (FT_Load_Char(face, c, FT_LOAD_RENDER))
-			{
-				std::println("ERROR::FREETYPE: Failed to load Glyph");
-				continue;
-			}
-
-			Render::Image glyph{
-				{ face->glyph->bitmap.width, face->glyph->bitmap.rows },
-				face->glyph->bitmap.buffer,
-				face->glyph->bitmap.buffer + static_cast<size_t>(face->glyph->bitmap.width) * static_cast<size_t>(face->glyph->bitmap.rows)
-			};
-			
-			bitmap.insert({0, 0}, glyph);
-			
-
-
-			Character character{
-				vec2iu{c, size_glyphs },
-				vec2iu{face->glyph->bitmap.width, face->glyph->bitmap.rows},
-				vec2i{face->glyph->bitmap_left, face->glyph->bitmap_top},
-				face->glyph->advance.x
-			};
-			characters.insert(std::pair<uint8, Character>{c, character});
-		}
-
-		glGenTextures(1, &m_texture_id);
-		glBindTexture(GL_TEXTURE_2D, m_texture_id);
-		glTexImage2D(
-			GL_TEXTURE_2D,
-			0,
-			GL_RED,
-			bitmap.getSize().x,
-			bitmap.getSize().y,
-			0,
-			GL_RED,
-			GL_UNSIGNED_BYTE,
-			bitmap.data()
-		);
-			
-
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-
-		FT_Done_Face(face);
-		FT_Done_FreeType(ft);
-		// create GPU data
-
-		glGenVertexArrays(1, &m_vao);
-		glGenBuffers(1, &m_vbo);
-
-		glBindVertexArray(m_vao);
-		glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-
-		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 6 * 4, nullptr, GL_DYNAMIC_DRAW);
-		glEnableVertexAttribArray(0);
-
-		glVertexAttribPointer(0, 4, GL_FLOAT, false, 4 * sizeof(float), 0);
-
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		glBindVertexArray(0);
-		glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
-	}
-
-	void setText(const std::string& str) noexcept { m_text = str; }
-
-	void draw(const Render::Shader& shader)
-	{
-		/*glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); */
-
-		shader.use();
-		glBindTexture(GL_TEXTURE_2D, m_texture_id);
-
-		shader.setValue("texColor", m_color);
-
-		glBindVertexArray(m_vao);
-		
-
-		/*vec2f tPos{ m_pos };
-
-		std::string::const_iterator c{};
-		for (c = m_text.begin(); c != m_text.end(); c++)
-		{
-			Character ch{ characters[*c] };
-
-			vec2f pos{ tPos.x + ch.bearing.x * m_scale, tPos.x - (ch.size.y - ch.bearing.y) * m_scale };
-			vec2f size{ ch.size.x * m_scale, ch.size.y * m_scale };
-
-
-			float vertices[6][4]
-			{
-				{ pos.x,			pos.y + size.y,			0,			0 },
-				{ pos.x,			pos.y,					0,			ch.pos.y },
-				{ pos.x + size.x,	pos.y,					ch.pos.x,	ch.pos.y },
-
-				{ pos.x,			pos.y + size.y,			0,			0 },
-				{ pos.x + size.x,	pos.y,					ch.pos.x,	ch.pos.y },
-				{ pos.x + size.x,	pos.y + size.y,			ch.pos.x,	0 },
-			};
-
-			
-
-			glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-			glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
-			
-			glBindBuffer(GL_ARRAY_BUFFER, 0); 
-			glDrawArrays(GL_TRIANGLES, 0, 6);
-
-			tPos.x += (ch.advance >> 6) * m_scale;
-		}*/
-
-		float vertices[6][4]
-		{
-			{ 0,			48,			0,	0 },
-			{ 0,			0,							0,	1 },
-			{ 48,0,				1,	1 },
-
-			{ 0,			48,			0,	0 },
-			{ 48,		0,			1,	1 },
-			{ 48,48,	1,	0 },
-		};
-
-		glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-		glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
-
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		glDrawArrays(GL_TRIANGLES, 0, 6);
-
-		glBindVertexArray(0);
-		glBindTexture(GL_TEXTURE_2D, 0);
-		glDisable(GL_BLEND);
-	}
-
-private:
-
-	std::string m_text{ "This is sample text" };
-	
-
-	std::map<uint8, Character> characters{};
-
-	vec3f m_color{ 0.5, 0.8f, 0.2f };
-	vec2f m_pos  {25.f, 25.f};
-
-	vec2iu m_texture_size{};
-	float m_scale{ 1.f };
-
-	GLuint m_vao{};
-	GLuint m_vbo{};
-
-	GLuint m_texture_id{};
-
-	static constexpr size_t nb_glyphs{ 128 };
-	static constexpr size_t size_glyph_squared{ 512 * 512 };
-	static constexpr size_t size_glyphs{ 48 };
-
-	static constexpr size_t padding_pixels{ 2 };
-
 };
 
 int main()
@@ -377,7 +180,7 @@ try
 	
 	std::vector<Render::Item3DMesh> itemsTest;
 
-	Text text{};
+	Render::GUI::Text text{ FONT_PATH"pixelated.ttf" };
 	float lastFrame{};
 	while (window.isOpen())
 	{

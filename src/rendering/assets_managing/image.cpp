@@ -6,19 +6,16 @@ Render::Image::Image(const types::path& path_to_image)
 	load_image(path_to_image);
 }
 
-Render::Image::Image(vec2iu size, uint8* first, uint8* last)
-	: m_size{size}
+Render::Image::Image(vec2iu size, uint8* ptr, int32 channel, GLenum format)
+	: m_size{size}, m_nrChannels{channel}, m_format{format}
 {
-	m_data.insert(m_data.end(),
-		first,
-		last
-	);
+	m_data.insert(m_data.end(), ptr, ptr + size.x * size.y);
 }
 
-Render::Image::Image(vec2iu allocate_size)
-	:m_size{ allocate_size }
+Render::Image::Image(vec2iu allocate_size, int32 channel, GLenum format)
+	:m_size{ allocate_size }, m_nrChannels{ channel }, m_format{ format }
 {
-	m_data.resize(allocate_size.x * allocate_size.y);
+	m_data.resize(allocate_size.x * allocate_size.y * m_nrChannels);
 }
 
 
@@ -72,7 +69,7 @@ void Render::Image::insert(vec2iu pos, const Image& other) noexcept
 		for (uint32 x{ pos.x }; x < subset_place.x; x++)
 		{
 			for (uint32 p{}; p < m_nrChannels; p++)
-				m_data[(x + y * m_size.x) * m_nrChannels + p] = other.getData()[((x - pos.y) + (y - pos.x) * other.getSize().x) * m_nrChannels + p];
+				m_data[(x + y * m_size.x) * m_nrChannels + p] = other.getData()[((x - pos.x) + (y - pos.y) * other.getSize().x) * m_nrChannels + p];
 		}
 	}
 

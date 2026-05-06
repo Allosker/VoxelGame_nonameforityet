@@ -20,11 +20,20 @@ namespace Render
 	{
 	public:
 
+
 		Image(const types::path& path_to_image);
 
-		Image(vec2iu size, uint8* first, uint8* last);
+		Image(vec2iu size, uint8* ptr, int32 channel, GLenum format);
 
-		Image(vec2iu allocate_size);
+		Image(vec2iu allocate_size, int32 channel, GLenum format);
+
+
+		Image(Image&&) = default;
+		Image& operator=(Image&&) = default;
+
+		Image() = delete;
+		Image(Image&) = delete;
+		Image& operator=(Image&) = delete;
 
 
 		// = Getters 

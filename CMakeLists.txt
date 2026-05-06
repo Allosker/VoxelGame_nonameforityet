@@ -76,7 +76,7 @@ target_include_directories(MYPROJECT PUBLIC ${LIB_DIR})
 target_include_directories(MYPROJECT PUBLIC ${IMGUI_DIR})
 target_include_directories(MYPROJECT PUBLIC ${IMGUI_BACKENDS_DIR})
 target_include_directories(MYPROJECT PUBLIC ${IMPLOT_DIR})
-    
+      
 # Other Settings
   
 set_property(TARGET MYPROJECT PROPERTY CXX_STANDARD 20) 
