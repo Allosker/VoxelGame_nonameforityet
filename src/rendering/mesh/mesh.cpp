@@ -76,7 +76,6 @@ Render::Mesh::~Mesh() noexcept
 // Actors 
 // =====================
 
-
 void Render::Mesh::updateBuffer(const std::vector<vec3f>& positions, const std::vector<vec2f>& uvs, GLenum draw_mode)
 {
 	updateBuffer(makeVertices(positions, uvs), sizeof(Data::Vertex), draw_mode);

@@ -181,6 +181,7 @@ try
 	std::vector<Render::Item3DMesh> itemsTest;
 
 	Render::GUI::Text text{ FONT_PATH"pixelated.ttf" };
+
 	float lastFrame{};
 	while (window.isOpen())
 	{

@@ -1,9 +1,20 @@
 #include "text.hpp"
 
+
+
+// =====================
+// Construction/Destruction
+// =====================
+
 Render::GUI::Text::Text(const types::path& path)
 {
 	load_font(path);
 }
+
+
+// =====================
+// Actors
+// =====================
 
 void Render::GUI::Text::load_font(const types::path& path) noexcept
 {
@@ -39,15 +50,36 @@ void Render::GUI::Text::load_font(const types::path& path) noexcept
 	glGenBuffers(1, &m_vbo);
 
 	glBindVertexArray(m_vao);
+	glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
 
-	glVertexAttribPointer(0, 4, GL_FLOAT, false, 4 * sizeof(float), 0);
+	glVertexAttribPointer(0, 2, GL_FLOAT, false, sizeof(Data::Vertex2D), std::bit_cast<void*>(offsetof(Data::Vertex2D, pos)));
+	glEnableVertexAttribArray(0);
+
+	glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(Data::Vertex2D), std::bit_cast<void*>(offsetof(Data::Vertex2D, uv)));
+	glEnableVertexAttribArray(1);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
 }
 
-Render::Image Render::GUI::Text::create_bitmap(const types::path& path) noexcept
+void Render::GUI::Text::draw(const Render::Shader& shader)
+{
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	shader.use();
+	glBindTexture(GL_TEXTURE_2D, m_texture_id);
+
+	shader.setValue("textColor", m_color);
+
+	update_buffer();
+	glBindVertexArray(m_vao);
+	glDrawArrays(GL_TRIANGLES, 0, m_size_data);
+}
+
+
+/*private*/ Render::Image Render::GUI::Text::create_bitmap(const types::path& path) noexcept
 {
 	FT_Library ft;
 	if (FT_Init_FreeType(&ft))
@@ -90,7 +122,7 @@ Render::Image Render::GUI::Text::create_bitmap(const types::path& path) noexcept
 
 		Character character{
 			vec2iu{pos_btmp.x , pos_btmp.y },
-			vec2iu{face->glyph->bitmap.width, face->glyph->bitmap.rows},
+			glyph.getSize(),
 			vec2i{face->glyph->bitmap_left, face->glyph->bitmap_top},
 			face->glyph->advance.x
 		};
@@ -107,10 +139,42 @@ Render::Image Render::GUI::Text::create_bitmap(const types::path& path) noexcept
 	return bitmap;
 }
 
-void Render::GUI::Text::update_buffer(const std::vector<Data::Vertex2D>& data) noexcept
+/*private*/ void Render::GUI::Text::update_buffer() noexcept
 {
+	glBindVertexArray(m_vao);
 	glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
 
-	glBufferData(GL_ARRAY_BUFFER, sizeof(Data::Vertex2D), data.data(), GL_STREAM_DRAW);
-	glEnableVertexAttribArray(0);
+	std::vector<Data::Vertex2D> data{};
+
+	vec2f tPos{ m_pos };
+
+	std::string::const_iterator c{};
+	for (c = m_text.begin(); c != m_text.end(); c++)
+	{
+		Character ch{ characters[*c] };
+
+		vec2f pos{ tPos.x + ch.bearing.x * m_scale, tPos.y - (ch.size.y - ch.bearing.y) * m_scale };
+		vec2f size{ ch.size.x * m_scale, ch.size.y * m_scale };
+
+		data.insert(data.end(),
+			{
+				Data::Vertex2D
+				{ vec2f{pos.x, pos.y + size.y},						static_cast<vec2f>(ch.pos)													},
+				{ pos,												static_cast<vec2f>(vec2iu {ch.pos.x, ch.pos.y + ch.size.y})					},
+				{ vec2f{pos.x + size.x, pos.y},						static_cast<vec2f>(vec2iu {ch.pos.x + ch.size.x,	ch.pos.y + ch.size.y})	},
+
+				{ vec2f{pos.x,				pos.y + size.y},		static_cast<vec2f>(vec2iu {ch.pos.x,				ch.pos.y})				},
+				{ vec2f{pos.x + size.x,		pos.y},					static_cast<vec2f>(vec2iu {ch.pos.x + ch.size.x,	ch.pos.y + ch.size.y})	},
+				{ vec2f{pos.x + size.x,		pos.y + size.y},		static_cast<vec2f>(vec2iu {ch.pos.x + ch.size.x,	ch.pos.y})				},
+			});
+
+		tPos.x += (ch.advance >> 6) * m_scale;
+	}
+
+	m_size_data = data.size();
+
+	glBufferData(GL_ARRAY_BUFFER, sizeof(Data::Vertex2D) * data.size(), data.data(), GL_STREAM_DRAW);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
 }
