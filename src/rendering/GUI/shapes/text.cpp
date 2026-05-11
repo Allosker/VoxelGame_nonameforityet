@@ -7,8 +7,10 @@
 // =====================
 
 Render::GUI::Text::Text(const types::path& path)
+	: Transform3D({}, {})
 {
 	load_font(path);
+	update_buffer();
 }
 
 
@@ -72,8 +74,8 @@ void Render::GUI::Text::draw(const Render::Shader& shader)
 	glBindTexture(GL_TEXTURE_2D, m_texture_id);
 
 	shader.setValue("textColor", m_color);
+	shader.setValue("model", getTransformation());
 
-	update_buffer();
 	glBindVertexArray(m_vao);
 	glDrawArrays(GL_TRIANGLES, 0, m_size_data);
 }
@@ -146,15 +148,15 @@ void Render::GUI::Text::draw(const Render::Shader& shader)
 
 	std::vector<Data::Vertex2D> data{};
 
-	vec2f tPos{ m_pos };
+	vec2f tPos{};
 
 	std::string::const_iterator c{};
 	for (c = m_text.begin(); c != m_text.end(); c++)
 	{
 		Character ch{ characters[*c] };
 
-		vec2f pos{ tPos.x + ch.bearing.x * m_scale, tPos.y - (ch.size.y - ch.bearing.y) * m_scale };
-		vec2f size{ ch.size.x * m_scale, ch.size.y * m_scale };
+		vec2f pos{ tPos.x + ch.bearing.x * m_scale_text, tPos.y - (ch.size.y - ch.bearing.y) * m_scale_text };
+		vec2f size{ ch.size.x * m_scale_text, ch.size.y * m_scale_text };
 
 		data.insert(data.end(),
 			{
@@ -168,7 +170,7 @@ void Render::GUI::Text::draw(const Render::Shader& shader)
 				{ vec2f{pos.x + size.x,		pos.y + size.y},		static_cast<vec2f>(vec2iu {ch.pos.x + ch.size.x,	ch.pos.y})				},
 			});
 
-		tPos.x += (ch.advance >> 6) * m_scale;
+		tPos.x += (ch.advance >> 6) * m_scale_text;
 	}
 
 	m_size_data = data.size();

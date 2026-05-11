@@ -5,7 +5,7 @@
 // Basic class for Player, this manages everything about the player and offers a higher level of abstraction
 // ---------------------------------------
 
-#include "physics/collisions/basicHitbox.hpp"
+#include "transforms/collisions/basicHitbox.hpp"
 
 #include "rendering/utilities/camera.hpp"
 

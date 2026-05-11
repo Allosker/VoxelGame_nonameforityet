@@ -5,7 +5,7 @@
 // Basic entity, this entity can be rotated but its hitbox is basic and it cannot
 // ---------------------------------------
 
-#include "uHeaders/openGL.hpp"
+#include "uHeaders/opengl.hpp"
 
 #include "rendering/mesh/mesh.hpp"
 
@@ -13,14 +13,16 @@
 
 #include "rendering/assets_managing/utilities.hpp"
 
-#include "physics/collisions/basicHitbox.hpp"
+#include "transforms/collisions/basicHitbox.hpp"
+
+#include "transforms/transform3D.hpp"
 
 
 namespace GameWorld::Entities
 {
 	
 	class BasicEntity
-		: public Render::Mesh
+		: public Render::Mesh, public Transform3D
 	{
 	public:
 
@@ -39,31 +41,6 @@ namespace GameWorld::Entities
 		virtual ~BasicEntity() = default;
 
 
-		// = Getters
-
-		const mpml::Matrix4<float>& getTransformation() noexcept;
-
-		vec3f getSize() const noexcept { return { m_baseSize.x * m_scale.x, m_baseSize.y * m_scale.y, m_baseSize.z * m_scale.z }; }
-		const vec3f& getPosition() const noexcept { return m_position; }
-
-
-		// = Setters
-
-		void setPosition(vec3f pos) noexcept;
-
-		void setScale(vec3f scale) noexcept;
-
-		void setSize(vec3f size) noexcept;
-
-		void setRotation(const mpml::Quaternion<float>& q) noexcept;
-
-		void move(vec3f offset) noexcept;
-
-		void scale(vec3f factor) noexcept;
-
-		void rotate(const mpml::Quaternion<float>& q) noexcept;
-
-
 		// = Predicates
 		
 		bool isWithin(const Physics::Collisions::BasicHitbox& container) const noexcept;
@@ -78,19 +55,7 @@ namespace GameWorld::Entities
 
 	private:
 
-		mpml::Matrix4<float>				m_transformations		{ mpml::Identity4<float> };
-
 		Physics::Collisions::BasicHitbox	m_hitbox				{};
-
-
-		vec3f								m_scale					{};
-		vec3f								m_baseSize				{};
-		vec3f								m_origin				{};
-		vec3f								m_position				{};
-
-		mpml::Quaternion<float>				m_rotation				{ 1.f, 0, 0, 0 };
-
-		bool								m_transformNeedUpdate	{ false };
 
 	};
 

@@ -13,6 +13,8 @@
 
 #include "rendering/world_managing/data/basic/vertex.hpp"
 
+#include "transforms/transform3D.hpp"
+
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
@@ -32,6 +34,7 @@ struct Character
 
 
 class Text
+	: public Transform3D
 {
 public:
 
@@ -48,9 +51,8 @@ public:
 		update_buffer();
 	}
 
-	void setScale(float scale) noexcept { m_scale = scale; }
-
 	void setColor(const vec3f& color) noexcept { m_color = color; }
+	void setScaleText(float scale) noexcept { m_scale_text = scale; }
 
 
 	// = Actors
@@ -77,8 +79,7 @@ private:
 	std::map<uint8, Character> characters{};
 
 	vec3f m_color		{ 0.5, 0.8f, 0.2f };
-	vec2f m_pos			{};
-	float m_scale		{ 1.f };
+	float m_scale_text	{ 1.f };
 
 
 	size_t m_size_data{};

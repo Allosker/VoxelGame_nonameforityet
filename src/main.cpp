@@ -35,7 +35,7 @@
 
 #include "uHeaders/debug.hpp"
 
-#include "physics/collisions/basicHitbox.hpp"
+#include "transforms/collisions/basicHitbox.hpp"
 #include "world/players/player/player.hpp"
 
 #include "rendering/GUI/Items/itemRenderer.hpp"
@@ -163,7 +163,7 @@ try
 	Render::GUI::Rectangle test{ texture_guiInventory.getSize(), {texture_guiInventory.getSize().x / 2, texture_guiInventory.getSize().y / 2}, types::Rect<types::uvs>{{}, texture_guiInventory.getSize()} };
 
 	// Test
-	Render::Image imageTest{ ASSET_PATH"apple_test.png" };
+	Render::Image imageTest{ ASSET_PATH"blocks/gui/block_inventory_atlas.png" };
 
 	Render::Texturing::Texture textureTest{ imageTest };
 
@@ -489,6 +489,7 @@ try
 
 		shader2Dtext.use();
 		shader2Dtext.setValue("proj", proj2D);
+		shader2Dtext.setValue("view", mpml::Identity4<float>);
 
 		shader2Drectangle.use();
 		shader2Drectangle.setValue("proj", proj2D);
