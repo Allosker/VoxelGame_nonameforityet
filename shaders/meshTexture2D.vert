@@ -9,6 +9,6 @@ out vec2 UVs;
 
 void main()
 {
-	gl_Position = proj * model * vec4(aPos.xy, 0.0, 1.0);
+	gl_Position = proj * model * vec4(aPos, 0.0, 1.0);
 	UVs = aUVs;
 }

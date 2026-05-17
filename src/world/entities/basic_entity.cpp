@@ -6,9 +6,9 @@
 
 GameWorld::Entities::BasicEntity::BasicEntity(
 	const types::Rect<vec3f>& entity_rect,
-	const types::Rect<vec3f>& hitbox)
+	const vec3f& hitbox_size)
 	: Transform3D(entity_rect.pos, entity_rect.size)
-	, m_hitbox{ hitbox.pos, -hitbox.size / 2.f, hitbox.size / 2.f }
+	, m_hitbox{ entity_rect.pos, hitbox_size / 2.f, hitbox_size / 2.f }
 {
 	if (m_origin.x != 0 || m_origin.y != 0)
 		m_transformNeedUpdate = true;
@@ -28,6 +28,7 @@ GameWorld::Entities::BasicEntity& GameWorld::Entities::BasicEntity::operator=(Ba
 
 	Mesh::operator=(std::move(other));
 	Transform3D::operator=(other);
+	m_hitbox = other.m_hitbox;
 
 	return *this;
 }

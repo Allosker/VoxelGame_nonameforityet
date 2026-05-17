@@ -62,7 +62,7 @@ namespace GameWorld::Voxels
 		// No guards against invalid loc
 		GameWorld::Voxels::Chunk& chunk_at_loc(const types::loc& loc) noexcept;
 		// No guard against invalid loc
-		const GameWorld::Voxels::Chunk& const chunk_at_loc(const types::loc& loc) const noexcept;
+		const GameWorld::Voxels::Chunk& chunk_at_loc(const types::loc& loc) const noexcept;
 
 		// No guards against invalid loc
 		Render::Data::ChunkMesh& chunkmesh_at_loc(const types::loc& loc) noexcept;

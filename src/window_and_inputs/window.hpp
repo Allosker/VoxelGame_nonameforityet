@@ -12,8 +12,6 @@
 
 #include "rendering/utilities/camera.hpp"
 
-#include "world/players/player/player.hpp"
-
 #include <string>
 #include <array>
 #include <functional>
@@ -27,7 +25,7 @@ namespace Wai
 
 		// = Construction/Initialization
 
-		explicit Window(const mpml::Vector2<int>& size_, const std::string& name, GLFWmonitor* monitor, GLFWwindow* share);
+		explicit Window(const vec2i& size_, const std::string& name, GLFWmonitor* monitor, GLFWwindow* share);
 
 		~Window() noexcept;
 
@@ -53,7 +51,7 @@ namespace Wai
 
 		void onFramebufferResize(vec2i newSize) noexcept;
 
-		void onMouseMovement(vec2f pos, GameWorld::Player& player) noexcept;
+		void onMouseMovement(vec2f pos) noexcept;
 
 		void onMouseWheelScroll(vec2f delta) noexcept;
 
@@ -68,13 +66,12 @@ namespace Wai
 		const mpml::Vector2<int>& getSize() const noexcept { return m_size; }
 
 		std::uint8_t getKeyState(int key) const noexcept { return glfwGetKey(m_window, key); }
-
 		std::uint32_t getMods() const noexcept;
 
 
 		vec2f getMouseWheelDelta() const noexcept {  return m_mouseWheel_delta; }
-
 		vec2f getMousePos() const noexcept { return m_mousePos; }
+		const vec3f& getNewFrontDir() const noexcept { return m_newDir; }
 
 
 		// = Predicates
@@ -96,6 +93,8 @@ namespace Wai
 
 		bool isMouseButtonPressed(int button) const noexcept { return glfwGetMouseButton(m_window, button) == Buttons::Pressed; }
 		bool isMouseButtonReleased(int button) const noexcept { return glfwGetMouseButton(m_window, button) == Buttons::Released; }
+
+		bool hasDirChanged() const noexcept { return m_dirChangedThisFrame; }
 
 
 		// = Setters
@@ -122,6 +121,9 @@ namespace Wai
 
 		vec2f m_mouseWheel_delta{};
 		vec2f m_mousePos{};
+
+		vec3f m_newDir{};
+		bool m_dirChangedThisFrame{ false };
 
 		bool m_wheelScrolledThisFrame{ false };
 		bool m_cursorHidden{ true };

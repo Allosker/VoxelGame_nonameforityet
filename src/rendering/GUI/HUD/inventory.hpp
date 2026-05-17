@@ -29,9 +29,11 @@ namespace Render::GUI
 		Inventory(const Texturing::Texture& texture_inventory, const Texturing::Texture& texture_slot);
 
 
-		void update(const Wai::Window& window, const ItemTypeManager& itm, Hotbar& hotbar, vec2f point) noexcept;
+		void update(const Wai::Window& window, const ItemTypeManager& itm, Hotbar& hotbar) noexcept;
 
 		void newPairOfSlots(const Texturing::Texture& texture_slot) noexcept;
+
+		bool addItem(const GameWorld::Inventory::Item& item, int64 count) noexcept;
 
 
 		void enable(Wai::Window& window, Hotbar& hotbar) noexcept;

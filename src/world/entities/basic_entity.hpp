@@ -30,7 +30,7 @@ namespace GameWorld::Entities
 
 		BasicEntity(
 			const types::Rect<vec3f>& entity_rect, 
-			const types::Rect<vec3f>& hitbox);
+			const vec3f& hitbox_size);
 
 
 		BasicEntity(BasicEntity&& other) noexcept;
@@ -39,6 +39,20 @@ namespace GameWorld::Entities
 
 
 		virtual ~BasicEntity() = default;
+
+
+		// = Setters
+
+		void setPosition(const vec3f& pos) noexcept override
+		{
+			Transform3D::setPosition(pos); 
+			m_hitbox.setHitbox(pos);
+		}
+
+
+		// = Getters
+
+		const Physics::Collisions::BasicHitbox& getHitbox() const noexcept { return m_hitbox; }
 
 
 		// = Predicates

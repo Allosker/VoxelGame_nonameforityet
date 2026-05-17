@@ -62,25 +62,25 @@ namespace
 
 		// = Setters
 
-		void setPosition(const vec3f& pos) noexcept
+		virtual void setPosition(const vec3f& pos) noexcept
 		{
 			m_position = pos;
 			m_transformNeedUpdate = true;
 		}
 
-		void setScale(const vec3f& scale) noexcept
+		virtual void setScale(const vec3f& scale) noexcept
 		{
 			m_scale = scale;
 			m_transformNeedUpdate = true;
 		}
 
-		void setSize(const vec3f& size) noexcept
+		virtual void setSize(const vec3f& size) noexcept
 		{
 			setScale({ size.x / m_baseSize.x, size.y / m_baseSize.y, size.z / m_baseSize.z });
 			m_transformNeedUpdate = true;
 		}
 
-		void setRotation(const mpml::Quaternion<float>& q) noexcept
+		virtual void setRotation(const mpml::Quaternion<float>& q) noexcept
 		{
 			m_rotation = q;
 			m_transformNeedUpdate = true;

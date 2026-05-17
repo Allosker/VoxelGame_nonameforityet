@@ -41,14 +41,8 @@
 #include "rendering/GUI/Items/itemRenderer.hpp"
 #include "rendering/GUI/Items/itemTypeManager.hpp"
 
-#include "rendering/GUI/HUD/hotbar.hpp"
-#include "rendering/GUI/HUD/inventory.hpp"
-
-#include "rendering/GUI/Items/itemRenderer.hpp"
-
-#include "rendering/GUI/shapes/text.hpp"
-
-#include <fstream>
+#include "rendering/GUI/text/text.hpp"
+#include "rendering/GUI/text/font.hpp"
 
 
 static void framebuffersize_callback(GLFWwindow* window, int width, int height) noexcept;
@@ -56,9 +50,6 @@ static void framebuffersize_callback(GLFWwindow* window, int width, int height) 
 static void mouse_callback(GLFWwindow* window, double xpos, double ypos) noexcept;
 
 static void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) noexcept;
-
-
-GameWorld::Player player{};
 
 float deltaTime{};
 
@@ -119,68 +110,42 @@ try
 	ImGui_ImplGlfw_InitForOpenGL(window.get(), true);          // Second param install_callback=true will install GLFW callbacks and chain to existing ones.
 	ImGui_ImplOpenGL3_Init();
 
+	// Shaders 
 	Render::Shader shader3Dworld{ SHADER_PATH"shader.vert", SHADER_PATH"shader.frag" };
-
 	Render::Shader shader3Ditem{ SHADER_PATH"shader3Ditem.vert", SHADER_PATH"shader3Ditem.frag" };
-
 	Render::Shader shaderCubeDisplay{ SHADER_PATH"shader.vert", SHADER_PATH"shader.frag" };
-
 	Render::Shader shader2Drectangle{ SHADER_PATH"meshTexture2D.vert", SHADER_PATH"meshTexture2D.frag" };
-
 	Render::Shader shader2Dtext{ SHADER_PATH"text_render/text2D.vert", SHADER_PATH"text_render/text2D.frag" };
 
-
-
+	// Textures/Images
 	Render::Texturing::Texture textureAtlas{ ASSET_PATH"blocks/world/atlas.png"};
-
 	Render::Texturing::Texture crossAirAtlas{ ASSET_PATH"hud/crossair_atlas.png" };
 
-	Render::Texturing::Texture atlas_guiBlocks{ ASSET_PATH"blocks/gui/block_inventory_atlas.png" };
+	Render::Image atlas_image_guiBlocks{ ASSET_PATH"blocks/gui/block_inventory_atlas.png" };
+	Render::Texturing::Texture atlas_guiBlocks{ atlas_image_guiBlocks };
 
-	Render::Texturing::Texture texture_guiSlot{ ASSET_PATH"hud/slot.png" };
-
-
-	
-	Render::Texturing::Texture texture_guiInventorySlot{ ASSET_PATH"hud/slot_inventory.png" };
-	Render::Texturing::Texture texture_guiInventory{ ASSET_PATH"hud/inventory.png" };
-
-
-
-	Render::Utils::CubeHighlight ch;
-
+	// World
 	GameWorld::World world{};
-
-	Render::GUI::ItemTypeManager itemTypeManager{};
-
-	
 	WorldOptions WO{};
 
+	/// Utils
+	Render::Utils::CubeHighlight ch;
+	Render::GUI::ItemTypeManager itemTypeManager{};
 
-	Render::GUI::Hotbar hotbar{ texture_guiSlot, itemTypeManager };
-
-	Render::GUI::Inventory inventory{ texture_guiInventory, texture_guiInventorySlot };
-
-	Render::GUI::Rectangle test{ texture_guiInventory.getSize(), {texture_guiInventory.getSize().x / 2, texture_guiInventory.getSize().y / 2}, types::Rect<types::uvs>{{}, texture_guiInventory.getSize()} };
-
-	// Test
-	Render::Image imageTest{ ASSET_PATH"blocks/gui/block_inventory_atlas.png" };
-
-	Render::Texturing::Texture textureTest{ imageTest };
-
-	Render::GUI::Rectangle rectTest{ {500, 500}, {}, { {}, imageTest.getSize()} };
-
-
-	Render::Item3DMesh ItemTest{ imageTest, Render::GUI::toPixelUnits(2, itemTypeManager) };
-	ItemTest.setPosition({ 10, 50, 10 });
-
-
+	// GUI
 	Render::GUI::Rectangle crossair{ {50, 50}, {0, 0}, types::Rect<types::uvs>{{0, 17}, {17, 17}} };
 	crossair.setPosition({ -crossair.getSize().x / 2, -crossair.getSize().y / 2 });
 
-	
-	std::vector<Render::Item3DMesh> itemsTest;
 
-	Render::GUI::Text text{ FONT_PATH"pixelated.ttf" };
+	// Player
+	GameWorld::Player player{ ASSET_PATH"hud/slot.png", ASSET_PATH"hud/inventory.png", ASSET_PATH"hud/slot_inventory.png", itemTypeManager };
+	
+	// Test					 		
+	std::vector<Render::Item3DMesh> world_items{};
+
+	Render::GUI::Font font{ FONT_PATH"pixelated.ttf" };
+	Render::GUI::Text text{ font, "this is a test" };
+
 
 	float lastFrame{};
 	while (window.isOpen())
@@ -210,7 +175,7 @@ try
 					window.close();
 
 				if (vec2f delta = window.getMouseWheelDelta(); delta.y != 0)
-					hotbar.nextSlot(delta.y).id;
+					player.getHotbar().nextSlot(delta.y).id;
 
 
 				if (window.isKeyPressed(b::W))
@@ -229,9 +194,9 @@ try
 				if (window.isKeyPressed(b::Left_shift))
 					player.move(Player::Downward, deltaTime);
 
-				if(!player.attributes.flying)
+				if(!player.attributes.flags.flying)
 				{
-					if (window.isKeyPressedOnce(b::Space))
+					if (window.isKeyPressedOnce(b::Space) && player.getVelocity().y == 0)
 						player.move(Player::Upward, deltaTime);
 				}
 				else
@@ -239,22 +204,13 @@ try
 						player.move(Player::Upward, deltaTime);
 
 				if (window.isKeyPressedOnce(b::Tab))
-					inventory.process(window, hotbar);
+					player.getInventory().process(window, player.getHotbar());
 
 				if (window.isKeyPressedOnce(b::E))
 					world.update(player.getPos(), true);
 
-				if (window.isKeyPressedOnce(b::P))
-					hotbar.newPairOfSlots(texture_guiSlot);
-
-				if (window.isKeyPressedOnce(b::O))
-					inventory.newPairOfSlots(texture_guiInventorySlot);
-
 				if (window.isKeyPressedOnce(b::M))
-					hotbar.disable();
-
-				if (window.isKeyPressedOnce(b::L))
-					hotbar.enable();
+					text.setText(std::format("Hey, delta time: {}", deltaTime));
 
 				/*if (window.isKeyPressedOnce(b::R))
 				{
@@ -290,8 +246,8 @@ try
 			ImGui::Text("Camera Pos	: %f %f %f", player.getPos().x, player.getPos().y, player.getPos().z);
 			ImGui::Text("Velocity	: %f %f %f", player.getVelocity().x, player.getVelocity().y, player.getVelocity().z);
 
-			ImGui::Checkbox("Flying", &player.attributes.flying);
-			ImGui::Checkbox("Ghost ", &player.attributes.ghost);
+			ImGui::Checkbox("Flying", &player.attributes.flags.flying);
+			ImGui::Checkbox("Ghost ", &player.attributes.flags.ghost);
 
 			if(const auto* cl{ world.chunk_at(player.getPos()) })
 			{
@@ -346,9 +302,9 @@ try
 			}*/
 
 
-			ImGui::SliderFloat("Player Speed   ", &player.attributes.speed, 0.0f, 500.0f);
-			ImGui::SliderFloat("Player MaxSpeed", &player.attributes.maxSpeed, 0.0f, 1000.f);
-			ImGui::SliderFloat("Player JUmpHeight", &player.attributes.jumpHeight, 0.0f, 1000.f);
+			ImGui::SliderFloat("Player Speed   ", &player.attributes.physics.speed, 0.0f, 500.0f);
+			ImGui::SliderFloat("Player MaxSpeed", &player.attributes.physics.maxSpeed, 0.0f, 1000.f);
+			ImGui::SliderFloat("Player JUmpHeight", &player.attributes.physics.jumpHeight, 0.0f, 1000.f);
 
 
 			ImGui::SliderScalar("Ray Distance", ImGuiDataType_U64, &WO.rayDist, &WO.rayDist_min, &WO.rayDist_max);
@@ -362,7 +318,6 @@ try
 		}
 
 		
-		inventory.update(window, itemTypeManager, hotbar, Wai::Window::toGUICoordinates(window, window.getMousePos()));
 		//std::println("{}", Wai::Window::toGUICoordinates(window, window.getMousePos()));
 
 		mat4f model{ mpml::Identity4<float> };
@@ -408,8 +363,8 @@ try
 				{
 					auto id{ world.block_at(ray_result->pos)->id };
 
-					hotbar.setCurrentSlot({ id }, itemTypeManager);
-					hotbar.setCurrentSlot({ id }, itemTypeManager);
+					player.getHotbar().setCurrentSlot({id}, itemTypeManager);
+					player.getHotbar().setCurrentSlot({ id }, itemTypeManager);
 				}
 
 				if (!WO.instant_voxel_breaking)
@@ -418,9 +373,10 @@ try
 					{
 						auto id{ world.block_at(ray_result->pos)->id };
 
-						itemsTest.emplace_back(Render::Item3DMesh{ imageTest, Render::GUI::toPixelUnits(id, itemTypeManager) });
-						itemsTest.back().rotate(mpml::Quaternion<float>::fromAxis(vec3f{1, 0, 0}, mpml::Angle<>::fromDegrees(90.f)));
-						itemsTest.back().setPosition(mpml::floor(ray_result->pos) + vec3f{ 0.5, 0.01, 0.5 });
+						world_items.emplace_back(Render::Item3DMesh{ atlas_image_guiBlocks, Render::GUI::toPixelUnits(id, itemTypeManager) });
+						world_items.back().setId(id);
+						world_items.back().rotate(mpml::Quaternion<float>::fromAxis(vec3f{1, 0, 0}, mpml::Angle<>::fromDegrees(90.f)));
+						world_items.back().setPosition(mpml::floor(ray_result->pos) + vec3f{ 0.5, 0.01, 0.5 });
 
 						world.set_voxel_at(ray_result->pos, 0);
 					}
@@ -434,19 +390,34 @@ try
 				if (!WO.instant_voxel_placing)
 				{
 					if (window.isMouseButtonPressedOnce(Wai::Buttons::Mouse::Right))
-						world.set_voxel_at(ray_result->pos + ray_result->normal, hotbar.getSelectedItem().id);
+						world.set_voxel_at(ray_result->pos + ray_result->normal, player.getHotbar().getSelectedItem().id);
 				}
 				else
 				{
 					if (window.isMouseButtonPressed(Wai::Buttons::Mouse::Right))
-						world.set_voxel_at(ray_result->pos + ray_result->normal, hotbar.getSelectedItem().id);
+						world.set_voxel_at(ray_result->pos + ray_result->normal, player.getHotbar().getSelectedItem().id);
 				}
 
 				drawHighlight = true;
 			}
 			
+		if (window.hasDirChanged())
+			player.getCamera().front_dir = window.getNewFrontDir();
 
-		player.update(world, deltaTime);
+		player.update(window, world, itemTypeManager, deltaTime);
+
+
+		for (size_t i{}; i < world_items.size(); i++)
+			if (world_items.at(i).getHitbox().intersects(player.getHitbox()))
+			{
+				if (!player.getInventory().addItem({ world_items.at(i).getId() }, 1))
+				{
+					if (player.getHotbar().addItem({ world_items.at(i).getId() }, 1))
+						world_items.erase(world_items.begin() + i);
+				}
+				else
+					world_items.erase(world_items.begin() + i);
+			}
 		
 
 		// Rendering
@@ -472,20 +443,16 @@ try
 			ch.draw();
 		
 
-		// draw test 
-		ItemTest.draw(shader3Ditem, textureTest);
-
-		for(auto& i : itemsTest)
-			i.draw(shader3Ditem, textureTest);
+		// World Items
+		for(auto& i : world_items)
+			i.draw(shader3Ditem, atlas_guiBlocks);
 
 		// UI
 		glDisable(GL_CULL_FACE);
 		glDisable(GL_DEPTH_TEST);
 		
-
-
+		// ortho mat
 		mat4f proj2D{ mpml::orthographic_projection(Wai::Window::g_guiViewSize.x, Wai::Window::g_guiViewSize.y, 0.f, 1.f) };
-		//proj2D = mpml::translate(proj2D, { -Wai::Window::g_guiViewSize.x / 2, Wai::Window::g_guiViewSize.y / 2, 0 });
 
 		shader2Dtext.use();
 		shader2Dtext.setValue("proj", proj2D);
@@ -494,21 +461,14 @@ try
 		shader2Drectangle.use();
 		shader2Drectangle.setValue("proj", proj2D);
 		
-		/*textureTest.bind();
-		rectTest.draw(shader2Drectangle);*/
-
-
+		//
 		crossAirAtlas.bind();
-
 		crossair.draw_transparent(shader2Drectangle);
 
-
-
-		hotbar.draw(shader2Drectangle, texture_guiSlot, atlas_guiBlocks, itemTypeManager);
-
-		inventory.draw(shader2Drectangle, texture_guiInventory, texture_guiInventorySlot, atlas_guiBlocks, itemTypeManager);
-
 		text.draw(shader2Dtext);
+
+
+		player.draw_attributes(shader2Drectangle, atlas_guiBlocks, itemTypeManager);
 
 		glEnable(GL_CULL_FACE);
 
@@ -555,7 +515,7 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos) noexcept
 	offset *= sensitivity;
 
 	if (!static_cast<Wai::Window*>(glfwGetWindowUserPointer(window))->isCursorHidden())
-		static_cast<Wai::Window*>(glfwGetWindowUserPointer(window))->onMouseMovement(offset, player);
+		static_cast<Wai::Window*>(glfwGetWindowUserPointer(window))->onMouseMovement(offset);
 
 	static_cast<Wai::Window*>(glfwGetWindowUserPointer(window))->onMouseCursorPosChange({ static_cast<float>(xpos), static_cast<float>(ypos) });
 }
@@ -564,6 +524,3 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) noexcep
 {
 	static_cast<Wai::Window*>(glfwGetWindowUserPointer(window))->onMouseWheelScroll({ static_cast<float>(xoffset), static_cast<float>(yoffset) });
 }
-
-
-

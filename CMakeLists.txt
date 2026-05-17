@@ -56,10 +56,10 @@ file(GLOB IMPLOT_FILES CMAKE_CONFIGURE_DEPENDS
 	"${IMPLOT_DIR}/*.cpp"
 	"${IMPLOT_DIR}/*.h"  
 	"${IMPLOT_DIR}/implot.h" 
-	"${IMPLOT_DIR}/implot_internal.h"
+	"${IMPLOT_DIR}/implot_inter nal.h"
 	"${IMPLOT_DIR}/implot.cpp"
 	"${IMPLOT_DIR}/implot_items.cpp"
-)  
+)   
  
 # Create Project     
 

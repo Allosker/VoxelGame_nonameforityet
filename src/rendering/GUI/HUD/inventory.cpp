@@ -12,7 +12,7 @@ Render::GUI::Inventory::Inventory(const Texturing::Texture& texture_inventory, c
 	m_moving_item.setScale(1.3);
 }
 
-void Render::GUI::Inventory::update(const Wai::Window& window, const ItemTypeManager& itm, Hotbar& hotbar, vec2f point) noexcept
+void Render::GUI::Inventory::update(const Wai::Window& window, const ItemTypeManager& itm, Hotbar& hotbar) noexcept
 {
 	if (!m_activated)
 		return;
@@ -23,6 +23,8 @@ void Render::GUI::Inventory::update(const Wai::Window& window, const ItemTypeMan
 	static bool wasWithinHotbar{ false };
 
 	bool isWithinHotbar{ false };
+
+	vec2f point{ Wai::Window::toGUICoordinates(window, window.getMousePos()) };
 
 	for (std::size_t i{}; i < m_slots.size(); i++)
 		if (m_slots[i].first.contains(point))
@@ -85,6 +87,21 @@ void Render::GUI::Inventory::newPairOfSlots(const Texturing::Texture& texture_sl
 {
 	if (m_slots.size() < g_max_nb_slots)
 		create_slots(texture_slot);
+}
+
+bool Render::GUI::Inventory::addItem(const GameWorld::Inventory::Item& item, int64 count) noexcept
+{
+	for (auto& [rect, i] : m_slots)
+	{
+		if (i.id == item.id || i.id == 0 && count >= 1)
+		{
+			i = item;
+			count -= 1;
+			return true;
+		}
+	}
+
+	return false;
 }
 
 void Render::GUI::Inventory::enable(Wai::Window& window, Hotbar& hotbar) noexcept

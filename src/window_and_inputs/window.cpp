@@ -5,7 +5,7 @@
 // Construction/Destruction
 // =====================
 
-Wai::Window::Window(const mpml::Vector2<int>& size_, const std::string& name, GLFWmonitor* monitor, GLFWwindow* share)
+Wai::Window::Window(const vec2i& size_, const std::string& name, GLFWmonitor* monitor, GLFWwindow* share)
 {
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
@@ -45,6 +45,7 @@ void Wai::Window::clearEvents() noexcept
 	updateMouseButtons();
 	m_mouseWheel_delta = vec2f{0};
 	m_wheelScrolledThisFrame = false;
+	m_dirChangedThisFrame = false;
 	glfwPollEvents();
 }
 
@@ -72,7 +73,7 @@ void Wai::Window::onFramebufferResize(vec2i newSize) noexcept
 	glViewport(0, 0, newSize.x, newSize.y);
 }
 
-void Wai::Window::onMouseMovement(vec2f offset, GameWorld::Player& player) noexcept
+void Wai::Window::onMouseMovement(vec2f offset) noexcept
 {
 	static float yaw{ -90 }, pitch{};
 
@@ -95,7 +96,8 @@ void Wai::Window::onMouseMovement(vec2f offset, GameWorld::Player& player) noexc
 	direction.y = -std::sin(radPitch);
 	direction.z = std::sin(radYaw) * cosPitch;
 
-	player.getCamera().front_dir = direction.normal();
+	m_newDir = direction.normal();
+	m_dirChangedThisFrame = true;
 }
 
 void Wai::Window::onMouseWheelScroll(vec2f delta) noexcept

@@ -56,6 +56,8 @@ namespace Render::GUI
 
 		void newPairOfSlots(const Render::Texturing::Texture& texture_slot) noexcept;
 
+		bool addItem(const GameWorld::Inventory::Item& item, int64 count) noexcept;
+
 		void disable() noexcept;
 		void enable() noexcept;
 

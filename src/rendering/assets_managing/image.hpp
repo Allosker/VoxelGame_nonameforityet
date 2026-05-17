@@ -6,7 +6,7 @@
 // ---------------------------------------
 
 #include "uHeaders/types.hpp"
-#include "uHeaders/opengl.hpp"*
+#include "uHeaders/opengl.hpp"
 
 #include "STB/stb_image.h"
 

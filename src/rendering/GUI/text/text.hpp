@@ -15,22 +15,10 @@
 
 #include "transforms/transform3D.hpp"
 
-#include <ft2build.h>
-#include FT_FREETYPE_H
-
-#include <map>
+#include "font.hpp"
 
 namespace Render::GUI
 {
-
-
-struct Character
-{
-	vec2iu	pos		{};
-	vec2iu	size	{};
-	vec2i	bearing	{};
-	uint32	advance	{};
-};
 
 
 class Text
@@ -40,12 +28,12 @@ public:
 
 	// = Construction/Destruction
 
-	Text(const types::path& path);
+	Text(const Font& font, std::string_view str, const vec3f& pos = {}, const vec3f& ori = {});
 
 
 	// = Setters
 
-	void setText(const std::string& str) noexcept
+	void setText(const std::string& str)
 	{
 		m_text = str;
 		update_buffer();
@@ -54,29 +42,36 @@ public:
 	void setColor(const vec3f& color) noexcept { m_color = color; }
 	void setScaleText(float scale) noexcept { m_scale_text = scale; }
 
+	void setFont(const Font& font)
+	{
+		p_font = &font;
+		update_buffer();
+	}
+
 
 	// = Actors
-
-	void load_font(const types::path& path) noexcept;
 
 	void draw(const Render::Shader& shader);
 
+	void reload()
+	{
+		update_buffer();
+	}
+
 
 private:
 
 	// = Actors
 
-	Image create_bitmap(const types::path& path) noexcept;
-
-	void update_buffer() noexcept;
+	void update_buffer();
 
 
 private:
 
 
-	std::string m_text{ "azerty" };
+	std::string m_text{};
 
-	std::map<uint8, Character> characters{};
+	const Font* p_font{ nullptr };
 
 	vec3f m_color		{ 0.5, 0.8f, 0.2f };
 	float m_scale_text	{ 1.f };
@@ -87,12 +82,7 @@ private:
 	GLuint m_vao{};
 	GLuint m_vbo{};
 
-	GLuint m_texture_id{};
-
-	static constexpr size_t nb_glyphs{ 128 };
-	static constexpr size_t size_bitmap{ 512 };
-
-	static constexpr size_t g_padding_pixels{ 2 };
+	
 
 };
 

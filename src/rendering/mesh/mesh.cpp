@@ -55,12 +55,16 @@ Render::Mesh& Render::Mesh::operator=(Mesh&& other) noexcept
 	if (this == &other)
 		return *this;
 
+	glDeleteBuffers(1, &m_vbo);
+	glDeleteVertexArrays(1, &m_vao);
+
 	m_vao			= other.m_vao;
 	m_vbo			= other.m_vbo;
 	m_nbVertices	= other.m_nbVertices;
 
 	other.m_vao = 0;
 	other.m_vbo = 0;
+	other.m_nbVertices = 0;
 
 	return *this;
 }

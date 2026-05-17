@@ -22,7 +22,7 @@ namespace Physics::Collisions
 		{ }
 
 		BasicHitbox(const vec3f& min_, const vec3f& max_)
-			: min{ min_ }, max{ max_ }
+			: min{ min_ }, max{ max_ }, realMin{ min_ }, realMax{ max_ }
 		{ }
 
 		BasicHitbox() noexcept = default;
@@ -107,6 +107,7 @@ namespace Physics::Collisions
 
 		vec3f min{};
 		vec3f max{};
+
 
 	private:
 

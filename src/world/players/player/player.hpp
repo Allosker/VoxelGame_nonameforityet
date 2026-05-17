@@ -9,7 +9,12 @@
 
 #include "rendering/utilities/camera.hpp"
 
+#include "rendering/shader.hpp"
+
 #include "world/world.hpp"
+
+#include "rendering/GUI/HUD/hotbar.hpp"
+#include "rendering/GUI/HUD/inventory.hpp"
 
 
 namespace GameWorld
@@ -34,14 +39,23 @@ namespace GameWorld
 
 		// = Construction/Destruction
 
+		Player(
+			const types::path& p_hotbarSlot,
+			const types::path& p_inv,
+			const types::path& p_slotInv,
+			const Render::GUI::ItemTypeManager& itm);
 
 		// = Actors
 
-		void update(const GameWorld::World& world, float deltaTime) noexcept;
+		void update(const Wai::Window& window, const GameWorld::World& world, const Render::GUI::ItemTypeManager& itm, float deltaTime) noexcept;
 
 		void updatePosition(const GameWorld::World& world, float deltaTime) noexcept;
 
 		void resolve_collisions(const GameWorld::World& world) noexcept;
+
+		void draw_attributes(const Render::Shader& shader,
+			const Render::Texturing::Texture& gui_block_atlas,
+			const Render::GUI::ItemTypeManager& itm) noexcept;
 
 
 		// = Mutators
@@ -53,38 +67,66 @@ namespace GameWorld
 
 		// = Getters
 
-		const vec3f& getVelocity() const noexcept;
+		const vec3f& getVelocity() const noexcept { return m_velocity; }
 
-		const vec3f& getPos() const noexcept;
+		const vec3f& getPos() const noexcept { return m_camera.pos; }
 
-		const Render::Utils::Camera& getCamera() const noexcept;
-		Render::Utils::Camera& getCamera() noexcept;
+		Physics::Collisions::BasicHitbox& getHitbox() noexcept { return m_hitbox; }
+		const Physics::Collisions::BasicHitbox& getHitbox() const noexcept { return m_hitbox; }
+
+		Render::Utils::Camera& getCamera() noexcept { return m_camera; }
+		const Render::Utils::Camera& getCamera() const noexcept { return m_camera; }
+
+		Render::GUI::Inventory& getInventory() noexcept { return m_inventory; }
+		const Render::GUI::Inventory& getInventory() const noexcept { return m_inventory; }
+
+		Render::GUI::Hotbar& getHotbar() noexcept { return m_hotbar; }
+		const Render::GUI::Hotbar& getHotbar() const noexcept { return m_hotbar; }
 
 
 	public:
 
 		struct
 		{
-			float speed{ 20.f };
-			float maxSpeed{ 5.f };
-			float jumpHeight{ 10.f };
+			struct
+			{
+				float speed{ 20.f };
+				float maxSpeed{ 5.f };
+				float jumpHeight{ 10.f };
+				float friction{ 15.f };
+			} physics;
 
-			float friction{ 15.f };
+			struct
+			{
+				float sensitivity{ 0.1f };
+			} playability;
 
-			float sensitivity{ 0.1f };
-
-			bool moving{ false };
-			bool flying{ true };
-			bool ghost{ true };
+			struct
+			{
+				bool moving{ false };
+				bool flying{ true };
+				bool ghost{ true };
+			} flags;
 
 		} attributes;
 
-	private:
 
-		Render::Utils::Camera m_camera{};
-		Physics::Collisions::BasicHitbox m_hitbox{};
+	public:
 
-		vec3f m_velocity{};
+		
+
+		Render::Utils::Camera				m_camera{};
+		Physics::Collisions::BasicHitbox	m_hitbox{};
+
+		Render::Texturing::Texture			m_texHotbarSlot;
+		Render::Texturing::Texture			m_texInv;
+		Render::Texturing::Texture			m_texInvSlot;
+
+		Render::GUI::Inventory				m_inventory;
+		Render::GUI::Hotbar					m_hotbar;
+
+
+		vec3f								m_velocity{};
 
 	};
 

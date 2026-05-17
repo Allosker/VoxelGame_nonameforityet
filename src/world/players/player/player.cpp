@@ -1,49 +1,68 @@
 #include "player.hpp"
 
 
+
+// =====================
+// Construction/Initialization
+// =====================
+
+GameWorld::Player::Player(
+	const types::path& t_hotbarSlot,
+	const types::path& t_inv, 
+	const types::path& t_slotInv,
+	const Render::GUI::ItemTypeManager& itm)
+	: m_texHotbarSlot{ t_hotbarSlot }, m_texInv{ t_inv }, m_texInvSlot{ t_slotInv },
+	m_hotbar{ m_texHotbarSlot, itm }, m_inventory{ m_texInv, m_texInvSlot },
+	m_hitbox{ { 0.25, 1.75, 0.25 }, { 0.25, 0.20, 0.25 } }
+{
+}
+
+
 // =====================
 // Actors
 // =====================
 
-void GameWorld::Player::update(const GameWorld::World& world, float deltaTime) noexcept
+void GameWorld::Player::update(const Wai::Window& window, const GameWorld::World& world, const Render::GUI::ItemTypeManager& itm, float deltaTime) noexcept
 {
 	updatePosition(world, deltaTime);
 	resolve_collisions(world);
+
+	m_inventory.update(window, itm, m_hotbar);
 }
 
 void GameWorld::Player::updatePosition(const GameWorld::World& world, float deltaTime) noexcept
 {
-	if (!attributes.flying)
+	if (!attributes.flags.flying)
 		m_velocity.y += world.settings.gravity * deltaTime;
 
 
-	if (vec2f{ m_velocity.x, m_velocity.z }.length() > attributes.maxSpeed)
+	if (vec2f{ m_velocity.x, m_velocity.z }.length() > attributes.physics.maxSpeed)
 	{
 		const auto tempY{ m_velocity.y };
 
-		m_velocity = vec3f{ m_velocity.x, 0, m_velocity.z }.normal() * attributes.maxSpeed;
+		m_velocity = vec3f{ m_velocity.x, 0, m_velocity.z }.normal() * attributes.physics.maxSpeed;
 		m_velocity.y = tempY;
 	}
 
 
-	if (!attributes.moving)
+	if (!attributes.flags.moving)
 	{
-		m_velocity.x *= (1 - attributes.friction * deltaTime);
-		m_velocity.z *= (1 - attributes.friction * deltaTime);
+		m_velocity.x *= (1 - attributes.physics.friction * deltaTime);
+		m_velocity.z *= (1 - attributes.physics.friction * deltaTime);
 	}
 
-	if (!attributes.flying)
+	if (!attributes.flags.flying)
 		m_camera.pos += m_velocity * deltaTime;
 	else
 		m_camera.pos += vec3f{m_velocity.x, 0, m_velocity.z } * deltaTime;
+
+	m_hitbox.setHitbox(m_camera.pos);
 }
 
 void GameWorld::Player::resolve_collisions(const GameWorld::World& world) noexcept
 {
-	if (attributes.ghost)
+	if (attributes.flags.ghost)
 		return;
-
-	m_hitbox = { m_camera.pos, { 0.25, 1.75, 0.25 }, { 0.25, 0.20, 0.25 } };
 
 	std::vector<types::loc> camPoss;
 
@@ -83,6 +102,12 @@ void GameWorld::Player::resolve_collisions(const GameWorld::World& world) noexce
 		}
 }
 
+void GameWorld::Player::draw_attributes(const Render::Shader& shader, const Render::Texturing::Texture& gui_block_atlas, const Render::GUI::ItemTypeManager& itm) noexcept
+{
+	m_hotbar.draw(shader, m_texHotbarSlot, gui_block_atlas, itm);
+	m_inventory.draw(shader, m_texInv, m_texInvSlot, gui_block_atlas, itm);
+}
+
 
 // =====================
 // Mutators
@@ -90,7 +115,7 @@ void GameWorld::Player::resolve_collisions(const GameWorld::World& world) noexce
 
 void GameWorld::Player::move(const Direction& dir, float deltaTime) noexcept
 {
-	const auto speed{ attributes.speed * deltaTime };
+	const auto speed{ attributes.physics.speed * deltaTime };
 
 	switch (dir)
 	{
@@ -111,46 +136,22 @@ void GameWorld::Player::move(const Direction& dir, float deltaTime) noexcept
 		break;
 
 	case Downward:
-		if (attributes.flying)
-			m_camera.pos -= vec3f{0, attributes.jumpHeight, 0} * deltaTime;
+		if (attributes.flags.flying)
+			m_camera.pos -= vec3f{0, attributes.physics.jumpHeight, 0} * deltaTime;
 		break;
 
 	case Upward:
-		if (!attributes.flying)
-			m_velocity.y += attributes.jumpHeight;
+		if (!attributes.flags.flying)
+			m_velocity.y += attributes.physics.jumpHeight;
 		else
-			m_camera.pos += vec3f{ 0, attributes.jumpHeight, 0 } * deltaTime;
+			m_camera.pos += vec3f{ 0, attributes.physics.jumpHeight, 0 } * deltaTime;
 		break;
 	}
-	attributes.moving = true;
+	attributes.flags.moving = true;
 }
 
 void GameWorld::Player::resetMovement() noexcept
 {
-	attributes.moving = false;
+	attributes.flags.moving = false;
 }
 
-
-// =====================
-// Getters
-// =====================
-
-const vec3f& GameWorld::Player::getVelocity() const noexcept
-{
-	return m_velocity;
-}
-
-const vec3f& GameWorld::Player::getPos() const noexcept
-{
-	return m_camera.pos;
-}
-
-const Render::Utils::Camera& GameWorld::Player::getCamera() const noexcept
-{
-	return m_camera;
-}
-
-Render::Utils::Camera& GameWorld::Player::getCamera() noexcept
-{
-	return m_camera;
-}

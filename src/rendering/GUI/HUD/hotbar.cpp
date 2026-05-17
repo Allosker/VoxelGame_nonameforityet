@@ -75,6 +75,21 @@ void Render::GUI::Hotbar::newPairOfSlots(const Render::Texturing::Texture& textu
 	}
 }
 
+bool Render::GUI::Hotbar::addItem(const GameWorld::Inventory::Item& item, int64 count) noexcept
+{
+	for (auto& [rect, i] : m_slots)
+	{
+		if (i.id == item.id || i.id == 0 && count >= 1)
+		{
+			i = item;
+			count -= 1;
+			return true;
+		}
+	}
+
+	return false;
+}
+
 void Render::GUI::Hotbar::disable() noexcept
 {
 	m_cursor_changed = false;
