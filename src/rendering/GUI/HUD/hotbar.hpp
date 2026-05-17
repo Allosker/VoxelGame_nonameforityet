@@ -2,7 +2,7 @@
 // MIT
 // Allosker ------------------------------
 // =========+
-// Manages the horbar within the HUD and each item associated with it
+// Manages the hotbar within the HUD and each item associated with it
 // ---------------------------------------
 
 #include <optional>

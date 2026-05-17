@@ -404,6 +404,7 @@ try
 		if (window.hasDirChanged())
 			player.getCamera().front_dir = window.getNewFrontDir();
 
+
 		player.update(window, world, itemTypeManager, deltaTime);
 
 

@@ -55,6 +55,8 @@ namespace Render::GUI
 
 		static constexpr std::size_t g_max_nb_slots{ 12 };
 
+		static constexpr float g_scale_coef{ 1.4 };
+
 	private:
 
 		Rectangle m_inventory;

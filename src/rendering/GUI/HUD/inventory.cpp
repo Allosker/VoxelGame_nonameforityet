@@ -9,7 +9,7 @@ Render::GUI::Inventory::Inventory(const Texturing::Texture& texture_inventory, c
 	create_slots(texture_slot);
 	create_slots(texture_slot);
 
-	m_moving_item.setScale(1.3);
+	m_moving_item.setScale(g_scale_coef);
 }
 
 void Render::GUI::Inventory::update(const Wai::Window& window, const ItemTypeManager& itm, Hotbar& hotbar) noexcept
@@ -21,6 +21,7 @@ void Render::GUI::Inventory::update(const Wai::Window& window, const ItemTypeMan
 	bool isWithinSlot{ false };
 
 	static bool wasWithinHotbar{ false };
+	static bool clickedOnce{ false };
 
 	bool isWithinHotbar{ false };
 
@@ -30,7 +31,7 @@ void Render::GUI::Inventory::update(const Wai::Window& window, const ItemTypeMan
 		if (m_slots[i].first.contains(point))
 		{
 			m_cursor = i;
-			m_items_slots[i].setScale(1.3);
+			m_items_slots[i].setScale(g_scale_coef);
 			isWithinSlot = true;
 		}
 		else
@@ -40,7 +41,7 @@ void Render::GUI::Inventory::update(const Wai::Window& window, const ItemTypeMan
 		if (hotbar.getSlots()[i].first.contains(point))
 		{
 			m_cursor = i;
-			hotbar.getItemsRenders()[i].setScale(1.3);
+			hotbar.getItemsRenders()[i].setScale(g_scale_coef);
 			isWithinHotbar = true;
 			isWithinSlot = true;
 		}
@@ -48,39 +49,38 @@ void Render::GUI::Inventory::update(const Wai::Window& window, const ItemTypeMan
 			hotbar.getItemsRenders()[i].setScale(1);
 
 
-	if (window.isMouseButtonPressedOnce(Wai::Buttons::Mouse::Left))
+	if (window.isMouseButtonPressedOnce(Wai::Buttons::Mouse::Left) && !clickedOnce)
 	{
-		if (clicked_slot == -1 && isWithinSlot)
+		if (isWithinSlot)
 		{
 			clicked_slot = m_cursor;
+			clickedOnce = true;
 
-			// hotbar control
 			wasWithinHotbar = isWithinHotbar;
-		}
-		else if (clicked_slot != -1)
-		{
-			if (isWithinSlot)
-			{
-				m_moving_item.updateSprite({});
-				if (!isWithinHotbar)
-					m_slots[m_cursor].second = wasWithinHotbar ? hotbar.getSlots()[clicked_slot].second : m_slots[clicked_slot].second;
-				else
-					hotbar.getSlots()[m_cursor].second = wasWithinHotbar ? hotbar.getSlots()[clicked_slot].second : m_slots[clicked_slot].second;
-				clicked_slot = -1;
-			}
+
+			types::type_id current_id{ wasWithinHotbar ? hotbar.getSlots()[clicked_slot].second.id : m_slots[clicked_slot].second.id };
+			if (current_id)
+				m_moving_item.updateSprite(mapTextureUvs(current_id, itm));
 		}
 	}
 
-
-	if (clicked_slot != -1)
+	if (window.isMouseButtonReleased(Wai::Buttons::Mouse::Left) && clickedOnce)
 	{
-		if (wasWithinHotbar ? hotbar.getSlots()[clicked_slot].second.id : m_slots[clicked_slot].second.id)
+		m_moving_item.updateSprite({});
+		if (isWithinSlot)
 		{
-			m_moving_item.updateSprite(mapTextureUvs(wasWithinHotbar ? hotbar.getSlots()[clicked_slot].second.id : m_slots[clicked_slot].second.id, itm));
-
-			m_moving_item.setPosition(point);
+			if (!isWithinHotbar)
+				m_slots[m_cursor].second = wasWithinHotbar ? hotbar.getSlots()[clicked_slot].second : m_slots[clicked_slot].second;
+			else
+				hotbar.getSlots()[m_cursor].second = wasWithinHotbar ? hotbar.getSlots()[clicked_slot].second : m_slots[clicked_slot].second;
 		}
+
+		clickedOnce = false;
 	}
+
+
+	if (window.isMouseButtonPressed(Wai::Buttons::Mouse::Left))
+			m_moving_item.setPosition(point);
 }
 
 void Render::GUI::Inventory::newPairOfSlots(const Texturing::Texture& texture_slot) noexcept
