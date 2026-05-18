@@ -138,7 +138,7 @@ try
 
 
 	// Player
-	GameWorld::Player player{ ASSET_PATH"hud/slot.png", ASSET_PATH"hud/inventory.png", ASSET_PATH"hud/slot_inventory.png", itemTypeManager };
+	GameWorld::Player player{ ASSET_PATH"hud/slot.png", ASSET_PATH"hud/inventory.png", ASSET_PATH"hud/slot_inventory.png", itemTypeManager, FONT_PATH"pixelated.ttf" };
 	
 	// Test					 		
 	std::vector<Render::Item3DMesh> world_items{};
@@ -210,7 +210,7 @@ try
 					world.update(player.getPos(), true);
 
 				if (window.isKeyPressedOnce(b::M))
-					text.setText(std::format("Hey, delta time: {}", deltaTime));
+					text.setStr(std::format("Hey, delta time: {}", deltaTime));
 
 				/*if (window.isKeyPressedOnce(b::R))
 				{

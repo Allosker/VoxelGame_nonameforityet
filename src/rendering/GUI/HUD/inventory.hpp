@@ -17,6 +17,8 @@
 
 #include "rendering/assets_managing/texturing/texture.hpp"
 
+#include "item_utils_2D.hpp"
+
 
 namespace Render::GUI
 {
@@ -26,7 +28,7 @@ namespace Render::GUI
 	public:
 
 
-		Inventory(const Texturing::Texture& texture_inventory, const Texturing::Texture& texture_slot);
+		Inventory(const Texturing::Texture& texture_inventory, const Texturing::Texture& texture_slot, const Font* font_);
 
 
 		void update(const Wai::Window& window, const ItemTypeManager& itm, Hotbar& hotbar) noexcept;
@@ -61,10 +63,19 @@ namespace Render::GUI
 
 		Rectangle m_inventory;
 		Rectangle m_moving_item;
-		std::vector<std::pair<Rectangle, GameWorld::Inventory::Item>> m_slots;
-		std::vector<Rectangle> m_items_slots;
+		std::vector<Rectangle> m_slots;
+		std::vector<ItemStack2D> m_items_slots;
 
+		const Font* font;
+		
+		size_t m_clicked_slot{};
 		std::size_t m_cursor{};
+
+		bool m_wasWithinHotbar{ false };
+		bool m_clickedOnce{ false };
+
+		bool m_draw_moving{ false };
+		
 
 		bool m_activated{ false };
 

@@ -16,6 +16,8 @@
 
 #include "rendering/assets_managing/texturing/texture.hpp"
 
+#include "item_utils_2D.hpp"
+
 namespace Render::GUI
 {
 	class Hotbar
@@ -24,7 +26,7 @@ namespace Render::GUI
 
 		// = Construction/Destruction
 
-		Hotbar(const Render::Texturing::Texture& texture_slot, const ItemTypeManager& itemTypeManager);
+		Hotbar(const Render::Texturing::Texture& texture_slot, const ItemTypeManager& itemTypeManager, const Font* font);
 
 
 		// = Getters
@@ -34,11 +36,11 @@ namespace Render::GUI
 		std::optional<GameWorld::Inventory::Item> getSlot_at(std::size_t index) const noexcept;
 
 
-		GameWorld::Inventory::Item getSelectedItem() const noexcept { return m_slots[m_cursor_position].second; }
+		GameWorld::Inventory::Item getSelectedItem() const noexcept { return m_slots[m_cursor_position].stack_item; }
 
 
-		std::vector<std::pair<Rectangle, GameWorld::Inventory::Item>>& getSlots() noexcept { return m_slots; }
-		const std::vector<std::pair<Rectangle, GameWorld::Inventory::Item>>& getSlots() const noexcept { return m_slots; }
+		std::vector<ItemStack2D>& getSlots() noexcept { return m_slots; }
+		const std::vector<ItemStack2D>& getSlots() const noexcept { return m_slots; }
 
 		std::vector<Rectangle>& getItemsRenders() noexcept { return m_items_slots; }
 		const std::vector<Rectangle>& getItemsRenders() const noexcept { return m_items_slots; }
@@ -76,8 +78,10 @@ namespace Render::GUI
 
 	private:
 
-		std::vector<std::pair<Rectangle, GameWorld::Inventory::Item>> m_slots;
+		std::vector<ItemStack2D> m_slots;
 		std::vector<Rectangle> m_items_slots{};
+
+		const Font* font;
 
 
 		int64 m_cursor_position{};

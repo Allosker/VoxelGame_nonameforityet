@@ -30,6 +30,48 @@ Render::GUI::Text::Text(const Font& font, std::string_view str, const vec3f& pos
 	update_buffer();
 }
 
+Render::GUI::Text::Text(Text&& other) noexcept
+	: Transform3D{ other },
+	m_text{ other.m_text }, p_font{ other.p_font }, m_color{ other.m_color },
+	m_scale_text{ other.m_scale_text }, m_size_data{ other.m_size_data }, m_vao{ other.m_vao }, m_vbo{ other.m_vbo }
+{
+	other.m_text		= {};
+	other.p_font		= 0;
+	other.m_color		= 0;
+	other.m_scale_text	= 0;
+	other.m_size_data	= 0;
+	other.m_vao			= 0;
+	other.m_vbo			= 0;
+}
+
+Render::GUI::Text& Render::GUI::Text::operator=(Text&& other) noexcept
+{
+	if (this == &other)
+		return *this;
+
+	m_text			= other.m_text;
+	p_font			= other.p_font;
+	m_color			= other.m_color;
+	m_scale_text	= other.m_scale_text;
+	m_size_data		= other.m_size_data;
+	m_vao			= other.m_vao;
+	m_vbo			= other.m_vbo;
+
+	other.m_text = {};
+	other.p_font = 0;
+	other.m_color = 0;
+	other.m_scale_text = 0;
+	other.m_size_data = 0;
+	other.m_vao = 0;
+	other.m_vbo = 0;
+}
+
+Render::GUI::Text::~Text() noexcept
+{
+	glDeleteVertexArrays(1, &m_vao);
+	glDeleteBuffers(1, &m_vbo);
+}
+
 
 // =====================
 // Actors

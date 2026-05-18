@@ -72,24 +72,24 @@ namespace
 
 		// = Setters
 
-		void setPosition(vec2f pos) noexcept
+		virtual void setPosition(vec2f pos) noexcept
 		{
 			m_position = pos;
 			m_transformNeedUpdate = true;
 		}
 
-		void setScale(vec2f scale) noexcept
+		virtual void setScale(vec2f scale) noexcept
 		{
 			m_scale = scale;
 			m_transformNeedUpdate = true;
 		}
 
-		void setSize(vec2f size) noexcept
+		virtual void setSize(vec2f size) noexcept
 		{
 			setScale({ size.x / m_baseSize.x, size.y / m_baseSize.y });
 		}
 
-		void setRotation(mpml::Angle<> rotation) noexcept
+		virtual void setRotation(mpml::Angle<> rotation) noexcept
 		{
 			m_rotation = rotation;
 			m_transformNeedUpdate = true;

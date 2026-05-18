@@ -10,9 +10,10 @@ GameWorld::Player::Player(
 	const types::path& t_hotbarSlot,
 	const types::path& t_inv, 
 	const types::path& t_slotInv,
-	const Render::GUI::ItemTypeManager& itm)
-	: m_texHotbarSlot{ t_hotbarSlot }, m_texInv{ t_inv }, m_texInvSlot{ t_slotInv },
-	m_hotbar{ m_texHotbarSlot, itm }, m_inventory{ m_texInv, m_texInvSlot },
+	const Render::GUI::ItemTypeManager& itm,
+	const types::path& p_font)
+	: m_texHotbarSlot{ t_hotbarSlot }, m_texInv{ t_inv }, m_texInvSlot{ t_slotInv }, m_font{ p_font },
+	m_hotbar{ m_texHotbarSlot, itm, &m_font }, m_inventory{ m_texInv, m_texInvSlot, &m_font },
 	m_hitbox{ { 0.25, 1.75, 0.25 }, { 0.25, 0.20, 0.25 } }
 {
 }

@@ -48,7 +48,7 @@ namespace Render::GUI
 		
 		// = Actors
 
-		void draw(const Shader& shader, GLenum mode = GL_TRIANGLES) noexcept;
+		virtual void draw(const Shader& shader, GLenum mode = GL_TRIANGLES) noexcept;
 
 		void draw_transparent(const Shader& shader, GLenum mode = GL_TRIANGLES) noexcept;
 

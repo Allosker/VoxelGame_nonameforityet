@@ -43,7 +43,9 @@ namespace GameWorld
 			const types::path& p_hotbarSlot,
 			const types::path& p_inv,
 			const types::path& p_slotInv,
-			const Render::GUI::ItemTypeManager& itm);
+			const Render::GUI::ItemTypeManager& itm,
+			const types::path& p_font
+		);
 
 		// = Actors
 
@@ -121,6 +123,8 @@ namespace GameWorld
 		Render::Texturing::Texture			m_texHotbarSlot;
 		Render::Texturing::Texture			m_texInv;
 		Render::Texturing::Texture			m_texInvSlot;
+
+		Render::GUI::Font					m_font;
 
 		Render::GUI::Inventory				m_inventory;
 		Render::GUI::Hotbar					m_hotbar;

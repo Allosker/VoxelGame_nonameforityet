@@ -55,7 +55,8 @@ namespace Render::Data
 
 		void updateBuffers(const types::pos& camPos) noexcept;
 
-		void destroy() const noexcept;
+		// Free GPU ressources
+		void free() noexcept;
 
 
 	// = Getters
@@ -67,7 +68,7 @@ namespace Render::Data
 		size_t m_nbVertices{};
 		size_t m_nbVertices_Transparent{};
 
-		std::vector< std::pair<vec3f, std::array<Vertex, 6>>> m_transparent_mesh{};
+		std::vector<std::pair<vec3f, std::array<Vertex, 6>>> m_transparent_mesh{};
 		std::vector<Vertex> m_mesh{};
 
 		GLuint m_vao{};
@@ -76,7 +77,6 @@ namespace Render::Data
 		GLuint m_vaoTransparent{};
 		GLuint m_vboTransparent{};
 		
-		GameWorld::Voxels::ChunkGrid grid;
 
 	public:
 
@@ -84,8 +84,6 @@ namespace Render::Data
 		{
 			bool has_transparency{};
 			bool dirty{ true };
-
-			bool destroy{};
 		} flags;
 
 	public:

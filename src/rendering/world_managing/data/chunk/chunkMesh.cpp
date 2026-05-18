@@ -38,8 +38,25 @@ Render::Data::ChunkMesh::ChunkMesh() noexcept
 }
 
 Render::Data::ChunkMesh::ChunkMesh(ChunkMesh&& other) noexcept
+	: 
+	m_nbVertices				{ other.m_nbVertices },
+	m_nbVertices_Transparent	{ other.m_nbVertices_Transparent },
+	m_mesh						{ other.m_mesh },
+	m_transparent_mesh			{ other.m_transparent_mesh },
+	m_vao						{ other.m_vao },
+	m_vbo						{ other.m_vbo },
+	m_vaoTransparent			{ other.m_vaoTransparent },
+	m_vboTransparent			{ other.m_vboTransparent },
+	flags						{ other.flags.has_transparency, other.flags.dirty }
 {
-	*this = std::move(other);
+	other.m_nbVertices				= 0;
+	other.m_nbVertices_Transparent	= 0;
+	other.m_vao						= 0;
+	other.m_vbo						= 0;
+	other.m_vaoTransparent			= 0;
+	other.m_vboTransparent			= 0;
+	other.flags.has_transparency	= 0;
+	other.flags.dirty				= 0;
 }
 
 Render::Data::ChunkMesh& Render::Data::ChunkMesh::operator=(ChunkMesh&& other) noexcept
@@ -47,35 +64,30 @@ Render::Data::ChunkMesh& Render::Data::ChunkMesh::operator=(ChunkMesh&& other) n
 	if (this == &other)
 		return *this;
 
-	m_nbVertices = other.m_nbVertices;
-	m_vao = other.m_vao;
-	m_vbo = other.m_vbo;
-
-	m_nbVertices_Transparent = other.m_nbVertices_Transparent;
-	m_vaoTransparent = other.m_vaoTransparent;
-	m_vboTransparent = other.m_vboTransparent;
-
-	flags.dirty = other.flags.dirty;
-	flags.has_transparency = other.flags.has_transparency;
+	m_nbVertices				=	other.m_nbVertices;
+	m_nbVertices_Transparent	=	other.m_nbVertices_Transparent;
+	m_vao						=	other.m_vao;
+	m_vbo						=	other.m_vbo;
+	m_vaoTransparent			=	other.m_vaoTransparent;
+	m_vboTransparent			=	other.m_vboTransparent;
+	flags.has_transparency		=	other.flags.has_transparency;
+	flags.dirty					=	other.flags.dirty;
 
 	other.m_nbVertices = 0;
+	other.m_nbVertices_Transparent = 0;
 	other.m_vao = 0;
 	other.m_vbo = 0;
-
-	other.m_nbVertices_Transparent = 0;
 	other.m_vaoTransparent = 0;
 	other.m_vboTransparent = 0;
-
-	other.flags.dirty = false;
-	other.flags.has_transparency = false;
-	other.flags.destroy = true;
+	other.flags.has_transparency = 0;
+	other.flags.dirty = 0;
 
 	return *this;
-}
+}	
 
 Render::Data::ChunkMesh::~ChunkMesh() noexcept
 {
-	destroy();
+	free();
 }
 
 
@@ -250,10 +262,15 @@ void Render::Data::ChunkMesh::updateBuffers(const types::pos& camPos) noexcept
 	updateTransparentMeshBuffer(camPos);
 }
 
-void Render::Data::ChunkMesh::destroy() const noexcept
+void Render::Data::ChunkMesh::free() noexcept
 {
 	glDeleteBuffers(1, &m_vbo);
 	glDeleteVertexArrays(1, &m_vao);
 	glDeleteBuffers(1, &m_vboTransparent);
 	glDeleteVertexArrays(1, &m_vaoTransparent);
+
+	m_vbo = 0;
+	m_vao = 0;
+	m_vboTransparent = 0;
+	m_vaoTransparent = 0;
 }
