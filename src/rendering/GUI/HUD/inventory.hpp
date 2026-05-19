@@ -35,7 +35,7 @@ namespace Render::GUI
 
 		void newPairOfSlots(const Texturing::Texture& texture_slot) noexcept;
 
-		bool addItem(const GameWorld::Inventory::Item& item, int64 count) noexcept;
+		bool addItem(const GameWorld::Inventory::Item& item, int64 count, const ItemTypeManager& itm) noexcept;
 
 
 		void enable(Wai::Window& window, Hotbar& hotbar) noexcept;
@@ -57,16 +57,15 @@ namespace Render::GUI
 
 		static constexpr std::size_t g_max_nb_slots{ 12 };
 
-		static constexpr float g_scale_coef{ 1.4 };
-
 	private:
 
+		const Font* font;
+
 		Rectangle m_inventory;
-		Rectangle m_moving_item;
+		ItemStack2D m_moving_item;
 		std::vector<Rectangle> m_slots;
 		std::vector<ItemStack2D> m_items_slots;
 
-		const Font* font;
 		
 		size_t m_clicked_slot{};
 		std::size_t m_cursor{};

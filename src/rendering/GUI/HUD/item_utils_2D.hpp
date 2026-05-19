@@ -20,7 +20,7 @@ namespace Render::GUI
 			: Rectangle{ size, ori, attributes },
 			stack_item{ item }, text{ font }
 		{
-			text.setScale(0.5);
+			text.setScale(g_scale_rest);
 			text.setStr("10");
 		}
 
@@ -46,12 +46,18 @@ namespace Render::GUI
 			update_text();
 		}
 
+		void setPosition(vec2f pos) noexcept override
+		{
+			Transform2D::setPosition(pos);
+			text.setPosition(vec3f{ m_position - getSize() / 2.f, 0 });
+		}
+
 		void draw(const Shader& shader, GLenum mode = GL_TRIANGLES) noexcept override
 		{
 			Rectangle::draw_transparent(shader);
 
-			/*if (count == 0)
-				return;*/
+			if (count == 1)
+				return;
 
 			text.draw(shader);
 		}
@@ -59,15 +65,19 @@ namespace Render::GUI
 		void update_text() noexcept
 		{
 			text.setStr(std::to_string(count));
-			text.setPosition(vec3f{ m_position - getSize() / 2.f , 0 });
+			text.setPosition(vec3f{ m_position - getSize() / 2.f, 0 });
 		}
 
 		Text text;
 		// Common id for all items
 		GameWorld::Inventory::Item stack_item{};
-		int16 count{ 10 };
+		int16 count{};
 
 		int16 max_count{ 100 };
+
+
+		static constexpr float g_scale_rest{ 0.5 };
+		static constexpr float g_scale_hover{ 0.6 };
 	};
 
 

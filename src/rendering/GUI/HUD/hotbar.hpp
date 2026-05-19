@@ -36,14 +36,14 @@ namespace Render::GUI
 		std::optional<GameWorld::Inventory::Item> getSlot_at(std::size_t index) const noexcept;
 
 
-		GameWorld::Inventory::Item getSelectedItem() const noexcept { return m_slots[m_cursor_position].stack_item; }
+		GameWorld::Inventory::Item getSelectedItem() const noexcept { return m_items_slots[m_cursor_position].stack_item; }
 
 
-		std::vector<ItemStack2D>& getSlots() noexcept { return m_slots; }
-		const std::vector<ItemStack2D>& getSlots() const noexcept { return m_slots; }
+		std::vector<Rectangle>& getSlots() noexcept { return m_slots; }
+		const std::vector<Rectangle>& getSlots() const noexcept { return m_slots; }
 
-		std::vector<Rectangle>& getItemsRenders() noexcept { return m_items_slots; }
-		const std::vector<Rectangle>& getItemsRenders() const noexcept { return m_items_slots; }
+		std::vector<ItemStack2D>& getItems() noexcept { return m_items_slots; }
+		const std::vector<ItemStack2D>& getItems() const noexcept { return m_items_slots; }
 
 
 		// = Setters
@@ -58,7 +58,7 @@ namespace Render::GUI
 
 		void newPairOfSlots(const Render::Texturing::Texture& texture_slot) noexcept;
 
-		bool addItem(const GameWorld::Inventory::Item& item, int64 count) noexcept;
+		bool addItem(const GameWorld::Inventory::Item& item, int64 count, const ItemTypeManager& itm) noexcept;
 
 		void disable() noexcept;
 		void enable() noexcept;
@@ -70,16 +70,24 @@ namespace Render::GUI
 
 		void create_new_slots(const Render::Texturing::Texture& texture_slot) noexcept;
 
+
 	public:
 
 		static constexpr vec2f g_slot_size{ 80 };
 
 		static constexpr std::size_t g_max_nb_slots{ 10 };
 
+		static constexpr float g_scale_item_coef_hover{ 1.4 };
+		static constexpr float g_scale_item_coef_rest{ 0.9 };
+
+		static constexpr float g_scale_hotbar_coef_hover{ 1.3 };
+		static constexpr float g_scale_hotbar_coef_rest{ 0.9 };
+
+
 	private:
 
-		std::vector<ItemStack2D> m_slots;
-		std::vector<Rectangle> m_items_slots{};
+		std::vector<Rectangle> m_slots;
+		std::vector<ItemStack2D> m_items_slots{};
 
 		const Font* font;
 

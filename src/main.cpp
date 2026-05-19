@@ -29,7 +29,7 @@
 /* TODOLIST
 * 
 *	== Fix it so that when you scroll the mouse wheel swiftly, it doesn't break the hotbar
-*
+*	== Fix it so that bounding boxes adapt to the size of the object
 */
 
 
@@ -144,7 +144,6 @@ try
 	std::vector<Render::Item3DMesh> world_items{};
 
 	Render::GUI::Font font{ FONT_PATH"pixelated.ttf" };
-	Render::GUI::Text text{ font, "this is a test" };
 
 
 	float lastFrame{};
@@ -208,9 +207,6 @@ try
 
 				if (window.isKeyPressedOnce(b::E))
 					world.update(player.getPos(), true);
-
-				if (window.isKeyPressedOnce(b::M))
-					text.setStr(std::format("Hey, delta time: {}", deltaTime));
 
 				/*if (window.isKeyPressedOnce(b::R))
 				{
@@ -411,9 +407,9 @@ try
 		for (size_t i{}; i < world_items.size(); i++)
 			if (world_items.at(i).getHitbox().intersects(player.getHitbox()))
 			{
-				if (!player.getInventory().addItem({ world_items.at(i).getId() }, 1))
+				if (!player.getInventory().addItem({ world_items.at(i).getId() }, 1, itemTypeManager))
 				{
-					if (player.getHotbar().addItem({ world_items.at(i).getId() }, 1))
+					if (player.getHotbar().addItem({ world_items.at(i).getId() }, 1, itemTypeManager))
 						world_items.erase(world_items.begin() + i);
 				}
 				else
@@ -465,8 +461,6 @@ try
 		//
 		crossAirAtlas.bind();
 		crossair.draw_transparent(shader2Drectangle);
-
-		text.draw(shader2Dtext);
 
 
 		player.draw_attributes(shader2Drectangle, atlas_guiBlocks, itemTypeManager);
