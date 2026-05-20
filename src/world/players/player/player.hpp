@@ -16,6 +16,7 @@
 #include "rendering/GUI/HUD/hotbar.hpp"
 #include "rendering/GUI/HUD/inventory.hpp"
 
+#include "rendering/GUI/Items/itemTypeManager.hpp"
 
 namespace GameWorld
 {
@@ -55,7 +56,16 @@ namespace GameWorld
 
 		void resolve_collisions(const GameWorld::World& world) noexcept;
 
-		void draw_attributes(const Render::Shader& shader,
+		// Trasnform to pick up item with item chunk manager or smth
+		bool addItem(const GameWorld::Inventory::Item& item, int64 count, const Render::GUI::ItemTypeManager& itm) noexcept;
+
+		bool removeItem(const GameWorld::Inventory::Item& item, int64 count, const Render::GUI::ItemTypeManager& itm) noexcept;
+
+		const GameWorld::Inventory::Item& place_voxel() noexcept;
+
+		void draw_attributes(
+			const Render::Shader& shader,
+			const Render::Shader& text_shader,
 			const Render::Texturing::Texture& gui_block_atlas,
 			const Render::GUI::ItemTypeManager& itm) noexcept;
 

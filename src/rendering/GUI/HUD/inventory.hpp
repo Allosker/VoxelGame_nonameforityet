@@ -36,13 +36,14 @@ namespace Render::GUI
 		void newPairOfSlots(const Texturing::Texture& texture_slot) noexcept;
 
 		bool addItem(const GameWorld::Inventory::Item& item, int64 count, const ItemTypeManager& itm) noexcept;
+		bool removeItem(const GameWorld::Inventory::Item& item, int64 count) noexcept;
 
 
 		void enable(Wai::Window& window, Hotbar& hotbar) noexcept;
 		void disable(Wai::Window& window, Hotbar& hotbar) noexcept;
 		void process(Wai::Window& window, Hotbar& hotbar) noexcept;
 
-		void draw(const Shader& shader, const Texturing::Texture& texture_inventory, const Texturing::Texture& texture_slot, const Render::Texturing::Texture& texture_block_gui_atlas, const ItemTypeManager& itm) noexcept;
+		void draw(const Shader& shader, const Shader& text_shader, const Texturing::Texture& texture_inventory, const Texturing::Texture& texture_slot, const Render::Texturing::Texture& texture_block_gui_atlas, const ItemTypeManager& itm) noexcept;
 
 
 	private:

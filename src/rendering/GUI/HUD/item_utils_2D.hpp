@@ -52,14 +52,20 @@ namespace Render::GUI
 			text.setPosition(vec3f{ m_position - getSize() / 2.f, 0 });
 		}
 
-		void draw(const Shader& shader, GLenum mode = GL_TRIANGLES) noexcept override
+		void draw(const Shader& shader, const Shader& text_shader) noexcept
 		{
 			Rectangle::draw_transparent(shader);
 
 			if (count == 1)
 				return;
 
-			text.draw(shader);
+			text.draw(text_shader);
+		}
+
+		void disable() noexcept
+		{
+			stack_item.id = 0;
+			count = 0;
 		}
 
 		void update_text() noexcept

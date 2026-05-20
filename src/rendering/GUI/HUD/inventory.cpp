@@ -37,22 +37,23 @@ void Render::GUI::Inventory::update(const Wai::Window& window, const ItemTypeMan
 			m_items_slots[i].text.setScale(ItemStack2D::g_scale_rest);
 		}
 
-	for (std::size_t i{}; i < hotbar.getSlots().size(); i++)
-		if (hotbar.getSlots()[i].contains(point))
-		{
-			m_cursor = i;
-			hotbar.getItems()[i].setScale(Hotbar::g_scale_item_coef_hover);
-			hotbar.getItems()[i].text.setScale(ItemStack2D::g_scale_hover);
-			hotbar.getSlots()[i].setScale(Hotbar::g_scale_hotbar_coef_hover);	
-			isWithinHotbar = true;
-			isWithinSlot = true;
-		}
-		else
-		{
-			hotbar.getItems()[i].setScale(Hotbar::g_scale_item_coef_rest);
-			hotbar.getSlots()[i].setScale(Hotbar::g_scale_hotbar_coef_rest);
-			hotbar.getItems()[i].text.setScale(ItemStack2D::g_scale_rest);
-		}
+	if (!isWithinSlot)
+		for (std::size_t i{}; i < hotbar.getSlots().size(); i++)
+			if (hotbar.getSlots()[i].contains(point))
+			{
+				m_cursor = i;
+				hotbar.getItems()[i].setScale(Hotbar::g_scale_item_coef_hover);
+				hotbar.getItems()[i].text.setScale(ItemStack2D::g_scale_hover);
+				hotbar.getSlots()[i].setScale(Hotbar::g_scale_hotbar_coef_hover);	
+				isWithinHotbar = true;
+				isWithinSlot = true;
+			}
+			else
+			{
+				hotbar.getItems()[i].setScale(Hotbar::g_scale_item_coef_rest);
+				hotbar.getSlots()[i].setScale(Hotbar::g_scale_hotbar_coef_rest);
+				hotbar.getItems()[i].text.setScale(ItemStack2D::g_scale_rest);
+			}
 
 
 	if (window.isMouseButtonPressedOnce(Wai::Buttons::Mouse::Left) && !m_clickedOnce)
@@ -74,35 +75,62 @@ void Render::GUI::Inventory::update(const Wai::Window& window, const ItemTypeMan
 				m_moving_item.update_text();
 
 				m_draw_moving = true;
+
+
+				if (!isWithinHotbar)
+					m_items_slots[m_cursor].disable();
+				else
+					hotbar.getItems()[m_cursor].disable();
+
 			}
 		}
 	}
 
 	if (window.isMouseButtonReleased(Wai::Buttons::Mouse::Left) && m_clickedOnce)
 	{
+		const auto& new_item = m_moving_item;
+
 		if (isWithinSlot)
 		{
-			const auto& item = m_wasWithinHotbar ? hotbar.getItems()[m_clicked_slot] : m_items_slots[m_clicked_slot];
+			auto& slot_item = (isWithinHotbar ? hotbar.getItems()[m_cursor] : m_items_slots[m_cursor]);
+			
 
-			if (!isWithinHotbar)
+			if (slot_item.stack_item.id == 0 || slot_item.stack_item.id == new_item.stack_item.id)
 			{
-				m_items_slots[m_cursor].stack_item = item.stack_item;
-				m_items_slots[m_cursor].count = item.count;
-				m_items_slots[m_cursor].text.setPosition(item.text.getPosition());
-				m_items_slots[m_cursor].update_text();
+				slot_item.stack_item = new_item.stack_item;
+				slot_item.count += new_item.count;
+				slot_item.text.setPosition(new_item.text.getPosition());
+				slot_item.update_text();
 
-				if (m_items_slots[m_cursor].stack_item.id)
-					m_items_slots[m_cursor].updateSprite(mapTextureUvs(m_items_slots[m_cursor].stack_item.id, itm));
+				if (!isWithinHotbar && slot_item.stack_item.id)
+					slot_item.updateSprite(mapTextureUvs(slot_item.stack_item.id, itm));
 			}
+			// Make function for this
 			else
 			{
-				hotbar.getItems()[m_cursor].stack_item = item.stack_item;
-				hotbar.getItems()[m_cursor].count = item.count;
-				hotbar.getItems()[m_cursor].text.setPosition(item.text.getPosition());
-				hotbar.getItems()[m_cursor].update_text();
-			}
+				auto& old_slot_item = (m_wasWithinHotbar ? hotbar.getItems()[m_clicked_slot] : m_items_slots[m_clicked_slot]);
 
+				old_slot_item.stack_item = new_item.stack_item;
+				old_slot_item.count += new_item.count;
+				old_slot_item.text.setPosition(new_item.text.getPosition());
+				old_slot_item.update_text();
+
+				if (!m_wasWithinHotbar && old_slot_item.stack_item.id)
+					old_slot_item.updateSprite(mapTextureUvs(old_slot_item.stack_item.id, itm));
+			}
 			
+		}
+		else
+		{
+			auto& old_slot_item = (m_wasWithinHotbar ? hotbar.getItems()[m_clicked_slot] : m_items_slots[m_clicked_slot]);
+
+			old_slot_item.stack_item = new_item.stack_item;
+			old_slot_item.count += new_item.count;
+			old_slot_item.text.setPosition(new_item.text.getPosition());
+			old_slot_item.update_text();
+
+			if (!m_wasWithinHotbar && old_slot_item.stack_item.id)
+				old_slot_item.updateSprite(mapTextureUvs(old_slot_item.stack_item.id, itm));
 		}
 
 		m_clickedOnce = false;
@@ -138,6 +166,20 @@ bool Render::GUI::Inventory::addItem(const GameWorld::Inventory::Item& item, int
 	return false;
 }
 
+bool Render::GUI::Inventory::removeItem(const GameWorld::Inventory::Item& item, int64 count) noexcept
+{
+	for (auto& i : m_items_slots)
+	{
+		if (count >= 1 && (i.stack_item.id == item.id || i.stack_item.id == 0) && count <= i.count)
+		{
+			i.count -= count;
+			return true;
+		}
+	}
+
+	return false;
+}
+
 void Render::GUI::Inventory::enable(Wai::Window& window, Hotbar& hotbar) noexcept
 {
 	m_activated = true;
@@ -160,7 +202,7 @@ void Render::GUI::Inventory::process(Wai::Window& window, Hotbar& hotbar) noexce
 		enable(window, hotbar);
 }
 
-void Render::GUI::Inventory::draw(const Shader& shader, const Texturing::Texture& texture_inventory, const Texturing::Texture& texture_slot, const Render::Texturing::Texture& texture_block_gui_atlas, const ItemTypeManager& itm) noexcept
+void Render::GUI::Inventory::draw(const Shader& shader, const Shader& text_shader, const Texturing::Texture& texture_inventory, const Texturing::Texture& texture_slot, const Render::Texturing::Texture& texture_block_gui_atlas, const ItemTypeManager& itm) noexcept
 {
 	if (!m_activated)
 		return;
@@ -178,12 +220,12 @@ void Render::GUI::Inventory::draw(const Shader& shader, const Texturing::Texture
 		if (m_items_slots[i].stack_item.id != 0 && m_items_slots[i].count != 0)
 		{
 			texture_block_gui_atlas.bind();
-			m_items_slots[i].draw(shader);
+			m_items_slots[i].draw(shader, text_shader);
 		}
 
 	texture_block_gui_atlas.bind();
 	if (m_draw_moving)
-		m_moving_item.draw(shader);
+		m_moving_item.draw(shader, text_shader);
 }
 
 /*private*/ void Render::GUI::Inventory::create_slots(const Texturing::Texture& texture_slot) noexcept

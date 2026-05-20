@@ -59,11 +59,13 @@ namespace Render::GUI
 		void newPairOfSlots(const Render::Texturing::Texture& texture_slot) noexcept;
 
 		bool addItem(const GameWorld::Inventory::Item& item, int64 count, const ItemTypeManager& itm) noexcept;
+		bool removeItem(const GameWorld::Inventory::Item& item, int64 count) noexcept;
+
 
 		void disable() noexcept;
 		void enable() noexcept;
 
-		void draw(const Shader& shader, const Render::Texturing::Texture& texture_slot, const Render::Texturing::Texture& texture_block_gui_atlas, const ItemTypeManager& itm) noexcept;
+		void draw(const Shader& shader, const Shader& text_shader, const Render::Texturing::Texture& texture_slot, const Render::Texturing::Texture& texture_block_gui_atlas, const ItemTypeManager& itm) noexcept;
 
 
 	private:

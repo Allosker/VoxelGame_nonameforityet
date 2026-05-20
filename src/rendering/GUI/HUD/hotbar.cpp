@@ -39,6 +39,7 @@ std::optional<GameWorld::Inventory::Item> Render::GUI::Hotbar::getSlot_at(std::s
 void Render::GUI::Hotbar::setCurrentSlot(GameWorld::Inventory::Item item, const ItemTypeManager& itm) noexcept
 {
 	m_items_slots[m_cursor_position].stack_item = item;
+	m_items_slots[m_cursor_position].count = 1;
 }
 
 
@@ -94,6 +95,26 @@ bool Render::GUI::Hotbar::addItem(const GameWorld::Inventory::Item& item, int64 
 	return false;
 }
 
+bool Render::GUI::Hotbar::removeItem(const GameWorld::Inventory::Item& item, int64 count) noexcept
+{
+	auto& i = m_items_slots[m_cursor_position];
+	if (count <= i.count && (i.stack_item.id == item.id || i.stack_item.id == 0))
+	{
+		i.count -= count;
+
+		if (i.count <= 0)
+		{
+			i.stack_item.id = 0;
+			return true;
+		}
+
+		i.update_text();
+		return true;
+	}
+
+	return false;
+}
+
 void Render::GUI::Hotbar::disable() noexcept
 {
 	m_cursor_changed = false;
@@ -120,6 +141,7 @@ void Render::GUI::Hotbar::enable() noexcept
 
 void Render::GUI::Hotbar::draw(
 	const Shader& shader, 
+	const Shader& text_shader,
 	const Render::Texturing::Texture& texture_slot, const Render::Texturing::Texture& texture_block_gui_atlas, 
 	const ItemTypeManager& itm) noexcept
 {
@@ -158,7 +180,7 @@ void Render::GUI::Hotbar::draw(
 			m_items_slots[i].updateSprite(mapTextureUvs(m_items_slots[i].stack_item.id, itm));
 
 			texture_block_gui_atlas.bind();
-			m_items_slots[i].draw(shader);
+			m_items_slots[i].draw(shader, text_shader);
 		}
 
 		texture_slot.bind();

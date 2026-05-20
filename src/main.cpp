@@ -360,7 +360,6 @@ try
 					auto id{ world.block_at(ray_result->pos)->id };
 
 					player.getHotbar().setCurrentSlot({id}, itemTypeManager);
-					player.getHotbar().setCurrentSlot({ id }, itemTypeManager);
 				}
 
 				if (!WO.instant_voxel_breaking)
@@ -386,7 +385,7 @@ try
 				if (!WO.instant_voxel_placing)
 				{
 					if (window.isMouseButtonPressedOnce(Wai::Buttons::Mouse::Right))
-						world.set_voxel_at(ray_result->pos + ray_result->normal, player.getHotbar().getSelectedItem().id);
+						world.set_voxel_at(ray_result->pos + ray_result->normal, player.place_voxel().id);
 				}
 				else
 				{
@@ -403,19 +402,10 @@ try
 
 		player.update(window, world, itemTypeManager, deltaTime);
 
-
 		for (size_t i{}; i < world_items.size(); i++)
 			if (world_items.at(i).getHitbox().intersects(player.getHitbox()))
-			{
-				if (!player.getInventory().addItem({ world_items.at(i).getId() }, 1, itemTypeManager))
-				{
-					if (player.getHotbar().addItem({ world_items.at(i).getId() }, 1, itemTypeManager))
-						world_items.erase(world_items.begin() + i);
-				}
-				else
+				if (player.addItem({ world_items.at(i).getId() }, 1, itemTypeManager))
 					world_items.erase(world_items.begin() + i);
-			}
-		
 
 		// Rendering
 
@@ -463,7 +453,7 @@ try
 		crossair.draw_transparent(shader2Drectangle);
 
 
-		player.draw_attributes(shader2Drectangle, atlas_guiBlocks, itemTypeManager);
+		player.draw_attributes(shader2Drectangle, shader2Dtext, atlas_guiBlocks, itemTypeManager);
 
 		glEnable(GL_CULL_FACE);
 

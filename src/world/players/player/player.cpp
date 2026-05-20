@@ -103,10 +103,34 @@ void GameWorld::Player::resolve_collisions(const GameWorld::World& world) noexce
 		}
 }
 
-void GameWorld::Player::draw_attributes(const Render::Shader& shader, const Render::Texturing::Texture& gui_block_atlas, const Render::GUI::ItemTypeManager& itm) noexcept
+bool GameWorld::Player::addItem(const GameWorld::Inventory::Item& item, int64 count, const Render::GUI::ItemTypeManager& itm) noexcept
 {
-	m_hotbar.draw(shader, m_texHotbarSlot, gui_block_atlas, itm);
-	m_inventory.draw(shader, m_texInv, m_texInvSlot, gui_block_atlas, itm);
+	if (!m_hotbar.addItem({ item.id }, count, itm))
+	{
+		if (m_inventory.addItem({ item.id }, count, itm))
+			return true;
+	}
+	else
+		return true;
+}
+
+bool GameWorld::Player::removeItem(const GameWorld::Inventory::Item& item, int64 count, const Render::GUI::ItemTypeManager& itm) noexcept
+{
+	return false;
+}
+
+
+const GameWorld::Inventory::Item& GameWorld::Player::place_voxel() noexcept
+{
+	const auto& item = m_hotbar.getSelectedItem();
+	m_hotbar.removeItem(item, 1);
+	return item;
+}
+
+void GameWorld::Player::draw_attributes(const Render::Shader& shader, const Render::Shader& text_shader, const Render::Texturing::Texture& gui_block_atlas, const Render::GUI::ItemTypeManager& itm) noexcept
+{
+	m_hotbar.draw(shader, text_shader, m_texHotbarSlot, gui_block_atlas, itm);
+	m_inventory.draw(shader, text_shader, m_texInv, m_texInvSlot, gui_block_atlas, itm);
 }
 
 
