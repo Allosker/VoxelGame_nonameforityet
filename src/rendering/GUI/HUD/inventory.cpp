@@ -11,6 +11,7 @@ Render::GUI::Inventory::Inventory(const Texturing::Texture& texture_inventory, c
 	create_slots(texture_slot);
 
 	m_moving_item.setScale(Hotbar::g_scale_item_coef_hover);
+	m_moving_item.text.setScale(ItemStack2D::g_scale_text_hover);
 }
 
 void Render::GUI::Inventory::update(const Wai::Window& window, const ItemTypeManager& itm, Hotbar& hotbar) noexcept
@@ -28,13 +29,13 @@ void Render::GUI::Inventory::update(const Wai::Window& window, const ItemTypeMan
 		{
 			m_cursor = i;
 			m_items_slots[i].setScale(Hotbar::g_scale_item_coef_hover);
-			m_items_slots[i].text.setScale(ItemStack2D::g_scale_hover);
+			m_items_slots[i].text.setScale(ItemStack2D::g_scale_text_hover);
 			isWithinSlot = true;
 		}
 		else
 		{
 			m_items_slots[i].setScale(Hotbar::g_scale_item_coef_rest);
-			m_items_slots[i].text.setScale(ItemStack2D::g_scale_rest);
+			m_items_slots[i].text.setScale(ItemStack2D::g_scale_text_rest);
 		}
 
 	if (!isWithinSlot)
@@ -43,7 +44,7 @@ void Render::GUI::Inventory::update(const Wai::Window& window, const ItemTypeMan
 			{
 				m_cursor = i;
 				hotbar.getItems()[i].setScale(Hotbar::g_scale_item_coef_hover);
-				hotbar.getItems()[i].text.setScale(ItemStack2D::g_scale_hover);
+				hotbar.getItems()[i].text.setScale(ItemStack2D::g_scale_text_hover);
 				hotbar.getSlots()[i].setScale(Hotbar::g_scale_hotbar_coef_hover);	
 				isWithinHotbar = true;
 				isWithinSlot = true;
@@ -52,10 +53,10 @@ void Render::GUI::Inventory::update(const Wai::Window& window, const ItemTypeMan
 			{
 				hotbar.getItems()[i].setScale(Hotbar::g_scale_item_coef_rest);
 				hotbar.getSlots()[i].setScale(Hotbar::g_scale_hotbar_coef_rest);
-				hotbar.getItems()[i].text.setScale(ItemStack2D::g_scale_rest);
+				hotbar.getItems()[i].text.setScale(ItemStack2D::g_scale_text_rest);
 			}
 
-
+	// Set Moving Object
 	if (window.isMouseButtonPressedOnce(Wai::Buttons::Mouse::Left) && !m_clickedOnce)
 	{
 		if (isWithinSlot)
@@ -93,7 +94,8 @@ void Render::GUI::Inventory::update(const Wai::Window& window, const ItemTypeMan
 			{
 				slot_item.stack_item = m_moving_item.stack_item;
 				
-				if (auto extra = addItems(slot_item, m_moving_item.count))
+				// If there are extra items
+				if (auto extra = addItems(slot_item, m_moving_item.count) && m_clicked_slot != m_cursor)
 				{
 					slot_item.count = slot_item.max_count;
 					m_moving_item.count = extra;
@@ -107,7 +109,8 @@ void Render::GUI::Inventory::update(const Wai::Window& window, const ItemTypeMan
 				}
 				else
 				{
-					slot_item.count += m_moving_item.count;
+					if (m_clicked_slot != m_cursor)
+						slot_item.count += m_moving_item.count;
 
 					slot_item.text.setPosition(m_moving_item.text.getPosition());
 					slot_item.update_text();
@@ -123,7 +126,6 @@ void Render::GUI::Inventory::update(const Wai::Window& window, const ItemTypeMan
 				if (!isWithinHotbar && slot_item.stack_item.id)
 					slot_item.updateSprite(mapTextureUvs(slot_item.stack_item.id, itm));
 			}
-			// Make function for this
 			else
 				old_slot_item.shouldBeDrawn = true;
 		}
@@ -149,7 +151,7 @@ bool Render::GUI::Inventory::addItem(const GameWorld::Inventory::Item& item, uin
 {
 	for (auto& i : m_items_slots)
 	{
-		if (i.stack_item.id == item.id && (i.count + count) < i.max_count)
+		if (i.stack_item.id == item.id && (i.count + count) <= i.max_count)
 		{
 			i.stack_item = item;
 			i.updateSprite(mapTextureUvs(i.stack_item.id, itm));
@@ -163,7 +165,7 @@ bool Render::GUI::Inventory::addItem(const GameWorld::Inventory::Item& item, uin
 
 	for (auto& i : m_items_slots)
 	{
-		if (i.stack_item.id == 0 && (i.count + count) < i.max_count)
+		if (i.stack_item.id == 0 && (i.count + count) <= i.max_count)
 		{
 			i.stack_item = item;
 			i.updateSprite(mapTextureUvs(i.stack_item.id, itm));

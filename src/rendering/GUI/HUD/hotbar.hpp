@@ -12,7 +12,7 @@
 #include "rendering/GUI/shapes/rectangle.hpp"
 #include "window_and_inputs/window.hpp"
 
-#include "world/items/item.hpp"
+#include "world/entities/items/item.hpp"
 
 #include "rendering/assets_managing/texturing/texture.hpp"
 

@@ -6,7 +6,7 @@
 // ---------------------------------------
 
 #include "rendering/GUI/shapes/rectangle.hpp"
-#include "world/items/item.hpp"
+#include "world/entities/items/item.hpp"
 #include "rendering/GUI/text/text.hpp"
 
 namespace Render::GUI
@@ -20,7 +20,7 @@ namespace Render::GUI
 			: Rectangle{ size, ori, attributes },
 			stack_item{ item }, text{ font }
 		{
-			text.setScale(g_scale_rest);
+			text.setScale(g_scale_text_rest);
 			text.setStr("10");
 		}
 
@@ -49,6 +49,12 @@ namespace Render::GUI
 		void setPosition(vec2f pos) noexcept override
 		{
 			Transform2D::setPosition(pos);
+			text.setPosition(vec3f{ m_position - getSize() / 2.f, 0 });
+		}
+
+		void setScale(vec2f scale) noexcept override
+		{
+			Transform2D::setScale(scale);
 			text.setPosition(vec3f{ m_position - getSize() / 2.f, 0 });
 		}
 
@@ -84,8 +90,8 @@ namespace Render::GUI
 		int16 max_count{ 10 };
 
 
-		static constexpr float g_scale_rest{ 0.5 };
-		static constexpr float g_scale_hover{ 0.6 };
+		static constexpr float g_scale_text_rest{ 0.5 };
+		static constexpr float g_scale_text_hover{ 0.6 };
 	};
 
 

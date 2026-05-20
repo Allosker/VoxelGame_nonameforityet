@@ -6,7 +6,7 @@
 // ---------------------------------------
 
 #include "uHeaders/types.hpp"
-#include "rendering/world_managing/data/basic/voxel.hpp"
+#include "world/voxels/voxel.hpp"
 
 #include <vector>
 

@@ -38,7 +38,7 @@
 #include "transforms/collisions/basicHitbox.hpp"
 #include "world/players/player/player.hpp"
 
-#include "rendering/GUI/Items/itemRenderer.hpp"
+#include "rendering/GUI/Items/item3DMesh.hpp"
 #include "rendering/GUI/Items/itemTypeManager.hpp"
 
 #include "rendering/GUI/text/text.hpp"

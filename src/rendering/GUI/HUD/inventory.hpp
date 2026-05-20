@@ -13,7 +13,7 @@
 
 #include "hotbar.hpp"
 
-#include "world/items/item.hpp"
+#include "world/entities/items/item.hpp"
 
 #include "rendering/assets_managing/texturing/texture.hpp"
 

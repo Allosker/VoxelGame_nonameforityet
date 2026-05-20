@@ -82,7 +82,7 @@ bool Render::GUI::Hotbar::addItem(const GameWorld::Inventory::Item& item, int64 
 {
 	for (auto& i : m_items_slots)
 	{
-		if (count >= 1 && i.stack_item.id == item.id && i.count < i.max_count)
+		if (count >= 1 && i.stack_item.id == item.id && (i.count + count) <= i.max_count)
 		{
 			i.stack_item = item;
 			i.updateSprite(mapTextureUvs(i.stack_item.id, itm));
@@ -96,7 +96,7 @@ bool Render::GUI::Hotbar::addItem(const GameWorld::Inventory::Item& item, int64 
 
 	for (auto& i : m_items_slots)
 	{
-		if (count >= 1 && i.stack_item.id == 0 && i.count < i.max_count)
+		if (count >= 1 && i.stack_item.id == 0 && (i.count + count) <= i.max_count)
 		{
 			i.stack_item = item;
 			i.updateSprite(mapTextureUvs(i.stack_item.id, itm));
@@ -173,7 +173,8 @@ void Render::GUI::Hotbar::draw(
 				m_slots[i].setScale(g_scale_hotbar_coef_hover);
 				m_slots[i].move({ 0, g_slot_size.x / 2 });
 
-				m_items_slots[i].setScale(g_scale_item_coef_rest);
+				m_items_slots[i].setScale(g_scale_item_coef_hover);
+				m_items_slots[m_cursor_position].text.setScale(ItemStack2D::g_scale_text_hover);
 				m_items_slots[i].move({ 0, g_slot_size.x / 2 });
 
 
@@ -186,6 +187,7 @@ void Render::GUI::Hotbar::draw(
 				m_slots[i].move({ 0, -g_slot_size.x / 2 });
 
 				m_items_slots[i].setScale(g_scale_item_coef_rest);
+				m_items_slots[m_cursor_position].text.setScale(ItemStack2D::g_scale_text_rest);
 				m_items_slots[i].move({ 0, -g_slot_size.x / 2 });
 
 				m_cursor_changed = false;

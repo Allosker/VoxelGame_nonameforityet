@@ -2,7 +2,7 @@
 // MIT
 // Allosker ------------------------------
 // =========+
-// Two classes to manage 3D world items and 2D GUI items
+// Manages a 3D mesh that is supposed to be an item
 // ---------------------------------------
 
 
@@ -11,7 +11,7 @@
 #include "world/entities/basic_entity.hpp"
 
 #include "rendering/GUI/items/itemTypeManager.hpp"
-#include "world/items/item.hpp"
+#include "world/entities/items/item.hpp"
 
 namespace Render
 {
