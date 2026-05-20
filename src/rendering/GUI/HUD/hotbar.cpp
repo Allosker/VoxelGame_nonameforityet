@@ -40,6 +40,7 @@ void Render::GUI::Hotbar::setCurrentSlot(GameWorld::Inventory::Item item, const 
 {
 	m_items_slots[m_cursor_position].stack_item = item;
 	m_items_slots[m_cursor_position].count = 1;
+	m_items_slots[m_cursor_position].shouldBeDrawn = true;
 }
 
 
@@ -81,16 +82,32 @@ bool Render::GUI::Hotbar::addItem(const GameWorld::Inventory::Item& item, int64 
 {
 	for (auto& i : m_items_slots)
 	{
-		if (count >= 1 && (i.stack_item.id == item.id || i.stack_item.id == 0) && i.count < i.max_count)
+		if (count >= 1 && i.stack_item.id == item.id && i.count < i.max_count)
 		{
 			i.stack_item = item;
 			i.updateSprite(mapTextureUvs(i.stack_item.id, itm));
 			i.count += count;
 			i.text.setPosition(vec3f{ i.getPosition(), 0 });
+			i.shouldBeDrawn = true;
 			i.update_text();
 			return true;
 		}
 	}
+
+	for (auto& i : m_items_slots)
+	{
+		if (count >= 1 && i.stack_item.id == 0 && i.count < i.max_count)
+		{
+			i.stack_item = item;
+			i.updateSprite(mapTextureUvs(i.stack_item.id, itm));
+			i.count += count;
+			i.text.setPosition(vec3f{ i.getPosition(), 0 });
+			i.shouldBeDrawn = true;
+			i.update_text();
+			return true;
+		}
+	}
+	
 
 	return false;
 }
@@ -105,6 +122,7 @@ bool Render::GUI::Hotbar::removeItem(const GameWorld::Inventory::Item& item, int
 		if (i.count <= 0)
 		{
 			i.stack_item.id = 0;
+			i.shouldBeDrawn = false;
 			return true;
 		}
 
@@ -175,7 +193,7 @@ void Render::GUI::Hotbar::draw(
 			}
 		}
 
-		if (m_items_slots[i].stack_item.id != 0)
+		if (m_items_slots[i].shouldBeDrawn && m_items_slots[i].count != 0 && m_items_slots[i].stack_item.id != 0)
 		{
 			m_items_slots[i].updateSprite(mapTextureUvs(m_items_slots[i].stack_item.id, itm));
 

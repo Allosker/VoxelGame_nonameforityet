@@ -79,7 +79,9 @@ namespace Render::GUI
 		GameWorld::Inventory::Item stack_item{};
 		int16 count{};
 
-		int16 max_count{ 100 };
+		bool shouldBeDrawn{ false };
+
+		int16 max_count{ 10 };
 
 
 		static constexpr float g_scale_rest{ 0.5 };

@@ -65,7 +65,7 @@ void Render::GUI::Inventory::update(const Wai::Window& window, const ItemTypeMan
 
 			m_wasWithinHotbar = isWithinHotbar;
 
-			const auto& item{ m_wasWithinHotbar ? hotbar.getItems()[m_clicked_slot] : m_items_slots[m_clicked_slot] };
+			auto& item{ isWithinHotbar ? hotbar.getItems()[m_cursor] : m_items_slots[m_cursor] };
 			if (item.stack_item.id)
 			{
 				m_moving_item.updateSprite(mapTextureUvs(item.stack_item.id, itm));
@@ -74,64 +74,61 @@ void Render::GUI::Inventory::update(const Wai::Window& window, const ItemTypeMan
 				m_moving_item.text.setPosition(item.text.getPosition());
 				m_moving_item.update_text();
 
+				item.shouldBeDrawn = false;
+
 				m_draw_moving = true;
-
-
-				if (!isWithinHotbar)
-					m_items_slots[m_cursor].disable();
-				else
-					hotbar.getItems()[m_cursor].disable();
-
 			}
 		}
 	}
 
 	if (window.isMouseButtonReleased(Wai::Buttons::Mouse::Left) && m_clickedOnce)
 	{
-		const auto& new_item = m_moving_item;
+		auto& old_slot_item = (m_wasWithinHotbar ? hotbar.getItems()[m_clicked_slot] : m_items_slots[m_clicked_slot]);
 
 		if (isWithinSlot)
 		{
 			auto& slot_item = (isWithinHotbar ? hotbar.getItems()[m_cursor] : m_items_slots[m_cursor]);
 			
-
-			if (slot_item.stack_item.id == 0 || slot_item.stack_item.id == new_item.stack_item.id)
+			if (slot_item.stack_item.id == 0 || slot_item.stack_item.id == m_moving_item.stack_item.id)
 			{
-				slot_item.stack_item = new_item.stack_item;
-				slot_item.count += new_item.count;
-				slot_item.text.setPosition(new_item.text.getPosition());
-				slot_item.update_text();
+				slot_item.stack_item = m_moving_item.stack_item;
+				
+				if (auto extra = addItems(slot_item, m_moving_item.count))
+				{
+					slot_item.count = slot_item.max_count;
+					m_moving_item.count = extra;
+
+					slot_item.text.setPosition(m_moving_item.text.getPosition());
+					slot_item.update_text();
+
+					old_slot_item.count = extra;
+					old_slot_item.shouldBeDrawn = true;
+					old_slot_item.update_text();
+				}
+				else
+				{
+					slot_item.count += m_moving_item.count;
+
+					slot_item.text.setPosition(m_moving_item.text.getPosition());
+					slot_item.update_text();
+
+					if (m_clicked_slot != m_cursor)
+						old_slot_item.disable();
+				}
+
+
+				slot_item.shouldBeDrawn = true;
+				m_moving_item.disable();
 
 				if (!isWithinHotbar && slot_item.stack_item.id)
 					slot_item.updateSprite(mapTextureUvs(slot_item.stack_item.id, itm));
 			}
 			// Make function for this
 			else
-			{
-				auto& old_slot_item = (m_wasWithinHotbar ? hotbar.getItems()[m_clicked_slot] : m_items_slots[m_clicked_slot]);
-
-				old_slot_item.stack_item = new_item.stack_item;
-				old_slot_item.count += new_item.count;
-				old_slot_item.text.setPosition(new_item.text.getPosition());
-				old_slot_item.update_text();
-
-				if (!m_wasWithinHotbar && old_slot_item.stack_item.id)
-					old_slot_item.updateSprite(mapTextureUvs(old_slot_item.stack_item.id, itm));
-			}
-			
+				old_slot_item.shouldBeDrawn = true;
 		}
 		else
-		{
-			auto& old_slot_item = (m_wasWithinHotbar ? hotbar.getItems()[m_clicked_slot] : m_items_slots[m_clicked_slot]);
-
-			old_slot_item.stack_item = new_item.stack_item;
-			old_slot_item.count += new_item.count;
-			old_slot_item.text.setPosition(new_item.text.getPosition());
-			old_slot_item.update_text();
-
-			if (!m_wasWithinHotbar && old_slot_item.stack_item.id)
-				old_slot_item.updateSprite(mapTextureUvs(old_slot_item.stack_item.id, itm));
-		}
+			old_slot_item.shouldBeDrawn = true;
 
 		m_clickedOnce = false;
 		m_draw_moving = false;
@@ -148,16 +145,31 @@ void Render::GUI::Inventory::newPairOfSlots(const Texturing::Texture& texture_sl
 		create_slots(texture_slot);
 }
 
-bool Render::GUI::Inventory::addItem(const GameWorld::Inventory::Item& item, int64 count, const ItemTypeManager& itm) noexcept
+bool Render::GUI::Inventory::addItem(const GameWorld::Inventory::Item& item, uint16 count, const ItemTypeManager& itm) noexcept
 {
 	for (auto& i : m_items_slots)
 	{
-		if (count >= 1 && (i.stack_item.id == item.id || i.stack_item.id == 0) && i.count < i.max_count)
+		if (i.stack_item.id == item.id && (i.count + count) < i.max_count)
 		{
 			i.stack_item = item;
 			i.updateSprite(mapTextureUvs(i.stack_item.id, itm));
 			i.count += count;
 			i.text.setPosition(vec3f{ i.getPosition(), 0 });
+			i.shouldBeDrawn = true;
+			i.update_text();
+			return true;
+		}
+	}
+
+	for (auto& i : m_items_slots)
+	{
+		if (i.stack_item.id == 0 && (i.count + count) < i.max_count)
+		{
+			i.stack_item = item;
+			i.updateSprite(mapTextureUvs(i.stack_item.id, itm));
+			i.count += count;
+			i.text.setPosition(vec3f{ i.getPosition(), 0 });
+			i.shouldBeDrawn = true;
 			i.update_text();
 			return true;
 		}
@@ -166,11 +178,19 @@ bool Render::GUI::Inventory::addItem(const GameWorld::Inventory::Item& item, int
 	return false;
 }
 
-bool Render::GUI::Inventory::removeItem(const GameWorld::Inventory::Item& item, int64 count) noexcept
+uint16 Render::GUI::Inventory::addItems(const ItemStack2D& item_stack, uint16 count) noexcept
+{
+	if (item_stack.count + count <= item_stack.max_count)
+		return 0;
+
+	return count - (item_stack.max_count - item_stack.count);
+}
+
+bool Render::GUI::Inventory::removeItem(const GameWorld::Inventory::Item& item, uint16 count) noexcept
 {
 	for (auto& i : m_items_slots)
 	{
-		if (count >= 1 && (i.stack_item.id == item.id || i.stack_item.id == 0) && count <= i.count)
+		if ((i.stack_item.id == item.id || i.stack_item.id == 0) && count <= i.count)
 		{
 			i.count -= count;
 			return true;
@@ -217,7 +237,7 @@ void Render::GUI::Inventory::draw(const Shader& shader, const Shader& text_shade
 
 
 	for (std::size_t i{}; i < m_items_slots.size(); i++)
-		if (m_items_slots[i].stack_item.id != 0 && m_items_slots[i].count != 0)
+		if (m_items_slots[i].shouldBeDrawn && m_items_slots[i].stack_item.id != 0 && m_items_slots[i].count != 0)
 		{
 			texture_block_gui_atlas.bind();
 			m_items_slots[i].draw(shader, text_shader);

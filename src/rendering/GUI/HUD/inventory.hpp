@@ -35,8 +35,9 @@ namespace Render::GUI
 
 		void newPairOfSlots(const Texturing::Texture& texture_slot) noexcept;
 
-		bool addItem(const GameWorld::Inventory::Item& item, int64 count, const ItemTypeManager& itm) noexcept;
-		bool removeItem(const GameWorld::Inventory::Item& item, int64 count) noexcept;
+		bool addItem(const GameWorld::Inventory::Item& item, uint16 count, const ItemTypeManager& itm) noexcept;
+		uint16 addItems(const ItemStack2D& item_stack, uint16 count) noexcept;
+		bool removeItem(const GameWorld::Inventory::Item& item, uint16 count) noexcept;
 
 
 		void enable(Wai::Window& window, Hotbar& hotbar) noexcept;
