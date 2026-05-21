@@ -1,6 +1,11 @@
 #include "inventory.hpp"
 
 
+
+// =====================
+// Construction/Destruction
+// =====================
+
 Render::GUI::Inventory::Inventory(const Texturing::Texture& texture_inventory, const Texturing::Texture& texture_slot, const Font* font_)
 	: m_inventory{ g_size_inventory, {g_size_inventory.x / 2, g_size_inventory.y / 2}, types::Rect<types::uvs>{{}, texture_inventory.getSize()} },
 	m_moving_item{ ItemTypeManager::g_size_gui_block, { ItemTypeManager::g_size_gui_block.x / 2, ItemTypeManager::g_size_gui_block.y / 2 }, types::Rect<types::uvs>{}, {}, *font },
@@ -13,6 +18,11 @@ Render::GUI::Inventory::Inventory(const Texturing::Texture& texture_inventory, c
 	m_moving_item.setScale(Hotbar::g_scale_item_coef_hover);
 	m_moving_item.text.setScale(ItemStack2D::g_scale_text_hover);
 }
+
+
+// =====================
+// Actors
+// =====================
 
 void Render::GUI::Inventory::update(const Wai::Window& window, const ItemTypeManager& itm, Hotbar& hotbar) noexcept
 {
@@ -249,6 +259,11 @@ void Render::GUI::Inventory::draw(const Shader& shader, const Shader& text_shade
 	if (m_draw_moving)
 		m_moving_item.draw(shader, text_shader);
 }
+
+
+// =====================
+// Private Actors
+// =====================
 
 /*private*/ void Render::GUI::Inventory::create_slots(const Texturing::Texture& texture_slot) noexcept
 {

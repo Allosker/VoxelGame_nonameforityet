@@ -1,7 +1,7 @@
 #include "item3DMesh.hpp"
 
-Render::Item3DMesh::Item3DMesh(const Image& constructor, const types::Rect<types::pixels>& uv_rect_pixels)
-	: GameWorld::Entities::BasicEntity{ types::Rect<vec3f>{{}, g_size_item}, g_hitbox_item }
+Render::Item3DMesh::Item3DMesh(const Image& constructor, const types::Rect<types::pixels>& uv_rect_pixels, size_t newID)
+	: GameWorld::Entities::BasicEntity{ types::Rect<vec3f>{{}, g_size_item}, g_hitbox_item }, m_id{newID}
 {
 	createBuffers(create_data(constructor, uv_rect_pixels), GL_STREAM_DRAW, { 3, 2 });
 }

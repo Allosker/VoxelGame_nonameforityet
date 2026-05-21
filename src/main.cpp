@@ -44,6 +44,7 @@
 #include "rendering/GUI/text/text.hpp"
 #include "rendering/GUI/text/font.hpp"
 
+#include "world/entities/entityChunkGrid.hpp"
 
 static void framebuffersize_callback(GLFWwindow* window, int width, int height) noexcept;
 
@@ -141,9 +142,10 @@ try
 	GameWorld::Player player{ ASSET_PATH"hud/slot.png", ASSET_PATH"hud/inventory.png", ASSET_PATH"hud/slot_inventory.png", itemTypeManager, FONT_PATH"pixelated.ttf" };
 	
 	// Test					 		
-	std::vector<Render::Item3DMesh> world_items{};
 
 	Render::GUI::Font font{ FONT_PATH"pixelated.ttf" };
+
+	GameWorld::Entities::EntityChunkGrid entity_chunk_grid{};
 
 
 	float lastFrame{};
@@ -368,10 +370,9 @@ try
 					{
 						auto id{ world.block_at(ray_result->pos)->id };
 
-						world_items.emplace_back(Render::Item3DMesh{ atlas_image_guiBlocks, Render::GUI::toPixelUnits(id, itemTypeManager) });
-						world_items.back().setId(id);
-						world_items.back().rotate(mpml::Quaternion<float>::fromAxis(vec3f{1, 0, 0}, mpml::Angle<>::fromDegrees(90.f)));
-						world_items.back().setPosition(mpml::floor(ray_result->pos) + vec3f{ 0.5, 0.01, 0.5 });
+						entity_chunk_grid.addEntity(
+							{ atlas_image_guiBlocks, Render::GUI::toPixelUnits(id, itemTypeManager), id },
+							ray_result->pos);
 
 						world.set_voxel_at(ray_result->pos, 0);
 					}
@@ -402,10 +403,10 @@ try
 
 		player.update(window, world, itemTypeManager, deltaTime);
 
-		for (size_t i{}; i < world_items.size(); i++)
-			if (world_items.at(i).getHitbox().intersects(player.getHitbox()))
-				if (player.addItem({ world_items.at(i).getId() }, 1, itemTypeManager))
-					world_items.erase(world_items.begin() + i);
+		entity_chunk_grid.update_items(player, itemTypeManager);
+		entity_chunk_grid.update(player, itemTypeManager);
+
+
 
 		// Rendering
 
@@ -431,8 +432,8 @@ try
 		
 
 		// World Items
-		for(auto& i : world_items)
-			i.draw(shader3Ditem, atlas_guiBlocks);
+		entity_chunk_grid.draw(shader3Ditem, atlas_guiBlocks);
+
 
 		// UI
 		glDisable(GL_CULL_FACE);

@@ -27,9 +27,12 @@ namespace Render::GUI
 	{
 	public:
 
+		// = Construction/Destruction
 
 		Inventory(const Texturing::Texture& texture_inventory, const Texturing::Texture& texture_slot, const Font* font_);
 
+
+		// = Actors
 
 		void update(const Wai::Window& window, const ItemTypeManager& itm, Hotbar& hotbar) noexcept;
 
@@ -47,17 +50,18 @@ namespace Render::GUI
 		void draw(const Shader& shader, const Shader& text_shader, const Texturing::Texture& texture_inventory, const Texturing::Texture& texture_slot, const Render::Texturing::Texture& texture_block_gui_atlas, const ItemTypeManager& itm) noexcept;
 
 
-	private:
+	private: // = Actors
 
 		void create_slots(const Texturing::Texture& texture_slot) noexcept;
 
 
-	public:
+	public: // = Global Constants
 
 		static constexpr vec2f g_slot_size{ 80 * 1.5 };
 		static constexpr vec2f g_size_inventory{ Wai::Window::g_guiViewSize.x / 4 * 1.5,  Wai::Window::g_guiViewSize.y / 2 * 1.5 }; 
 
 		static constexpr std::size_t g_max_nb_slots{ 12 };
+
 
 	private:
 

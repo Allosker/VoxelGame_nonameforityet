@@ -96,7 +96,7 @@ namespace GameWorld::Voxels
 
 		// Predicates
 
-		static types::loc to_loc(const types::pos& camPos) noexcept;
+		static types::loc to_loc(const types::pos& pos) noexcept;
 
 
 	private: // = Predicates

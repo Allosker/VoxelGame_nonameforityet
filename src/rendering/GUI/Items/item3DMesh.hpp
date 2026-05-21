@@ -21,8 +21,11 @@ namespace Render
 	{
 	public:
 
+		// = Construction 
+		Item3DMesh(const Image& constructor, const types::Rect<types::pixels>& uv_rect_pixels, size_t newID);
 
-		Item3DMesh(const Image& constructor, const types::Rect<types::pixels>& uv_rect_pixels);
+		Item3DMesh(Item3DMesh&&) noexcept = default;
+		Item3DMesh& operator=(Item3DMesh&&) noexcept = default;
 
 		void setId(size_t newId) noexcept { m_id = newId; }
 

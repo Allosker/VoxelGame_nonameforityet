@@ -13,6 +13,14 @@ void GameWorld::Entities::EntityChunk::update_items(Player& player, const Render
 	// Update the physics for them
 }
 
+void GameWorld::Entities::EntityChunk::addEntity(Render::Item3DMesh&& item, const vec3f& pos) noexcept
+{
+	item.rotate(mpml::Quaternion<float>::fromAxis(vec3f{ 1, 0, 0 }, mpml::Angle<>::fromDegrees(90.f)));
+	item.setPosition(mpml::floor(pos) + vec3f{ 0.5, 0.01, 0.5 });
+
+	m_items.emplace_back(std::move(item));
+}
+
 void GameWorld::Entities::EntityChunk::draw(const Render::Shader& shader, const Render::Texturing::Texture& items_texture) noexcept
 {
 	for (auto& i : m_items)
