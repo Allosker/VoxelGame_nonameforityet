@@ -130,7 +130,10 @@ namespace Render
 		glVertexAttribPointer(0, components.x, GL_FLOAT, false, sizeof(T), std::bit_cast<void*>(offsetof(T, pos)));
 		glEnableVertexAttribArray(0);
 
-		glVertexAttribPointer(1, components.y, GL_FLOAT, false, sizeof(T), std::bit_cast<void*>(offsetof(T, uv)));
+		if constexpr (!std::is_same_v<T, Render::Data::VertexColor>)
+			glVertexAttribPointer(1, components.y, GL_FLOAT, false, sizeof(T), std::bit_cast<void*>(offsetof(T, uv)));
+		else
+			glVertexAttribPointer(1, components.y, GL_FLOAT, false, sizeof(T), std::bit_cast<void*>(offsetof(T, color)));
 		glEnableVertexAttribArray(1);
 
 		glBindVertexArray(0);
@@ -150,7 +153,10 @@ namespace Render
 		glVertexAttribPointer(0, components.x, GL_FLOAT, false, sizeof(T), std::bit_cast<void*>(offsetof(T, pos)));
 		glEnableVertexAttribArray(0);
 
-		glVertexAttribPointer(1, components.y, GL_FLOAT, false, sizeof(T), std::bit_cast<void*>(offsetof(T, uv)));
+		if constexpr (!std::is_same_v<T, Render::Data::VertexColor>)
+			glVertexAttribPointer(1, components.y, GL_FLOAT, false, sizeof(T), std::bit_cast<void*>(offsetof(T, uv)));
+		else
+			glVertexAttribPointer(1, components.y, GL_FLOAT, false, sizeof(T), std::bit_cast<void*>(offsetof(T, color)));
 		glEnableVertexAttribArray(1);
 
 		glBindVertexArray(0);

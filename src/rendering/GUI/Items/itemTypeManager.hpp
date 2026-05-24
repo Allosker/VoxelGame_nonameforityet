@@ -19,13 +19,13 @@ namespace Render::GUI
 		// Order msut be same as Voxels
 		ItemTypeManager()
 		{
-			types.push_back(ItemTextureUvsAtlas::c_dirtGrass	);
-			types.push_back(ItemTextureUvsAtlas::c_dirt			);
-			types.push_back(ItemTextureUvsAtlas::c_stone		);
-			types.push_back(ItemTextureUvsAtlas::c_deepStone	);
-			types.push_back(ItemTextureUvsAtlas::c_water		);
-			types.push_back(ItemTextureUvsAtlas::c_log			);
-			types.push_back(ItemTextureUvsAtlas::c_leaf			);
+			types.push_back({ ItemTextureUvsAtlas::c_dirtGrass	, "grass" });
+			types.push_back({ ItemTextureUvsAtlas::c_dirt		, "dirt" });
+			types.push_back({ ItemTextureUvsAtlas::c_stone		, "stone" });
+			types.push_back({ ItemTextureUvsAtlas::c_deepStone	, "deep stone" });
+			types.push_back({ ItemTextureUvsAtlas::c_water		, "water" });
+			types.push_back({ ItemTextureUvsAtlas::c_log		, "log" });
+			types.push_back({ ItemTextureUvsAtlas::c_leaf		, "leaf" });
 		}
 
 

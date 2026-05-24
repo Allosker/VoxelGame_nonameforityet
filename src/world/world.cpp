@@ -304,9 +304,9 @@ void GameWorld::World::generateWorld(const std::vector<types::loc>& new_chunks_l
 	}
 }
 
-void GameWorld::World::draw_chunkGrid(const types::loc& playerLoc) const noexcept
+void GameWorld::World::draw_chunkGrid(const Player& player) const noexcept
 {
-	grid.draw_all(playerLoc);
+	grid.draw_all(player);
 }
 
 bool GameWorld::World::set_voxel_at(const types::pos& block_pos, types::type_id id) noexcept

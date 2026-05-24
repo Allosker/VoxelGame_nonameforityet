@@ -37,13 +37,14 @@ namespace Render::GUI
 
 	struct ItemType
 	{
-		ItemType(const types::atlas_units& atlas_pos)
-			: pos_in_atlas{ atlas_pos }
+		ItemType(const types::atlas_units& atlas_pos, const std::string& name_ = "undefined")
+			: pos_in_atlas{ atlas_pos }, name{ name_ }
 		{ }
 
 
-		types::atlas_units pos_in_atlas{};
+		std::string name{};
 
+		types::atlas_units pos_in_atlas{};
 
 	};
 

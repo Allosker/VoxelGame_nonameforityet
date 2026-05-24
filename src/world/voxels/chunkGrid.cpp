@@ -1,6 +1,7 @@
 #include "world/voxels/chunkGrid.hpp"
 
 #include "rendering/world_managing/data/chunk/chunkMesh.hpp"
+#include "world/players/player/player.hpp"
 
 namespace Render::Data
 {
@@ -10,6 +11,13 @@ namespace Render::Data
 // =====================
 // Actor
 // =====================
+
+GameWorld::Voxels::ChunkGrid::ChunkGrid() noexcept
+	: shader{ SHADER_PATH"color.vert", SHADER_PATH"color.frag" }
+{
+	m_mesh.createBuffers<Render::Data::VertexColor>
+	({}, GL_DYNAMIC_DRAW, { 3, 3 });
+}
 
 void GameWorld::Voxels::ChunkGrid::update(const Render::Data::Types::VoxelTypeManager& type_manager, const types::pos& playerPos) noexcept
 {
@@ -29,7 +37,6 @@ void GameWorld::Voxels::ChunkGrid::update(const Render::Data::Types::VoxelTypeMa
 		if (shouldBreak)
 			break;
 	}
-
 }
 
 void GameWorld::Voxels::ChunkGrid::discard_outside_chunks(const types::loc& camLoc) noexcept
@@ -111,17 +118,21 @@ std::vector<types::loc> GameWorld::Voxels::ChunkGrid::generate_new_chunks(const 
 	return locations;
 }
 
-void GameWorld::Voxels::ChunkGrid::draw_all(const types::loc& playerLoc) const noexcept
+void GameWorld::Voxels::ChunkGrid::draw_all(const GameWorld::Player& player) const noexcept
 {
+	std::vector<types::loc> visible_chunks{ Render::Utils::cull_staticAABB_frustum(player.getCamera(), m_chunks)};
+
+	// Sort transparent chunks to draw them last 
 	std::vector<types::loc> chunk_transparents{};
 	std::vector<types::loc> chunks{};
 
-	for (const auto& i : m_chunk_meshes)
-		if (i.second.flags.has_transparency)
-			chunk_transparents.emplace_back(i.first);
+	for (const auto& i : visible_chunks)
+		if (m_chunk_meshes.at(i).flags.has_transparency)
+			chunk_transparents.emplace_back(i);
 		else
-			chunks.emplace_back(i.first);
+			chunks.emplace_back(i);
 
+	auto playerLoc = GameWorld::Voxels::ChunkGrid::to_loc(player.getPos());
 	std::sort(chunk_transparents.begin(), chunk_transparents.end(), [&](const auto& a, const auto& b)
 		{
 			return
@@ -134,6 +145,62 @@ void GameWorld::Voxels::ChunkGrid::draw_all(const types::loc& playerLoc) const n
 
 	for(const auto& loc : chunk_transparents)
 		m_chunk_meshes.at(loc).draw();
+
+	
+
+	shader.use();
+	shader.setValue("model", player.getCamera().model);
+	shader.setValue("view", player.getCamera().view);
+	shader.setValue("proj", player.getCamera().proj);
+
+	auto loc = to_loc(player.getPos());
+
+	std::vector<Render::Data::VertexColor> newBuffer{};
+	for (const auto& [k, c] : m_chunks)
+	{
+		const auto& p = c.getPos();
+		const auto& o = c.getOppositeCorner();
+
+		vec3f color{ 1, 0, 0 };
+
+		if (std::find(chunks.begin(), chunks.end(), k) != chunks.end() ||
+			std::find(chunk_transparents.begin(), chunk_transparents.end(), k) != chunk_transparents.end())
+			color = { 0, 1, 0 };
+
+		/*if (loc == k)
+			color = { 1, 1, 0 };*/
+
+		float d = 0.001;
+
+		newBuffer.insert
+		(newBuffer.end(),
+			{
+				Render::Data::VertexColor
+				// 4 Bottom Edges (Slightly pushed down/inward)
+				{ {p.x + d, p.y - d, p.z + d}, color }, { {o.x - d, p.y - d, p.z + d}, color },
+				{ {o.x - d, p.y - d, p.z + d}, color }, { {o.x - d, p.y - d, o.z - d}, color },
+				{ {o.x - d, p.y - d, o.z - d}, color }, { {p.x + d, p.y - d, o.z - d}, color },
+				{ {p.x + d, p.y - d, o.z - d}, color }, { {p.x + d, p.y - d, p.z + d}, color },
+
+				// 4 Top Edges (Slightly pushed up/inward)
+				{ {p.x + d, o.y + d, p.z + d}, color }, { {o.x - d, o.y + d, p.z + d}, color },
+				{ {o.x - d, o.y + d, p.z + d}, color }, { {o.x - d, o.y + d, o.z - d}, color },
+				{ {o.x - d, o.y + d, o.z - d}, color }, { {p.x + d, o.y + d, o.z - d}, color },
+				{ {p.x + d, o.y + d, o.z - d}, color }, { {p.x + d, o.y + d, p.z + d}, color },
+
+				// 4 Vertical Pillars (Slightly pushed outward so they encase the loops)
+				{ {p.x, p.y - d, p.z}, color }, { {p.x, o.y + d, p.z}, color },
+				{ {o.x, p.y - d, p.z}, color }, { {o.x, o.y + d, p.z}, color },
+				{ {o.x, p.y - d, o.z}, color }, { {o.x, o.y + d, o.z}, color },
+				{ {p.x, p.y - d, o.z}, color }, { {p.x, o.y + d, o.z}, color }
+
+			});
+	}
+	m_mesh.updateBuffer<Render::Data::VertexColor>(newBuffer, sizeof(Render::Data::VertexColor), GL_DYNAMIC_DRAW);
+	
+	glDisable(GL_DEPTH_TEST);
+	m_mesh.draw(GL_LINES);
+	glEnable(GL_DEPTH_TEST);
 }
 
 

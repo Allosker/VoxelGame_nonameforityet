@@ -7,7 +7,6 @@
 
 #include "world/voxels/chunkGrid.hpp"
 #include "rendering/world_managing/data/typeManagement/voxelTypeManager.hpp"
-
 #include "rendering/world_managing/data/chunk/chunkMesh.hpp"
 
 namespace GameWorld
@@ -23,7 +22,7 @@ namespace GameWorld
 
 		void generateWorld(const std::vector<types::loc>& new_chunks_loc);
 
-		void draw_chunkGrid(const types::loc& camLoc) const noexcept;
+		void draw_chunkGrid(const Player& player) const noexcept;
 
 		
 

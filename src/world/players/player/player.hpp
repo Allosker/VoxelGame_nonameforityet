@@ -5,21 +5,23 @@
 // Basic class for Player, this manages everything about the player and offers a higher level of abstraction
 // ---------------------------------------
 
-#include "transforms/collisions/basicHitbox.hpp"
+
 
 #include "rendering/utilities/camera.hpp"
 
 #include "rendering/shader.hpp"
-
-#include "world/world.hpp"
 
 #include "rendering/GUI/HUD/hotbar.hpp"
 #include "rendering/GUI/HUD/inventory.hpp"
 
 #include "rendering/GUI/Items/itemTypeManager.hpp"
 
+#include "transforms/collisions/basicHitbox.hpp"
+
+
 namespace GameWorld
 {
+	class World;
 
 	class Player
 	{

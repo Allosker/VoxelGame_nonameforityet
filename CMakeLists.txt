@@ -53,7 +53,7 @@ file(GLOB IMGUI_FILES CMAKE_CONFIGURE_DEPENDS
 )  
 
 file(GLOB IMPLOT_FILES CMAKE_CONFIGURE_DEPENDS  
-	"${IMPLOT_DIR}/*.cpp"  
+	"${IMPLOT_DIR}/*.cpp"   
 	"${IMPLOT_DIR}/*.h"   
 	"${IMPLOT_DIR}/implot.h" 
 	"${IMPLOT_DIR}/implot_internal.h" 

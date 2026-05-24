@@ -6,11 +6,21 @@
 // ---------------------------------------
 
 #include "uHeaders/types.hpp"
-#include "world/voxels/chunk.hpp"
 #include "rendering/world_managing/data/typeManagement/voxelTypeManager.hpp"
+#include "rendering/utilities/frustum_culling.hpp"
+
+#include "world/voxels/chunk.hpp"
+
+#include "rendering/mesh/mesh.hpp"
+
 #include <optional>
 #include <map>
 #include <vector>
+
+namespace GameWorld
+{
+	class Player;
+}
 
 namespace Render::Data
 {
@@ -32,7 +42,7 @@ namespace GameWorld::Voxels
 
 		// Initialization
 
-		explicit ChunkGrid() noexcept = default;
+		explicit ChunkGrid() noexcept;
 
 
 		// Actors
@@ -46,7 +56,7 @@ namespace GameWorld::Voxels
 		std::vector<types::loc> generate_new_chunks(const types::loc& camPos) noexcept;
 
 
-		void draw_all(const types::loc& camLoc) const noexcept;
+		void draw_all(const GameWorld::Player& player) const noexcept;
 
 
 		// = Getters
@@ -106,6 +116,9 @@ namespace GameWorld::Voxels
 
 	private:
 
+
+		mutable Render::Mesh m_mesh{};
+		mutable Render::Shader shader;
 
 		std::map<types::loc, GameWorld::Voxels::Chunk> m_chunks{};
 		std::map<types::loc, Render::Data::ChunkMesh> m_chunk_meshes{};

@@ -96,6 +96,8 @@ namespace Wai
 
 		bool hasDirChanged() const noexcept { return m_dirChangedThisFrame; }
 
+		bool wasFrameBufferResized() const noexcept { return m_wasFrameBufferResized; }
+
 
 		// = Setters
 
@@ -127,6 +129,8 @@ namespace Wai
 
 		bool m_wheelScrolledThisFrame{ false };
 		bool m_cursorHidden{ true };
+
+		bool m_wasFrameBufferResized{ false };
 
 		GLFWwindow* m_window{ nullptr };
 

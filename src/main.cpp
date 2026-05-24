@@ -140,7 +140,8 @@ try
 
 	// Player
 	GameWorld::Player player{ ASSET_PATH"hud/slot.png", ASSET_PATH"hud/inventory.png", ASSET_PATH"hud/slot_inventory.png", itemTypeManager, FONT_PATH"pixelated.ttf" };
-	
+	player.getCamera().updateProjMatrix(window.getSize()); // First Cam update
+
 	// Test					 		
 
 	Render::GUI::Font font{ FONT_PATH"pixelated.ttf" };
@@ -318,19 +319,25 @@ try
 		
 		//std::println("{}", Wai::Window::toGUICoordinates(window, window.getMousePos()));
 
-		mat4f model{ mpml::Identity4<float> };
-		mat4f view{ mpml::lookAt(player.getPos(), player.getCamera().front_dir + player.getPos(), player.getCamera().up_dir)};
-		mat4f proj{ mpml::perspective(mpml::Angle<>::fromDegrees(90), window.getSize().x, window.getSize().y, 0.1f, 1000.f) };
+		// Window Events check
+
+		if (window.wasFrameBufferResized())
+			player.getCamera().updateProjMatrix(window.getSize());
+
+		if (window.hasDirChanged())
+			player.getCamera().front_dir = window.getNewFrontDir();
 
 
+		player.getCamera().view = mpml::lookAt(player.getPos(), player.getCamera().front_dir + player.getPos(), player.getCamera().up_dir);
+		
 
 		{
-			// Chunks
+			// ChunksS
 			shader3Dworld.use();
 
-			shader3Dworld.setValue("model", model);
-			shader3Dworld.setValue("view", view);
-			shader3Dworld.setValue("proj", proj);
+			shader3Dworld.setValue("model", player.getCamera().model);
+			shader3Dworld.setValue("view", player.getCamera().view);
+			shader3Dworld.setValue("proj", player.getCamera().proj);
 
 			//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
@@ -340,9 +347,9 @@ try
 
 			shader3Ditem.use();
 
-			shader3Ditem.setValue("model", model);
-			shader3Ditem.setValue("view", view);
-			shader3Ditem.setValue("proj", proj);
+			shader3Ditem.setValue("model", player.getCamera().model);
+			shader3Ditem.setValue("view", player.getCamera().view);
+			shader3Ditem.setValue("proj", player.getCamera().proj);
 		}
 		
 
@@ -353,7 +360,7 @@ try
 			if (ray_result)
 			{
 
-				ch.update(model, view, proj, ray_result->pos);
+				ch.update(player.getCamera().model, player.getCamera().view, player.getCamera().proj, ray_result->pos);
 
 
 
@@ -397,14 +404,14 @@ try
 				drawHighlight = true;
 			}
 			
-		if (window.hasDirChanged())
-			player.getCamera().front_dir = window.getNewFrontDir();
+		
 
 
 		player.update(window, world, itemTypeManager, deltaTime);
 
 		entity_chunk_grid.update_items(player, itemTypeManager);
 		entity_chunk_grid.update(player, itemTypeManager);
+
 
 
 
@@ -422,7 +429,7 @@ try
 		textureAtlas.bind();
 
 		
-		world.draw_chunkGrid(GameWorld::Voxels::ChunkGrid::to_loc(player.getPos()));
+		world.draw_chunkGrid(player);
 
 		// Cube Highlight
 

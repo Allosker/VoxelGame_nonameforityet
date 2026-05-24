@@ -20,6 +20,11 @@
 
 #include "world/voxels/chunk.hpp"
 
+namespace GameWorld::Voxels
+{
+	class ChunkGrid;
+}
+
 namespace Render::Data
 {
 	class ChunkMesh

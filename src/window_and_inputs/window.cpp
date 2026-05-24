@@ -46,6 +46,7 @@ void Wai::Window::clearEvents() noexcept
 	m_mouseWheel_delta = vec2f{0};
 	m_wheelScrolledThisFrame = false;
 	m_dirChangedThisFrame = false;
+	m_wasFrameBufferResized = false;
 	glfwPollEvents();
 }
 
@@ -69,6 +70,7 @@ bool Wai::Window::alternateCursorVisibility() noexcept
 
 void Wai::Window::onFramebufferResize(vec2i newSize) noexcept
 {
+	m_wasFrameBufferResized = true;
 	m_size = newSize;
 	glViewport(0, 0, newSize.x, newSize.y);
 }

@@ -169,13 +169,13 @@ void Render::Shader::compile(std::uint32_t s_id, const std::string& name)
 	glCompileShader(s_id);
 
 	GLint success;
-	GLchar infoLog[512];
+	GLchar infoLog[1024];
 
 	glGetShaderiv(s_id, GL_COMPILE_STATUS, &success); 
 
 	if (!success)
 	{
-		glGetShaderInfoLog(s_id, 512, nullptr, infoLog);
+		glGetShaderInfoLog(s_id, 1024, nullptr, infoLog);
 
 		throw std::runtime_error("ERROR::SHADER::COMPILATION_FAILED::" + name + '\n' + infoLog + '\n');
 	}
@@ -186,13 +186,13 @@ void Render::Shader::link(std::uint32_t s_id)
 	glLinkProgram(s_id);
 
 	GLint success;
-	GLchar infoLog[512];
+	GLchar infoLog[1024];
 
 	glGetProgramiv(s_id, GL_LINK_STATUS, &success);
 
 	if (!success)
 	{
-		glGetProgramInfoLog(s_id, 512, nullptr, infoLog);
+		glGetProgramInfoLog(s_id, 1024, nullptr, infoLog);
 
 		throw std::runtime_error(std::string{"ERROR::SHADER::LINKAGE_FAILED::Shader_Program::"} + infoLog + '\n');
 	}

@@ -119,6 +119,7 @@ void Render::GUI::Inventory::update(const Wai::Window& window, const ItemTypeMan
 				}
 				else
 				{
+					int x = 0;
 					if (m_clicked_slot != m_cursor)
 						slot_item.count += m_moving_item.count;
 
@@ -137,7 +138,25 @@ void Render::GUI::Inventory::update(const Wai::Window& window, const ItemTypeMan
 					slot_item.updateSprite(mapTextureUvs(slot_item.stack_item.id, itm));
 			}
 			else
+			{
+				auto stack_item = slot_item.stack_item;
+				auto count = slot_item.count;
+				auto textpos = slot_item.text.getPosition();
+
+				slot_item.updateSprite(mapTextureUvs(old_slot_item.stack_item.id, itm));
+				slot_item.stack_item = old_slot_item.stack_item;
+				slot_item.count = old_slot_item.count;
+				slot_item.text.setPosition(old_slot_item.text.getPosition());
+				slot_item.update_text();
+				
+				old_slot_item.updateSprite(mapTextureUvs(stack_item.id, itm));
+				old_slot_item.stack_item = stack_item;
+				old_slot_item.count = count;
+				old_slot_item.text.setPosition(textpos);
+				old_slot_item.update_text();
+
 				old_slot_item.shouldBeDrawn = true;
+			}
 		}
 		else
 			old_slot_item.shouldBeDrawn = true;
