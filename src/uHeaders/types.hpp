@@ -31,7 +31,7 @@ namespace types
 
 	using chunk_index = uint16;
 
-	using type_id = std::size_t;
+	using type_id = uint16; // around 65k unique ids
 
 	using mapped_uvs = mpml::Vector2<float>;
 	using uvs = mpml::Vector2<float>;

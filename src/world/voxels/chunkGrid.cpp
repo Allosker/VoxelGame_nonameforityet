@@ -23,14 +23,16 @@ void GameWorld::Voxels::ChunkGrid::update(const Render::Data::Types::VoxelTypeMa
 {
 	bool shouldBreak{};
 
-	for (auto& c : m_chunk_meshes)
+	for (auto& [k, c] : m_chunks)
 	{
+		if (!m_chunk_meshes.contains(k))
+			create_chunkMesh_for_chunk_at(k);
 
-		if (c.second.flags.dirty)
+		if (m_chunk_meshes[k].flags.dirty)
 		{
-			c.second.buildMesh(chunk_at_loc(c.first), type_manager, *this);
-			c.second.updateBuffers(playerPos);
-			c.second.flags.dirty = false;
+			m_chunk_meshes[k].buildMesh(chunk_at_loc(k), type_manager, *this);
+			m_chunk_meshes[k].updateBuffers(playerPos);
+			m_chunk_meshes[k].flags.dirty = false;
 			shouldBreak = true;
 		}
 
@@ -55,8 +57,11 @@ void GameWorld::Voxels::ChunkGrid::discard_outside_chunks(const types::loc& camL
 		{
 
 			it = m_chunks.erase(it);
-			m_chunk_meshes.at(loc).free();
-			m_chunk_meshes.erase(loc);
+			if (m_chunk_meshes.contains(loc))
+			{
+				m_chunk_meshes.at(loc).free();
+				m_chunk_meshes.erase(loc);
+			}
 		}
 		else
 			++it;
@@ -79,58 +84,75 @@ std::vector<types::loc> GameWorld::Voxels::ChunkGrid::generate_new_chunks(const 
 {
 	std::vector<types::loc> locations{};
 
-	for (int64 x{ camLoc.x - ChunkSettings::world_render_distance }; x <= camLoc.x + ChunkSettings::world_render_distance; x++)
-		for (int64 y{ camLoc.y - ChunkSettings::world_render_distance }; y < camLoc.y + ChunkSettings::world_render_distance; y++)
-			for (int64 z{ camLoc.z - ChunkSettings::world_render_distance }; z <= camLoc.z + ChunkSettings::world_render_distance; z++)
-			{
+	if (ChunkSettings::world_render_distance == 0)
+	{
+		m_chunks.emplace(
+			camLoc, GameWorld::Voxels::Chunk{ types::loc{
+			camLoc.x * static_cast<int64>(Chunk::g_size),
+			camLoc.y * static_cast<int64>(Chunk::g_size),
+			camLoc.z * static_cast<int64>(Chunk::g_size)} 
+		});
 
-				if (types::loc location{ x,y,z }; !m_chunks.contains(location))
+		locations.push_back(camLoc);
+	}
+	else
+		for (int64 x{ camLoc.x - ChunkSettings::world_render_distance }; x <= camLoc.x + ChunkSettings::world_render_distance; x++)
+			for (int64 y{ camLoc.y - ChunkSettings::world_render_distance }; y <= camLoc.y + ChunkSettings::world_render_distance; y++)
+				for (int64 z{ camLoc.z - ChunkSettings::world_render_distance }; z <= camLoc.z + ChunkSettings::world_render_distance; z++)
 				{
-					m_chunks.emplace(location, GameWorld::Voxels::Chunk{ types::loc{
-						location.x * static_cast<int64>(Chunk::g_size),
-						location.y * static_cast<int64>(Chunk::g_size),
-						location.z * static_cast<int64>(Chunk::g_size)} });
 
-					locations.push_back(location);
+					if (types::loc location{ x,y,z }; !m_chunks.contains(location))
+					{
+						m_chunks.emplace(location, GameWorld::Voxels::Chunk{ types::loc{
+							location.x * static_cast<int64>(Chunk::g_size),
+							location.y * static_cast<int64>(Chunk::g_size),
+							location.z * static_cast<int64>(Chunk::g_size)} });
+
+						locations.push_back(location);
 
 
-					if (auto c{ chunkmesh_at_loc_ptr(location + types::loc{1, 0, 0}) })
-						c->flags.dirty = true;
+						if (auto c{ chunkmesh_at_loc_ptr(location + types::loc{1, 0, 0}) })
+							c->flags.dirty = true;
 
-					if (auto c{ chunkmesh_at_loc_ptr(location - types::loc{1, 0, 0}) })
-						c->flags.dirty = true;
+						if (auto c{ chunkmesh_at_loc_ptr(location - types::loc{1, 0, 0}) })
+							c->flags.dirty = true;
 
-					if (auto c{ chunkmesh_at_loc_ptr(location + types::loc{0, 1, 0}) })
-						c->flags.dirty = true;
+						if (auto c{ chunkmesh_at_loc_ptr(location + types::loc{0, 1, 0}) })
+							c->flags.dirty = true;
 
-					if (auto c{ chunkmesh_at_loc_ptr(location - types::loc{0, 1, 0}) })
-						c->flags.dirty = true;
+						if (auto c{ chunkmesh_at_loc_ptr(location - types::loc{0, 1, 0}) })
+							c->flags.dirty = true;
 				
-					if (auto c{ chunkmesh_at_loc_ptr(location + types::loc{0, 0, 1}) })
-						c->flags.dirty = true;
+						if (auto c{ chunkmesh_at_loc_ptr(location + types::loc{0, 0, 1}) })
+							c->flags.dirty = true;
 
-					if (auto c{ chunkmesh_at_loc_ptr(location - types::loc{0, 0, 1}) })
-						c->flags.dirty = true;
+						if (auto c{ chunkmesh_at_loc_ptr(location - types::loc{0, 0, 1}) })
+							c->flags.dirty = true;
+					}
+
 				}
-
-			}
 
 	return locations;
 }
 
 void GameWorld::Voxels::ChunkGrid::draw_all(const GameWorld::Player& player) const noexcept
 {
-	std::vector<types::loc> visible_chunks{ Render::Utils::cull_staticAABB_frustum(player.getCamera(), m_chunks)};
+	/*std::vector<std::vector<bool>> corners{};
+	std::vector<types::loc> visible_chunks{
+		Render::Utils::cull_staticAABB_frustum(player.getCamera(), m_chunks, corners)};*/
 
 	// Sort transparent chunks to draw them last 
 	std::vector<types::loc> chunk_transparents{};
 	std::vector<types::loc> chunks{};
 
-	for (const auto& i : visible_chunks)
-		if (m_chunk_meshes.at(i).flags.has_transparency)
-			chunk_transparents.emplace_back(i);
-		else
-			chunks.emplace_back(i);
+	for (const auto& i : m_chunks)
+		if(m_chunk_meshes.contains(i.first))
+		{
+			if (m_chunk_meshes.at(i.first).flags.has_transparency)
+				chunk_transparents.emplace_back(i.first);
+			else
+				chunks.emplace_back(i.first);
+		}
 
 	auto playerLoc = GameWorld::Voxels::ChunkGrid::to_loc(player.getPos());
 	std::sort(chunk_transparents.begin(), chunk_transparents.end(), [&](const auto& a, const auto& b)
@@ -147,60 +169,61 @@ void GameWorld::Voxels::ChunkGrid::draw_all(const GameWorld::Player& player) con
 		m_chunk_meshes.at(loc).draw();
 
 	
+	//if (false)
+	//{
+	//	shader.use();
+	//	shader.setValue("model", player.getCamera().model);
+	//	shader.setValue("view", player.getCamera().view);
+	//	shader.setValue("proj", player.getCamera().proj);
 
-	shader.use();
-	shader.setValue("model", player.getCamera().model);
-	shader.setValue("view", player.getCamera().view);
-	shader.setValue("proj", player.getCamera().proj);
+	//	auto loc = to_loc(player.getPos());
 
-	auto loc = to_loc(player.getPos());
+	//	std::vector<Render::Data::VertexColor> newBuffer{};
+	//	size_t i{};
+	//	for (const auto& [k, c] : m_chunks)
+	//	{
+	//		const auto& p = c.getPos();
+	//		const auto& o = c.getOppositeCorner();
 
-	std::vector<Render::Data::VertexColor> newBuffer{};
-	for (const auto& [k, c] : m_chunks)
-	{
-		const auto& p = c.getPos();
-		const auto& o = c.getOppositeCorner();
+	//		vec3f in{ 0, 1, 0 };
+	//		vec3f out{ 1, 0, 0 };
 
-		vec3f color{ 1, 0, 0 };
+	//		/*if (loc == k)
+	//			color = { 1, 1, 0 };*/
 
-		if (std::find(chunks.begin(), chunks.end(), k) != chunks.end() ||
-			std::find(chunk_transparents.begin(), chunk_transparents.end(), k) != chunk_transparents.end())
-			color = { 0, 1, 0 };
+	//		float d = 0.001;
 
-		/*if (loc == k)
-			color = { 1, 1, 0 };*/
+	//		newBuffer.insert
+	//		(newBuffer.end(),
+	//			{
+	//				Render::Data::VertexColor
+	//				// 4 Bottom Edges (Slightly pushed down/inward)
+	//				{ {p.x + d, p.y - d, p.z + d}, corners[i][0] ? in : out }, { {o.x - d, p.y - d, p.z + d}, corners[i][1] ? in : out }, // base - left
+	//				{ {o.x - d, p.y - d, p.z + d}, corners[i][1] ? in : out }, { {o.x - d, p.y - d, o.z - d}, corners[i][5] ? in : out }, // left - front left
+	//				{ {o.x - d, p.y - d, o.z - d}, corners[i][5] ? in : out }, { {p.x + d, p.y - d, o.z - d}, corners[i][4] ? in : out }, // front left - front
+	//				{ {p.x + d, p.y - d, o.z - d}, corners[i][4] ? in : out }, { {p.x + d, p.y - d, p.z + d}, corners[i][0] ? in : out }, // front - base
 
-		float d = 0.001;
+	//			// 4 Top Edges (Slightly pushed up/inward)
+	//			{ {p.x + d, o.y + d, p.z + d}, corners[i][2] ? in : out }, { {o.x - d, o.y + d, p.z + d}, corners[i][3] ? in : out }, // up base - up left
+	//			{ {o.x - d, o.y + d, p.z + d}, corners[i][3] ? in : out }, { {o.x - d, o.y + d, o.z - d}, corners[i][7] ? in : out }, // up left - opposite
+	//			{ {o.x - d, o.y + d, o.z - d}, corners[i][7] ? in : out }, { {p.x + d, o.y + d, o.z - d}, corners[i][6] ? in : out }, // opposite - up front
+	//			{ {p.x + d, o.y + d, o.z - d}, corners[i][6] ? in : out }, { {p.x + d, o.y + d, p.z + d}, corners[i][2] ? in : out }, // up front - up base
 
-		newBuffer.insert
-		(newBuffer.end(),
-			{
-				Render::Data::VertexColor
-				// 4 Bottom Edges (Slightly pushed down/inward)
-				{ {p.x + d, p.y - d, p.z + d}, color }, { {o.x - d, p.y - d, p.z + d}, color },
-				{ {o.x - d, p.y - d, p.z + d}, color }, { {o.x - d, p.y - d, o.z - d}, color },
-				{ {o.x - d, p.y - d, o.z - d}, color }, { {p.x + d, p.y - d, o.z - d}, color },
-				{ {p.x + d, p.y - d, o.z - d}, color }, { {p.x + d, p.y - d, p.z + d}, color },
+	//			// 4 Vertical Pillars (Slightly pushed outward so they encase the loops)
+	//			{ {p.x, p.y - d, p.z}, corners[i][0] ? in : out }, { {p.x, o.y + d, p.z}, corners[i][2] ? in : out }, // base - up base
+	//			{ {o.x, p.y - d, p.z}, corners[i][1] ? in : out }, { {o.x, o.y + d, p.z}, corners[i][3] ? in : out }, // left - up left
+	//			{ {o.x, p.y - d, o.z}, corners[i][5] ? in : out }, { {o.x, o.y + d, o.z}, corners[i][7] ? in : out }, // left front - opposite
+	//			{ {p.x, p.y - d, o.z}, corners[i][4] ? in : out }, { {p.x, o.y + d, o.z}, corners[i][6] ? in : out }  // front - up front 
 
-				// 4 Top Edges (Slightly pushed up/inward)
-				{ {p.x + d, o.y + d, p.z + d}, color }, { {o.x - d, o.y + d, p.z + d}, color },
-				{ {o.x - d, o.y + d, p.z + d}, color }, { {o.x - d, o.y + d, o.z - d}, color },
-				{ {o.x - d, o.y + d, o.z - d}, color }, { {p.x + d, o.y + d, o.z - d}, color },
-				{ {p.x + d, o.y + d, o.z - d}, color }, { {p.x + d, o.y + d, p.z + d}, color },
+	//			});
+	//		i++;
+	//	}
+	//	m_mesh.updateBuffer<Render::Data::VertexColor>(newBuffer, sizeof(Render::Data::VertexColor), GL_DYNAMIC_DRAW);
 
-				// 4 Vertical Pillars (Slightly pushed outward so they encase the loops)
-				{ {p.x, p.y - d, p.z}, color }, { {p.x, o.y + d, p.z}, color },
-				{ {o.x, p.y - d, p.z}, color }, { {o.x, o.y + d, p.z}, color },
-				{ {o.x, p.y - d, o.z}, color }, { {o.x, o.y + d, o.z}, color },
-				{ {p.x, p.y - d, o.z}, color }, { {p.x, o.y + d, o.z}, color }
-
-			});
-	}
-	m_mesh.updateBuffer<Render::Data::VertexColor>(newBuffer, sizeof(Render::Data::VertexColor), GL_DYNAMIC_DRAW);
-	
-	glDisable(GL_DEPTH_TEST);
-	m_mesh.draw(GL_LINES);
-	glEnable(GL_DEPTH_TEST);
+	//	glDisable(GL_DEPTH_TEST);
+	//	m_mesh.draw(GL_LINES);
+	//	glEnable(GL_DEPTH_TEST);
+	//}
 }
 
 

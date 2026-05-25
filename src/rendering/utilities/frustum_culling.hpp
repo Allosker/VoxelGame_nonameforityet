@@ -18,18 +18,20 @@ namespace Render::Utils
 		vec3f max{};
 	};
 
-	inline bool isWithinFrustum(const mat4f& mv, const StaticAABB& aabb) noexcept
+	inline bool isWithinFrustum(const mat4f& mv, const StaticAABB& aabb, 
+		std::vector<std::vector<bool>>& c
+		) noexcept
 	{
 		vec4f corners[8] = {
-			{aabb.min.x, aabb.min.y, aabb.min.z, 1.0}, // x y z
-			{aabb.max.x, aabb.min.y, aabb.min.z, 1.0}, // X y z
-			{aabb.min.x, aabb.max.y, aabb.min.z, 1.0}, // x Y z
-			{aabb.max.x, aabb.max.y, aabb.min.z, 1.0}, // X Y z
+			{aabb.min.x, aabb.min.y, aabb.min.z, 1.0}, // base corner
+			{aabb.max.x, aabb.min.y, aabb.min.z, 1.0}, // lower left
+			{aabb.min.x, aabb.max.y, aabb.min.z, 1.0}, // upper base
+			{aabb.max.x, aabb.max.y, aabb.min.z, 1.0}, // upper left
 
-			{aabb.min.x, aabb.min.y, aabb.max.z, 1.0}, // x y Z
-			{aabb.max.x, aabb.min.y, aabb.max.z, 1.0}, // X y Z
-			{aabb.min.x, aabb.max.y, aabb.max.z, 1.0}, // x Y Z
-			{aabb.max.x, aabb.max.y, aabb.max.z, 1.0}, // X Y Z
+			{aabb.min.x, aabb.min.y, aabb.max.z, 1.0}, // front
+			{aabb.max.x, aabb.min.y, aabb.max.z, 1.0}, // left front
+			{aabb.min.x, aabb.max.y, aabb.max.z, 1.0}, // upper front
+			{aabb.max.x, aabb.max.y, aabb.max.z, 1.0}, // opposite
 		};
 
 		bool inside{ false };
@@ -38,9 +40,13 @@ namespace Render::Utils
 			vec4f corner = mv * corners[i];  
 
 			inside = inside ||
-				(-corner.w <= corner.x && corner.x <= corner.w) &&
+				((-corner.w <= corner.x && corner.x <= corner.w) &&
 				(-corner.w <= corner.y && corner.y <= corner.w) &&
-				(0.f	   <= corner.z && corner.z <= corner.w);
+				(-corner.w <= corner.z && corner.z <= corner.w));
+
+			c.back().push_back((-corner.w <= corner.x && corner.x <= corner.w) &&
+				(-corner.w <= corner.y && corner.y <= corner.w) &&
+				(-corner.w <= corner.z && corner.z <= corner.w));
 		}
 
 		return inside;
@@ -48,7 +54,8 @@ namespace Render::Utils
 
 	inline std::vector<types::loc> cull_staticAABB_frustum(
 		const Camera& cam,
-		const std::map<types::loc, GameWorld::Voxels::Chunk>& chunks
+		const std::map<types::loc, GameWorld::Voxels::Chunk>& chunks,
+		std::vector<std::vector<bool>>& c
 	) noexcept
 	{
 		mat4f mv{ cam.view * cam.proj };
@@ -58,7 +65,9 @@ namespace Render::Utils
 		{
 			StaticAABB aabb{ i.second.getPos(), i.second.getOppositeCorner() };
 			
-			if (isWithinFrustum(mv, aabb))
+			c.push_back({});
+
+			if (isWithinFrustum(mv, aabb, c))
 				out.push_back(i.first);
 		}
 

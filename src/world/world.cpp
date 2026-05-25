@@ -60,12 +60,12 @@ void GameWorld::World::update(const types::pos& playerPos, bool force_reload)
 	if (force_reload || (lastCamLoc != camLoc))
 	{
 		auto m = grid.generate_new_chunks(camLoc);
-		for (const auto& i : m)
-			grid.create_chunkMesh_for_chunk_at(i);
-
 		generateWorld(m);
 
 		grid.discard_outside_chunks(camLoc);
+
+		for (const auto& i : m)
+			grid.chunk_at_loc(i).createPalette();
 
 		lastCamLoc = camLoc;
 	}
@@ -297,8 +297,13 @@ void GameWorld::World::generateWorld(const std::vector<types::loc>& new_chunks_l
 
 	for (auto it = structure_blocks.begin(); it != structure_blocks.end();)
 	{
-		if (set_voxel_at(it->first, it->second))
+		auto* chunk{ grid.chunk_at(it->first) };
+
+		if (chunk)
+		{
+			chunk->block_at(grid.getVoxelIndex(it->first)).id = it->second;
 			it = structure_blocks.erase(it);
+		}
 		else
 			it++;
 	}
@@ -315,6 +320,9 @@ bool GameWorld::World::set_voxel_at(const types::pos& block_pos, types::type_id 
 
 	if (chunk == nullptr)
 		return false;
+
+	if (chunk->isPalette())
+		chunk->recreateChunkFromPalette();
 
 	chunk->block_at(grid.getVoxelIndex(block_pos)).id = id;
 	grid.chunkmesh_at(block_pos)->flags.dirty = true;

@@ -116,7 +116,7 @@ void Render::Data::ChunkMesh::buildMesh(
 	const GameWorld::Voxels::ChunkGrid& grid
 ) noexcept
 {
-	const auto z_stride{ GameWorld::Voxels::Chunk::g_size * GameWorld::Voxels::Chunk::g_size };
+	static constexpr auto z_stride{ GameWorld::Voxels::Chunk::g_size * GameWorld::Voxels::Chunk::g_size };
 
 	for (int32 x{}; x < GameWorld::Voxels::Chunk::g_size; x++)
 	for (int32 y{}; y < GameWorld::Voxels::Chunk::g_size; y++)
@@ -124,7 +124,7 @@ void Render::Data::ChunkMesh::buildMesh(
 	{
 		int32 block_index{ static_cast<int32>((z * z_stride) + (y * GameWorld::Voxels::Chunk::g_size) + x) };
 
-		auto& current_block{ chunk.getVoxelData()[block_index] };
+		auto& current_block{ chunk.block_at(block_index) };
 
 		if (!current_block.id)
 			continue;
@@ -134,39 +134,39 @@ void Render::Data::ChunkMesh::buildMesh(
 
 
 		if (z + 1 < GameWorld::Voxels::Chunk::g_size)
-			CF_block_dirs[0] = chunk.getVoxelData()[block_index + z_stride].id;
+			CF_block_dirs[0] = chunk.block_at(block_index + z_stride).id;
 		else 
 			if (const auto* c{grid.chunk_at(static_cast<types::pos>(vec3i{x, y, z + 1} + static_cast<vec3i>(chunk.getPos())))})
-			CF_block_dirs[0] = c->block_at(static_cast<types::loc>(vec3i{ x, y, 0 })).id;
+				CF_block_dirs[0] = c->block_at(static_cast<types::loc>(vec3i{ x, y, 0 })).id;
 
 		if (z - 1 >= 0)
-			CF_block_dirs[1] = chunk.getVoxelData()[block_index - z_stride].id;
+			CF_block_dirs[1] = chunk.block_at(block_index - z_stride).id;
 		else
 			if (const auto* c{ grid.chunk_at(static_cast<types::pos>(vec3i{x, y, z - 1} + static_cast<vec3i>(chunk.getPos()))) })
 				CF_block_dirs[1] = c->block_at(types::loc{ x, y, GameWorld::Voxels::Chunk::g_size - 1 }).id;
 
 
 		if (y + 1 < GameWorld::Voxels::Chunk::g_size)
-			CF_block_dirs[2] = chunk.getVoxelData()[block_index + GameWorld::Voxels::Chunk::g_size].id;
+			CF_block_dirs[2] = chunk.block_at(block_index + GameWorld::Voxels::Chunk::g_size).id;
 		else
 			if (const auto* c{ grid.chunk_at(static_cast<types::pos>(vec3i{x, y + 1, z} + static_cast<vec3i>(chunk.getPos()))) })
 				CF_block_dirs[2] = c->block_at(types::loc{ x, 0, z }).id;
 
 		if (y - 1 >= 0)
-			CF_block_dirs[3] = chunk.getVoxelData()[block_index - GameWorld::Voxels::Chunk::g_size].id;
+			CF_block_dirs[3] = chunk.block_at(block_index - GameWorld::Voxels::Chunk::g_size).id;
 		else
 			if (const auto* c{ grid.chunk_at(static_cast<types::pos>(vec3i{x, y - 1, z} + static_cast<vec3i>(chunk.getPos()))) })
 				CF_block_dirs[3] = c->block_at(types::loc{ x, GameWorld::Voxels::Chunk::g_size - 1, z }).id;
 
 
 		if (x + 1 < GameWorld::Voxels::Chunk::g_size)
-			CF_block_dirs[4] = chunk.getVoxelData()[block_index + 1].id;
+			CF_block_dirs[4] = chunk.block_at(block_index + 1).id;
 		else
 			if (const auto* c{ grid.chunk_at(static_cast<types::pos>(vec3i{x + 1, y, z} + static_cast<vec3i>(chunk.getPos()))) })
 				CF_block_dirs[4] = c->block_at(types::loc{ 0, y, z }).id;
 
 		if (x - 1 >= 0)
-			CF_block_dirs[5] = chunk.getVoxelData()[block_index - 1].id;
+			CF_block_dirs[5] = chunk.block_at(block_index - 1).id;
 		else
 			if (const auto* c{ grid.chunk_at(static_cast<types::pos>(vec3i{x - 1, y, z} + static_cast<vec3i>(chunk.getPos()))) })
 				CF_block_dirs[5] = c->block_at(types::loc{ GameWorld::Voxels::Chunk::g_size - 1, y, z }).id;

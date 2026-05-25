@@ -1,6 +1,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <limits>
+#include <thread>
 
 #include "mpml/vectors/special_overloads/print_vectors.hpp"
 
@@ -26,10 +27,11 @@
 
 #include "world/entities/basic_entity.hpp"
 
-/* TODOLIST
+/* TOFIXLIST -- TODOLIST on Trello
 * 
 *	== Fix it so that when you scroll the mouse wheel swiftly, it doesn't break the hotbar
 *	== Fix it so that bounding boxes adapt to the size of the object
+* 
 */
 
 
@@ -150,12 +152,17 @@ try
 
 
 	float lastFrame{};
+	float fps{};
+	constexpr float fps_cap{ 60 };
 	while (window.isOpen())
 	{
-		deltaTime = glfwGetTime() - lastFrame;
-		lastFrame = glfwGetTime();
+		float frameStart = glfwGetTime();
+
+		deltaTime = frameStart - lastFrame;
+		lastFrame = frameStart;
 
 		deltaTime = std::min(deltaTime, 1.F / 30.f);
+		fps = 1.f / deltaTime;
 
 
 		window.clearEvents();
@@ -241,6 +248,8 @@ try
 		
 		{
 			ImGui::Begin("Debug"); // Window beginning
+
+			ImGui::Text("FPS: %f", fps);
 			
 			ImGui::Text("Camera Pos	: %f %f %f", player.getPos().x, player.getPos().y, player.getPos().z);
 			ImGui::Text("Velocity	: %f %f %f", player.getVelocity().x, player.getVelocity().y, player.getVelocity().z);
@@ -471,6 +480,13 @@ try
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
 		window.display();
+
+		// Limit FrameRate
+		auto frameExecutionTime = glfwGetTime() - frameStart;
+		if (frameExecutionTime < 1 / fps_cap)
+		{
+			std::this_thread::sleep_for(std::chrono::duration<float>(1 / fps_cap - frameExecutionTime));
+		}
 	}
 
 

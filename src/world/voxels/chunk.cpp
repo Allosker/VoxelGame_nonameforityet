@@ -12,6 +12,35 @@ GameWorld::Voxels::Chunk::Chunk(const types::loc& pos) noexcept
 
 
 // =====================
+// Actors
+// =====================
+
+void GameWorld::Voxels::Chunk::createPalette() noexcept
+{
+	const auto& palette_voxel = m_voxels.back(); 
+
+	for (const auto& v : m_voxels)
+		if (palette_voxel.id != v.id)
+			return;
+
+	m_voxels.resize(1);
+	m_voxels.shrink_to_fit();
+
+	m_isPaletteChunk = true;
+}
+
+void GameWorld::Voxels::Chunk::recreateChunkFromPalette() noexcept
+{
+	m_voxels.resize(GameWorld::Voxels::Chunk::g_maxSize);
+
+	for (auto& v : m_voxels)
+		v.id = m_voxels[0].id;
+
+	m_isPaletteChunk = false;
+}
+
+
+// =====================
 // Predicates
 // =====================
 
@@ -56,5 +85,7 @@ const Render::Data::Voxel* GameWorld::Voxels::Chunk::block_at_ptr(const types::c
 	if (index < 0 || index >= Chunk::g_maxSize)
 		return nullptr;
 
-	return &m_voxels.at(index);
+	if (!m_isPaletteChunk)
+		return &m_voxels.at(index);
+	return &m_voxels.back();
 }

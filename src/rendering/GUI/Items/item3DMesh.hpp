@@ -22,14 +22,14 @@ namespace Render
 	public:
 
 		// = Construction 
-		Item3DMesh(const Image& constructor, const types::Rect<types::pixels>& uv_rect_pixels, size_t newID);
+		Item3DMesh(const Image& constructor, const types::Rect<types::pixels>& uv_rect_pixels, types::type_id newID);
 
 		Item3DMesh(Item3DMesh&&) noexcept = default;
 		Item3DMesh& operator=(Item3DMesh&&) noexcept = default;
 
-		void setId(size_t newId) noexcept { m_id = newId; }
+		void setId(types::type_id newId) noexcept { m_id = newId; }
 
-		size_t getId() const noexcept { return m_id; }
+		types::type_id getId() const noexcept { return m_id; }
 
 		void draw(const Shader& shader, const Texturing::Texture& item_texture) noexcept;
 
@@ -38,7 +38,7 @@ namespace Render
 
 		std::vector<Data::Vertex> create_data(const Image& item, const types::Rect<types::pixels>& uv_rect_pixels);
 
-		size_t m_id{};
+		types::type_id m_id{};
 
 
 		//static constexpr vec3f g_size_item{ 1, 1, 0.1 };

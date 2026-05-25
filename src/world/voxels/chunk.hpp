@@ -30,11 +30,14 @@ namespace GameWorld::Voxels
 		Chunk& operator=(const Chunk&) = delete;
 
 
-		// = Getters
-			
-		const std::vector<Render::Data::Voxel>& getVoxelData() const noexcept { return m_voxels; };
+		// = Actors
 
-		std::vector<Render::Data::Voxel>& getVoxelData() noexcept { return m_voxels; }
+		void createPalette() noexcept;
+
+		void recreateChunkFromPalette() noexcept;
+
+
+		// = Getters
 
 		types::pos getPos() const noexcept { return static_cast<types::pos>(m_pos); }
 
@@ -47,11 +50,23 @@ namespace GameWorld::Voxels
 
 		const bool is_empty_at(const types::chunk_index& index) const noexcept { return m_voxels.at(index).id == 0; }
 
+		bool isPalette() const noexcept { return m_isPaletteChunk; }
+
 
 		// = Mutators
 
-		Render::Data::Voxel& block_at(const types::loc& loc) { return block_at(loc.x + loc.y * g_size + loc.z * g_size * g_size ); }
-		Render::Data::Voxel& block_at(const types::chunk_index& index) { return m_voxels.at(index); }
+		Render::Data::Voxel& block_at(const types::loc& loc) 
+		{ 
+			if (!m_isPaletteChunk)
+				return block_at(loc.x + loc.y * g_size + loc.z * g_size * g_size );
+			return m_voxels.back();
+		}
+		Render::Data::Voxel& block_at(const types::chunk_index& index)
+		{ 
+			if (!m_isPaletteChunk)
+				return m_voxels.at(index);
+			return m_voxels.back();
+		}
 
 		Render::Data::Voxel* block_at_ptr(const types::loc& loc) noexcept;
 		Render::Data::Voxel* block_at_ptr(const types::chunk_index& index) noexcept;
@@ -59,10 +74,14 @@ namespace GameWorld::Voxels
 		const Render::Data::Voxel* block_at_ptr(const types::loc& loc) const noexcept;
 		const Render::Data::Voxel* block_at_ptr(const types::chunk_index& index) const noexcept;
 
-		const Render::Data::Voxel& block_at(const types::chunk_index& index) const { return m_voxels.at(index); }
+		const Render::Data::Voxel& block_at(const types::chunk_index& index) const
+		{ 
+			if (!m_isPaletteChunk)
+				return m_voxels.at(index);
+			return m_voxels.back();
+		}
 		const Render::Data::Voxel& block_at(const types::loc& loc) const { return block_at(loc.x + loc.y * g_size + loc.z * g_size * g_size); }
 		
-	private:
 
 	private:
 
@@ -70,6 +89,8 @@ namespace GameWorld::Voxels
 		std::vector<Render::Data::Voxel> m_voxels;
 
 		types::loc m_pos{};
+
+		bool m_isPaletteChunk{ false };
 		
 
 	public:
