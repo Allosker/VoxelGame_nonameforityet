@@ -16,32 +16,18 @@ namespace Render::Utils
 	{
 		vec3f normal{};
 		float distance{};
-
-		Plan(const vec3f& p1, const vec3f& norm)
-			: normal(norm.normal()),
-			distance(normal.dot(p1))
-		{
-		}
-
-		void normalize()
-		{
-			auto len = normal.length();
-
-			normal /= len;
-			distance /= len;
-		}
 	};
 	
 	struct Frustum
 	{
 		Frustum() noexcept = default;
 
-		Plan left{ {}, {} };
-		Plan right{ {}, {} };
-		Plan bottom{ {}, {} };
-		Plan top{ {}, {} };
-		Plan near{ {}, {} };
-		Plan far{ {}, {} };
+		Plan left;
+		Plan right;
+		Plan bottom;
+		Plan top;
+		Plan near;
+		Plan far;
 	};
 
 	struct StaticAABB
@@ -57,9 +43,8 @@ namespace Render::Utils
 		bool isOnOrForwardPlan(const Plan& plan) const
 		{
 			// Compute the projection interval radius of b onto L(t) = b.c + t * p.n
-			const float r = extent * (std::abs(plan.normal.x) + std::abs(plan.normal.y) + std::abs(plan.normal.z));
-			auto e = plan.normal.dot(center) - plan.distance;
-			return -r <= e;
+			const float r = extent * std::abs(plan.normal.x) + extent * std::abs(plan.normal.y) + extent * std::abs(plan.normal.z);
+			return -r <= plan.normal.dot(center) - plan.distance;
 		}
 
 		bool isOnFrustum(const Frustum& camFrustum) const
@@ -82,41 +67,30 @@ namespace Render::Utils
 		std::vector<std::vector<bool>>& c) noexcept
 	{
 		Frustum     frustum;
-		/*const float halfVSide = 1000.f * tanf(mpml::Angle<>::fromDegrees(90).asRadians() * .5f);
-		const float halfHSide = halfVSide * 2560 / 1440;
-		const vec3f frontMultFar = 1000.f * cam.front_dir;
-
-		frustum.near = { cam.pos + 0.1f * cam.front_dir, cam.front_dir };
-		frustum.far = { cam.pos + frontMultFar, -cam.front_dir };
-		frustum.right = { cam.pos, cam.up_dir.cross(frontMultFar + cam.right_dir() * halfHSide) };
-		frustum.left = { cam.pos, (frontMultFar - cam.right_dir() * halfHSide).cross(cam.up_dir)};
-		frustum.top = { cam.pos, cam.right_dir().cross(frontMultFar - cam.up_dir * halfVSide) };
-		frustum.bottom = { cam.pos, (frontMultFar + cam.up_dir * halfVSide).cross(cam.right_dir())};*/
 
 		auto vp = cam.view * cam.proj;
+		vp = vp.transpose();
 
-		for (int i = 3; i--; ) { frustum.left.normal[i]		= vp[3][i] + vp[0][i]; }
-		for (int i = 3; i--; ) { frustum.right.normal[i]	= vp[3][i] - vp[0][i]; }
-		for (int i = 3; i--; ) { frustum.bottom.normal[i]	= vp[3][i] + vp[1][i]; }
-		for (int i = 3; i--; ) { frustum.top.normal[i]		= vp[3][i] - vp[1][i]; }
-		for (int i = 3; i--; ) { frustum.near.normal[i]		= vp[3][i] + vp[2][i]; }
-		for (int i = 3; i--; ) { frustum.far.normal[i]		= vp[3][i] - vp[2][i]; }
+		for (int i = 3; i--; ) { frustum.left.normal[i]		= vp[i][3] + vp[i][0]; }
+		for (int i = 3; i--; ) { frustum.right.normal[i]	= vp[i][3] - vp[i][0]; }
+		for (int i = 3; i--; ) { frustum.bottom.normal[i]	= vp[i][3] + vp[i][1]; }
+		for (int i = 3; i--; ) { frustum.top.normal[i]		= vp[i][3] - vp[i][1]; }
+		for (int i = 3; i--; ) { frustum.near.normal[i]		= vp[i][3] + vp[i][2]; }
+		for (int i = 3; i--; ) { frustum.far.normal[i]		= vp[i][3] - vp[i][2]; }
 
-		frustum.left.distance	= vp[3][3] + vp[0][3];
-		frustum.right.distance	= vp[3][3] - vp[0][3];
-		frustum.bottom.distance = vp[3][3] + vp[1][3]; 
-		frustum.top.distance	= vp[3][3] - vp[1][3];
-		frustum.near.distance	= vp[3][3] + vp[2][3];
-		frustum.far.distance	= vp[3][3] - vp[2][3];
+		frustum.left.distance	= vp[3][3] + vp[3][0];
+		frustum.right.distance	= vp[3][3] - vp[3][0];
+		frustum.bottom.distance = vp[3][3] + vp[3][1]; 
+		frustum.top.distance	= vp[3][3] - vp[3][1];
+		frustum.near.distance	= vp[3][3] + vp[3][2];
+		frustum.far.distance	= vp[3][3] - vp[3][2];
 
-		frustum.left.normalize();
-		frustum.right.normalize();
-		frustum.bottom.normalize();
-		frustum.top.normalize();
-		frustum.near.normalize();
-		frustum.far.normalize();
-
-		cam.front_dir;
+		frustum.left.normal = frustum.left.normal.normal();
+		frustum.right.normal = frustum.right.normal.normal();
+		frustum.bottom.normal = frustum.bottom.normal.normal();
+		frustum.top.normal = frustum.top.normal.normal();
+		frustum.near.normal = frustum.near.normal.normal();
+		frustum.far.normal = frustum.far.normal.normal();
 
 		std::vector<types::loc> visible_chunks{};
 		for (const auto& i : chunks)
