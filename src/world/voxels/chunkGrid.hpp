@@ -117,8 +117,8 @@ namespace GameWorld::Voxels
 	private:
 
 
-		mutable Render::Mesh m_mesh{};
-		mutable Render::Shader shader;
+		/*mutable Render::Mesh m_mesh{};
+		mutable Render::Shader shader;*/
 
 		std::map<types::loc, GameWorld::Voxels::Chunk> m_chunks{};
 		std::map<types::loc, Render::Data::ChunkMesh> m_chunk_meshes{};

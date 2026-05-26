@@ -153,7 +153,7 @@ try
 
 	float lastFrame{};
 	float fps{};
-	constexpr float fps_cap{ 60 };
+	constexpr float fps_cap{ 120 };
 	while (window.isOpen())
 	{
 		float frameStart = glfwGetTime();
