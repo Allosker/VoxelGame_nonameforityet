@@ -216,7 +216,10 @@ try
 					player.getInventory().process(window, player.getHotbar());
 
 				if (window.isKeyPressedOnce(b::E))
-					world.update(player.getPos(), true);
+					world.update(player, true);
+
+				if (window.isKeyPressedOnce(b::R))
+					player.getCamera().free = !player.getCamera().free;
 
 				/*if (window.isKeyPressedOnce(b::R))
 				{
@@ -350,7 +353,7 @@ try
 
 			//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-			world.update(player.getPos());
+			world.update(player);
 
 			// 3 Item Renders
 
@@ -422,6 +425,8 @@ try
 		entity_chunk_grid.update(player, itemTypeManager);
 
 
+		// Debug
+		Render::Debug::DebugRenderer::get().update(glfwGetTime());
 
 
 		// Rendering
@@ -451,6 +456,24 @@ try
 		entity_chunk_grid.draw(shader3Ditem, atlas_guiBlocks);
 
 
+		// 3D Debug
+
+		
+
+		static auto i = (player.getCamera().view* player.getCamera().proj).inverse()->transpose();
+
+		if (!player.getCamera().free)
+			i = (player.getCamera().view * player.getCamera().proj).inverse()->transpose();
+
+
+		//Render::Debug::obb({}, { 1 }, { 1, 1, 1 }, i, 0, false);
+
+		Render::Debug::aabb({}, { 1 }, { 1, 1, 1 }, 0.1);
+
+		auto vp = (player.getCamera().view * player.getCamera().proj);
+		Render::Debug::DebugRenderer::get().render(vp);
+
+		
 		// UI
 		glDisable(GL_CULL_FACE);
 		glDisable(GL_DEPTH_TEST);

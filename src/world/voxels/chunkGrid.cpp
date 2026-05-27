@@ -13,14 +13,14 @@ namespace Render::Data
 // =====================
 
 GameWorld::Voxels::ChunkGrid::ChunkGrid() noexcept
-	/*: shader{ SHADER_PATH"color.vert", SHADER_PATH"color.frag" }*/
 {
-	/*m_mesh.createBuffers<Render::Data::VertexColor>
-	({}, GL_DYNAMIC_DRAW, { 3, 3 });*/
 }
 
-void GameWorld::Voxels::ChunkGrid::update(const Render::Data::Types::VoxelTypeManager& type_manager, const types::pos& playerPos) noexcept
+void GameWorld::Voxels::ChunkGrid::update(const Render::Data::Types::VoxelTypeManager& type_manager, const Player& player) noexcept
 {
+	if (!m_update_world)
+		return;
+
 	bool shouldBreak{};
 
 	for (auto& [k, c] : m_chunks)
@@ -31,7 +31,7 @@ void GameWorld::Voxels::ChunkGrid::update(const Render::Data::Types::VoxelTypeMa
 		if (m_chunk_meshes[k].flags.dirty)
 		{
 			m_chunk_meshes[k].buildMesh(chunk_at_loc(k), type_manager, *this);
-			m_chunk_meshes[k].updateBuffers(playerPos);
+			m_chunk_meshes[k].updateBuffers(player.getPos());
 			m_chunk_meshes[k].flags.dirty = false;
 			shouldBreak = true;
 		}
@@ -43,6 +43,9 @@ void GameWorld::Voxels::ChunkGrid::update(const Render::Data::Types::VoxelTypeMa
 
 void GameWorld::Voxels::ChunkGrid::discard_outside_chunks(const types::loc& camLoc) noexcept
 {
+	if (!m_update_world)
+		return;
+
 	types::loc min{ camLoc - ChunkSettings::world_render_distance };
 	types::loc max{ camLoc + ChunkSettings::world_render_distance };
 
@@ -82,6 +85,9 @@ void GameWorld::Voxels::ChunkGrid::discard_all_chunks() noexcept
 
 std::vector<types::loc> GameWorld::Voxels::ChunkGrid::generate_new_chunks(const types::loc& camLoc) noexcept
 {
+	if (!m_update_world)
+		return {};
+
 	std::vector<types::loc> locations{};
 
 	if (ChunkSettings::world_render_distance == 0)
@@ -137,9 +143,10 @@ std::vector<types::loc> GameWorld::Voxels::ChunkGrid::generate_new_chunks(const 
 
 void GameWorld::Voxels::ChunkGrid::draw_all(const GameWorld::Player& player) const noexcept
 {
-	std::vector<std::vector<bool>> corners{};
-	std::vector<types::loc> visible_chunks{
-		Render::Utils::createViewFrustum(player.getCamera(), m_chunks, corners)};
+	static std::vector<types::loc> visible_chunks{};
+
+	if (!player.getCamera().free)
+		visible_chunks = Render::Utils::createViewFrustum(player.getCamera(), m_chunks);
 
 	// Sort transparent chunks to draw them last 
 	std::vector<types::loc> chunk_transparents{};
@@ -165,62 +172,8 @@ void GameWorld::Voxels::ChunkGrid::draw_all(const GameWorld::Player& player) con
 	for (const auto& loc : chunks)
 		m_chunk_meshes.at(loc).draw();
 
-	for(const auto& loc : chunk_transparents)
+	for (const auto& loc : chunk_transparents)
 		m_chunk_meshes.at(loc).draw();
-
-	
-	//shader.use();
-	//shader.setValue("model", player.getCamera().model);
-	//shader.setValue("view", player.getCamera().view);
-	//shader.setValue("proj", player.getCamera().proj);
-
-	//auto loc = to_loc(player.getPos());
-
-	//std::vector<Render::Data::VertexColor> newBuffer{};
-	//size_t i{};
-	//for (const auto& [k, c] : m_chunks)
-	//{
-	//	const auto& p = c.getPos();
-	//	const auto& o = c.getOppositeCorner();
-
-	//	vec3f in{ 0, 1, 0 };
-	//	vec3f out{ 1, 0, 0 };
-
-	//	/*if (loc == k)
-	//		color = { 1, 1, 0 };*/
-
-	//	float d = 0.001;
-
-	//	//newBuffer.insert
-	//	//(newBuffer.end(),
-	//	//{
-	//	//	Render::Data::VertexColor
-	//	//	// 4 Bottom Edges (Slightly pushed down/inward)
-	//	//	{ {p.x + d, p.y - d, p.z + d}, corners[i][0] ? in : out }, { {o.x - d, p.y - d, p.z + d}, corners[i][1] ? in : out }, // base - left
-	//	//	{ {o.x - d, p.y - d, p.z + d}, corners[i][1] ? in : out }, { {o.x - d, p.y - d, o.z - d}, corners[i][5] ? in : out }, // left - front left
-	//	//	{ {o.x - d, p.y - d, o.z - d}, corners[i][5] ? in : out }, { {p.x + d, p.y - d, o.z - d}, corners[i][4] ? in : out }, // front left - front
-	//	//	{ {p.x + d, p.y - d, o.z - d}, corners[i][4] ? in : out }, { {p.x + d, p.y - d, p.z + d}, corners[i][0] ? in : out }, // front - base
-
-	//	//	// 4 Top Edges (Slightly pushed up/inward)
-	//	//	{ {p.x + d, o.y + d, p.z + d}, corners[i][2] ? in : out }, { {o.x - d, o.y + d, p.z + d}, corners[i][3] ? in : out }, // up base - up left
-	//	//	{ {o.x - d, o.y + d, p.z + d}, corners[i][3] ? in : out }, { {o.x - d, o.y + d, o.z - d}, corners[i][7] ? in : out }, // up left - opposite
-	//	//	{ {o.x - d, o.y + d, o.z - d}, corners[i][7] ? in : out }, { {p.x + d, o.y + d, o.z - d}, corners[i][6] ? in : out }, // opposite - up front
-	//	//	{ {p.x + d, o.y + d, o.z - d}, corners[i][6] ? in : out }, { {p.x + d, o.y + d, p.z + d}, corners[i][2] ? in : out }, // up front - up base
-
-	//	//	// 4 Vertical Pillars (Slightly pushed outward so they encase the loops)
-	//	//	{ {p.x, p.y - d, p.z}, corners[i][0] ? in : out }, { {p.x, o.y + d, p.z}, corners[i][2] ? in : out }, // base - up base
-	//	//	{ {o.x, p.y - d, p.z}, corners[i][1] ? in : out }, { {o.x, o.y + d, p.z}, corners[i][3] ? in : out }, // left - up left
-	//	//	{ {o.x, p.y - d, o.z}, corners[i][5] ? in : out }, { {o.x, o.y + d, o.z}, corners[i][7] ? in : out }, // left front - opposite
-	//	//	{ {p.x, p.y - d, o.z}, corners[i][4] ? in : out }, { {p.x, o.y + d, o.z}, corners[i][6] ? in : out }  // front - up front 
-
-	//	//});
-	//	i++;
-	//}
-	//m_mesh.updateBuffer<Render::Data::VertexColor>(newBuffer, sizeof(Render::Data::VertexColor), GL_DYNAMIC_DRAW);
-
-	//glDisable(GL_DEPTH_TEST);
-	//m_mesh.draw(GL_LINES);
-	//glEnable(GL_DEPTH_TEST);
 }
 
 

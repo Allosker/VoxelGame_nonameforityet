@@ -18,7 +18,7 @@ namespace GameWorld
 
 
 
-		void update(const types::pos& camPos, bool force_reload=false);
+		void update(const Player& player, bool force_reload=false);
 
 		void generateWorld(const std::vector<types::loc>& new_chunks_loc);
 

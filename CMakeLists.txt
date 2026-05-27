@@ -13,7 +13,7 @@ project (
 )  
  
 # Directories   
-
+ 
 set(SRC_DIR "${PROJECT_SOURCE_DIR}/src/") 
 set(INCLUDE_DIR "${PROJECT_SOURCE_DIR}/src/") 
 set(LIB_DIR "${PROJECT_SOURCE_DIR}/libs/") 

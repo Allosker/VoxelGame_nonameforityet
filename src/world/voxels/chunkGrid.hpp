@@ -47,7 +47,7 @@ namespace GameWorld::Voxels
 
 		// Actors
 
-		void update(const Render::Data::Types::VoxelTypeManager& type_manager, const types::pos& playerPos) noexcept;
+		void update(const Render::Data::Types::VoxelTypeManager& type_manager, const Player& player) noexcept;
 
 		void discard_outside_chunks(const types::loc& camPos) noexcept;
 
@@ -89,9 +89,16 @@ namespace GameWorld::Voxels
 		const Render::Data::ChunkMesh* chunkmesh_at(const types::pos& pos) const noexcept;
 
 
+		// = Setters
+
+		void setWorldUpdateFlag(bool b) noexcept { m_update_world = b; }
+
+
 		// = Predicates
 
 		bool is_empty(const types::pos& block_pos, const Render::Data::Types::VoxelTypeManager& type_manager) const noexcept;
+
+		bool shouldUpdateWorld() const noexcept { return m_update_world; }
 
 
 		// = Mutators
@@ -117,14 +124,12 @@ namespace GameWorld::Voxels
 	private:
 
 
-		/*mutable Render::Mesh m_mesh{};
-		mutable Render::Shader shader;*/
-
 		std::map<types::loc, GameWorld::Voxels::Chunk> m_chunks{};
 		std::map<types::loc, Render::Data::ChunkMesh> m_chunk_meshes{};
 
 
 		bool m_generated_new_chunks{};
+		bool m_update_world{ true };
 	};
 
 

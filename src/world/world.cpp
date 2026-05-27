@@ -4,6 +4,8 @@
 
 #include "PerlinNoiseHO/PerlinNoise.hpp"
 
+#include "players/player/player.hpp"
+
 using Spline = std::vector<vec2d>;
 
 static inline double sampleSpline(const Spline& pts, double x)
@@ -47,11 +49,10 @@ static inline double pickSpline(const std::vector<std::pair<vec2d, std::vector<v
 };
 
 
-void GameWorld::World::update(const types::pos& playerPos, bool force_reload)
+void GameWorld::World::update(const Player& player, bool force_reload)
 {
 	static types::loc lastCamLoc{};
-
-	types::loc camLoc{ GameWorld::Voxels::ChunkGrid::to_loc(playerPos) };
+	types::loc camLoc{ GameWorld::Voxels::ChunkGrid::to_loc(player.getPos()) };
 
 	if (force_reload)
 		grid.discard_all_chunks();
@@ -70,7 +71,7 @@ void GameWorld::World::update(const types::pos& playerPos, bool force_reload)
 		lastCamLoc = camLoc;
 	}
 
-	grid.update(type_manager, playerPos);
+	grid.update(type_manager, player);
 }
 
 void GameWorld::World::generateWorld(const std::vector<types::loc>& new_chunks_loc)
