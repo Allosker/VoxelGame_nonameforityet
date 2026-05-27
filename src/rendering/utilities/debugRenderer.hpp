@@ -41,6 +41,11 @@ namespace Render::Debug
 
 		DebugRenderer()
 		{
+			linesWorld.primitiveSize = 2;
+			linesWorld.primitiveSize = 2;
+			trianglesWorld.primitiveSize = 3;
+			trianglesForeground.primitiveSize = 3;
+
 			GLuint linePointVS = glCreateShader(GL_VERTEX_SHADER);
 			glShaderSource(linePointVS, 1, &linePointVertShaderSrc, nullptr);
 			glCompileShader(linePointVS);
@@ -118,6 +123,8 @@ namespace Render::Debug
 
 		struct VertexList
 		{
+			int primitiveSize{};
+
 			std::vector<Vertex> vertices;
 			std::vector<float> pendings;
 
@@ -135,7 +142,6 @@ namespace Render::Debug
 			list.vertices.push_back({ end, color });
 
 			list.pendings.push_back(duration < 0.f ? -1.f : time + duration);
-			list.pendings.push_back(duration < 0.f ? -1.f : time + duration);
 
 			list.dirty = true;
 		}
@@ -149,8 +155,6 @@ namespace Render::Debug
 			list.vertices.push_back({ p3, color });
 
 			list.pendings.push_back(duration < 0.f ? -1.f : time + duration);
-			list.pendings.push_back(duration < 0.f ? -1.f : time + duration);
-			list.pendings.push_back(duration < 0.f ? -1.f : time + duration);
 
 			list.dirty = true;
 		}
@@ -161,19 +165,19 @@ namespace Render::Debug
 
 			const auto updateList = [&](VertexList& list)
 				{
-					for (int x = 0; x < list.vertices.size(); x++)
+					for (int x = 0; x < list.pendings.size(); x++)
 					{
 						float endTime = list.pendings[x];
-						if (endTime < 0.f || endTime == 0.f || endTime > currentTime)
-						{
+						if (endTime <= 0.f || endTime > currentTime)
 							continue;
-						}
 
-						std::swap(list.vertices[x], list.vertices.back());
 						std::swap(list.pendings[x], list.pendings.back());
-
-						list.vertices.resize(list.vertices.size() - 1);
 						list.pendings.resize(list.pendings.size() - 1);
+
+						for (int y = 0; y < list.primitiveSize; y++)
+							std::swap(list.vertices[x * list.primitiveSize + y], list.vertices[list.vertices.size() - list.primitiveSize + y]);
+
+						list.vertices.resize(list.vertices.size() - list.primitiveSize);
 
 						list.dirty = true;
 					}
@@ -329,7 +333,7 @@ namespace Render::Debug
 		renderer.addLine(corners[3], corners[7], color, duration, foreground);
 	}
 
-	inline void triangle_fill(vec3f p1, vec3f p2, vec3f p3, vec4f color, float duration = -1.f, bool foreground = true)
+	inline void triangle_fill(vec3f p1, vec3f p2, vec3f p3, vec4f color, float duration = 0.f, bool foreground = true)
 	{
 		Render::Debug::DebugRenderer::get().addTriangle(p1, p2, p3, color, duration, foreground);
 	}

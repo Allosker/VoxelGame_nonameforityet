@@ -58,7 +58,7 @@ void GameWorld::World::update(const Player& player, bool force_reload)
 		grid.discard_all_chunks();
 
 
-	if (force_reload || (lastCamLoc != camLoc))
+	if ((force_reload || lastCamLoc != camLoc) && debug_flags.update_world)
 	{
 		auto m = grid.generate_new_chunks(camLoc);
 		generateWorld(m);
@@ -71,7 +71,12 @@ void GameWorld::World::update(const Player& player, bool force_reload)
 		lastCamLoc = camLoc;
 	}
 
-	grid.update(type_manager, player);
+	if (debug_flags.update_world)
+		grid.update(type_manager, player);
+
+	if (debug_flags.draw_chunk_borders)
+		for (const auto& c : grid.getChunks())
+			Render::Debug::aabb(c.second.getPos() + 16.f, { 16.f }, { 1,1,0 }, 0, false);  
 }
 
 void GameWorld::World::generateWorld(const std::vector<types::loc>& new_chunks_loc)

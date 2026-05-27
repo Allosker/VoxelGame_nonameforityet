@@ -18,9 +18,6 @@ GameWorld::Voxels::ChunkGrid::ChunkGrid() noexcept
 
 void GameWorld::Voxels::ChunkGrid::update(const Render::Data::Types::VoxelTypeManager& type_manager, const Player& player) noexcept
 {
-	if (!m_update_world)
-		return;
-
 	bool shouldBreak{};
 
 	for (auto& [k, c] : m_chunks)
@@ -43,9 +40,6 @@ void GameWorld::Voxels::ChunkGrid::update(const Render::Data::Types::VoxelTypeMa
 
 void GameWorld::Voxels::ChunkGrid::discard_outside_chunks(const types::loc& camLoc) noexcept
 {
-	if (!m_update_world)
-		return;
-
 	types::loc min{ camLoc - ChunkSettings::world_render_distance };
 	types::loc max{ camLoc + ChunkSettings::world_render_distance };
 
@@ -85,9 +79,6 @@ void GameWorld::Voxels::ChunkGrid::discard_all_chunks() noexcept
 
 std::vector<types::loc> GameWorld::Voxels::ChunkGrid::generate_new_chunks(const types::loc& camLoc) noexcept
 {
-	if (!m_update_world)
-		return {};
-
 	std::vector<types::loc> locations{};
 
 	if (ChunkSettings::world_render_distance == 0)

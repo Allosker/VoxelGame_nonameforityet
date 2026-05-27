@@ -26,6 +26,8 @@ namespace GameWorld
 
 		
 
+		// = Setters
+
 
 		bool set_voxel_at(const types::pos& block_pos, types::type_id id) noexcept;
 
@@ -124,6 +126,14 @@ namespace GameWorld
 			};
 
 		} debug;
+
+
+		struct
+		{
+			bool update_world{ true };
+			bool draw_chunk_borders{ false };
+		} debug_flags;
+
 
 		double y_min{ -100 };
 		double y_max{ 0 };

@@ -219,7 +219,13 @@ try
 					world.update(player, true);
 
 				if (window.isKeyPressedOnce(b::R))
+				{
 					player.getCamera().free = !player.getCamera().free;
+					world.debug_flags.update_world = !world.debug_flags.update_world;
+				}
+
+				if (window.isKeyPressedOnce(b::T))
+					world.debug_flags.draw_chunk_borders = !world.debug_flags.draw_chunk_borders;
 
 				/*if (window.isKeyPressedOnce(b::R))
 				{
@@ -466,9 +472,9 @@ try
 			i = (player.getCamera().view * player.getCamera().proj).inverse()->transpose();
 
 
-		//Render::Debug::obb({}, { 1 }, { 1, 1, 1 }, i, 0, false);
+		Render::Debug::obb({}, { 1 }, { 1, 1, 1 }, i, 0, false);
 
-		Render::Debug::aabb({}, { 1 }, { 1, 1, 1 }, 0.1);
+		//Render::Debug::aabb({}, { 1 }, { 1, 1, 1 }, 0.1);
 
 		auto vp = (player.getCamera().view * player.getCamera().proj);
 		Render::Debug::DebugRenderer::get().render(vp);

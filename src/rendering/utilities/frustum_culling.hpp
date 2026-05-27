@@ -106,8 +106,6 @@ namespace Render::Utils
 		for (const auto& i : chunks)
 		{
 			StaticAABB aabb{ i.second.getPos() + i.second.g_size / 2.f, i.second.g_size / 2.f };
-
-			//Render::Debug::obb(i.second.getPos() + 16.f, { 16.f }, { 1,1,0 }, 0, false);
 					
 
 			if (aabb.isOnFrustum(frustum))

@@ -89,16 +89,9 @@ namespace GameWorld::Voxels
 		const Render::Data::ChunkMesh* chunkmesh_at(const types::pos& pos) const noexcept;
 
 
-		// = Setters
-
-		void setWorldUpdateFlag(bool b) noexcept { m_update_world = b; }
-
-
 		// = Predicates
 
 		bool is_empty(const types::pos& block_pos, const Render::Data::Types::VoxelTypeManager& type_manager) const noexcept;
-
-		bool shouldUpdateWorld() const noexcept { return m_update_world; }
 
 
 		// = Mutators
@@ -129,7 +122,7 @@ namespace GameWorld::Voxels
 
 
 		bool m_generated_new_chunks{};
-		bool m_update_world{ true };
+
 	};
 
 
