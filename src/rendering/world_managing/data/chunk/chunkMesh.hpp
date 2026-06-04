@@ -31,10 +31,6 @@ namespace Render::Data
 
 		struct VoxelVertex
 		{
-			VoxelVertex(const vec3f& apos = {}, const vec2f& auv = {}, float ashadow = 1.f, uint8 ablocklight = 10, uint8 asunlight = 10) noexcept
-				: pos{ apos }, uv{ auv }, shadow{ ashadow }, blocklight{ ablocklight }, sunlight { asunlight }
-			{ }
-
 			vec3f pos;
 			vec2f uv;
 			float shadow{ 1.f };

@@ -105,7 +105,7 @@ try
 
 		
 
-
+		   
 	//glfwSetKeyCallback(window.get(), key_callback);
 
 	glfwSetFramebufferSizeCallback(window.get(), framebuffersize_callback);

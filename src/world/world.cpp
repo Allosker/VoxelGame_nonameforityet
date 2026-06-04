@@ -68,7 +68,7 @@ void GameWorld::World::update(const Player& player, bool force_reload)
 		for (auto& i : grid.getChunks())
 			i.second.make_empty();
 
-		gen_nodes_sunlight(m);
+		//gen_nodes_sunlight(m);
 
 		grid.discard_outside_chunks(camLoc);
 
@@ -121,9 +121,9 @@ void GameWorld::World::update_blocklight() noexcept
 			if (auto* v = blockempty_at(d))
 			{
 				if (auto neighborLevel = v->getBlocklight();
-					neighborLevel != g_ambientlight && neighborLevel < lightlevel)
+					neighborLevel != 0 && neighborLevel < lightlevel)
 				{
-					v->setBlocklight(g_ambientlight);
+					v->setBlocklight(0);
 
 					lightRemovalBfsQueue.emplace(d, neighborLevel);
 
@@ -183,6 +183,47 @@ void GameWorld::World::update_blocklight() noexcept
 
 void GameWorld::World::update_sunlight() noexcept
 {
+	while (!sunlightRemovalBfsQueue.empty())
+	{
+		LightRemovalNode& node = sunlightRemovalBfsQueue.front();
+
+		types::pos pos = node.pos;
+		auto lightlevel = node.val;
+
+		sunlightRemovalBfsQueue.pop();
+
+		const std::array<types::pos, 6> dirs
+		{
+			types::pos
+			{pos.x + 1, pos.y, pos.z},
+			{pos.x - 1, pos.y, pos.z},
+			{pos.x, pos.y + 1, pos.z},
+			{pos.x, pos.y - 1, pos.z},
+			{pos.x, pos.y, pos.z + 1},
+			{pos.x, pos.y, pos.z - 1}
+		};
+
+		for (size_t j{}; j < dirs.size(); j++)
+			if (auto* v = blockempty_at(dirs[j]))
+			{
+				if (auto neighborLevel = v->getSunlight();
+					(neighborLevel != 0 && neighborLevel < lightlevel) || (j == 3 && lightlevel == g_maxsunlight))
+				{
+					v->setSunlight(0);
+
+					sunlightRemovalBfsQueue.emplace(dirs[j], neighborLevel);
+
+					if (auto* cmesh = grid.chunkmesh_at(dirs[j]))
+						cmesh->flags.dirty = true;
+				}
+				else if (neighborLevel >= lightlevel)
+				{
+					sunlightBfsQueue.emplace(dirs[j]);
+				}
+			}
+
+	}
+
 	size_t i{};
 	while (!sunlightBfsQueue.empty())
 	{
@@ -213,29 +254,28 @@ void GameWorld::World::update_sunlight() noexcept
 		for (size_t j{}; j < dirs.size(); j++)
 			if (auto* v = blockempty_at(dirs[j]))
 			{
+				if (j == 3 && type_manager.isTypeTransparent(v) && blockempty_at(pos)->getSunlight() == g_maxsunlight)
+				{
+					v->setSunlight(g_maxsunlight);
+					sunlightBfsQueue.emplace(dirs[j]);
+				}
+
 				if (type_manager.isTypeTransparent(v) &&
 					v->getSunlight() < lightlevel - 1)
 				{
-					if (j == 3 && blockempty_at(pos)->getSunlight() == g_maxsunlight)
-						v->setSunlight(g_maxsunlight);
-					else
-						v->setSunlight(lightlevel - 1);
+					v->setSunlight(lightlevel - 1);
 
-					lightBfsQueue.emplace(dirs[j]);
+					sunlightBfsQueue.emplace(dirs[j]);
 
 					if (auto* cmesh = grid.chunkmesh_at(dirs[j]))
 						cmesh->flags.dirty = true;
 				}
 			}
 
-		if (i > 10000)
+
+		if (i > 5000)
 			break;
 		i++;
-	}
-
-	while (!sunlightRemovalBfsQueue.empty())
-	{
-
 	}
 }
 
@@ -537,7 +577,7 @@ bool GameWorld::World::set_voxel_at(const types::pos& block_pos, types::type_id 
 	else if (chunk->block_at(voxel_index).id != 0 && type_manager.getType(chunk->block_at(voxel_index).id).is_lightSource)
 	{
 		lightRemovalBfsQueue.emplace(block_pos, chunk->block_at(voxel_index).getBlocklight());
-		chunk->block_at(voxel_index).setBlocklight(g_ambientlight);
+		chunk->block_at(voxel_index).setBlocklight(0);
 	}
 
 	for (int32 x{}; x < Voxels::Chunk::g_size; x++)
@@ -545,7 +585,7 @@ bool GameWorld::World::set_voxel_at(const types::pos& block_pos, types::type_id 
 			for (int32 z{}; z < Voxels::Chunk::g_size; z++)
 			{
 				auto& block = chunk->block_at({ x,y,z });
-				block.setBlocklight(g_ambientlight);
+				block.setBlocklight(0);
 
 				if (block.id != 0 && type_manager.getType(block.id).is_lightSource)
 				{
@@ -555,8 +595,47 @@ bool GameWorld::World::set_voxel_at(const types::pos& block_pos, types::type_id 
 			}
 
 	// Sunlight update
-	sunlightBfsQueue.emplace(block_pos + types::pos{0, 1, 0});
+	/*if (id == 0)
+	{
+		const std::array<types::pos, 6> dirs
+		{
+			types::pos
+			{block_pos.x + 1, block_pos.y, block_pos.z},
+			{block_pos.x - 1, block_pos.y, block_pos.z},
+			{block_pos.x, block_pos.y + 1, block_pos.z},
+			{block_pos.x, block_pos.y - 1, block_pos.z},
+			{block_pos.x, block_pos.y, block_pos.z + 1},
+			{block_pos.x, block_pos.y, block_pos.z - 1}
+		};
+
+		if (auto* tb = blockempty_at({ block_pos.x, block_pos.y + 1, block_pos.z }); tb && tb->getSunlight() != g_maxsunlight)
+		{
+			uint8 highest{};
+			for (const auto& p : dirs)
+			{
+
+				if (auto* b = blockempty_at(p))
+				{
+					highest = std::max(highest, b->getSunlight());
+				}
+
+			}
+
+			blockempty_at(block_pos)->setSunlight(highest == 0 ? 0 : highest - 1);
+		}
+		else
+			blockempty_at(block_pos)->setSunlight(g_maxsunlight);
+
+		sunlightBfsQueue.emplace(block_pos);
+	}
+	else
+	{
+		sunlightRemovalBfsQueue.emplace(block_pos, blockempty_at(block_pos)->getSunlight());
+		blockempty_at(block_pos)->setSunlight(0);
+	}*/
+
 	
+		
 
 	// - Update dirtiness of chunk meshes to update them
 

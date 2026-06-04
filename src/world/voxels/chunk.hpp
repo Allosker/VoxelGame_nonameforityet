@@ -96,7 +96,7 @@ namespace GameWorld::Voxels
 
 	public:
 
-		bool generated_sunlight{ false };
+		bool generated_sunlight{ true };
 
 	private:
 

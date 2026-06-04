@@ -80,7 +80,7 @@ namespace GameWorld
 		std::queue<LightRemovalNode> lightRemovalBfsQueue;
 
 		std::queue<LightNode> sunlightBfsQueue;
-		std::queue<LightNode> sunlightRemovalBfsQueue;
+		std::queue<LightRemovalNode> sunlightRemovalBfsQueue;
 
 		struct
 		{
@@ -182,8 +182,6 @@ namespace GameWorld
 		static constexpr uint8 g_blocklight_propagation{ 1 };
 
 		static constexpr uint8 g_maxsunlight{ 15 };
-
-		static constexpr uint8 g_ambientlight{ 1 };
 
 	};
 
