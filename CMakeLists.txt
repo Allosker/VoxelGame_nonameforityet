@@ -80,7 +80,7 @@ target_include_directories(MYPROJECT PUBLIC ${IMPLOT_DIR})
 # Other Settings   
    
 set_property(TARGET MYPROJECT PROPERTY CXX_STANDARD 20) 
-
+ 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
  
 # Other Paths     

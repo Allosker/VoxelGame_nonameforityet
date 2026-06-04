@@ -188,6 +188,28 @@ namespace Render::Debug
 			updateList(trianglesWorld);
 			updateList(trianglesForeground);
 		}
+		
+		void erase_all()
+		{
+			const auto eraseList = [&](VertexList& list)
+				{
+					for (int x = 0; x < list.pendings.size(); x++)
+					{
+						std::vector<Vertex> vertices;
+						std::vector<float> pendings;
+
+						list.vertices.swap(vertices);
+						list.pendings.swap(pendings);
+
+						list.dirty = true;
+					}
+				};
+
+			eraseList(linesWorld);
+			eraseList(linesForeground);
+			eraseList(trianglesWorld);
+			eraseList(trianglesForeground);
+		}
 
 		void render(mat4f mvpMatrix)
 		{
@@ -235,7 +257,7 @@ namespace Render::Debug
 
 	private:
 
-		float time;
+		float time{};
 
 		VertexList linesWorld;
 		VertexList linesForeground;

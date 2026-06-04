@@ -1,42 +1,12 @@
 #include "world/voxels/chunk.hpp"
 
-
 // =====================
 // Construction/Destruction
 // =====================
 
 GameWorld::Voxels::Chunk::Chunk(const types::loc& pos) noexcept
-	: m_pos(pos), m_voxels(GameWorld::Voxels::Chunk::g_maxSize)
+	: m_pos(pos), m_voxels(g_maxSize)
 {
-}
-
-
-// =====================
-// Actors
-// =====================
-
-void GameWorld::Voxels::Chunk::createPalette() noexcept
-{
-	const auto& palette_voxel = m_voxels.back(); 
-
-	for (const auto& v : m_voxels)
-		if (palette_voxel.id != v.id)
-			return;
-
-	m_voxels.resize(1);
-	m_voxels.shrink_to_fit();
-
-	m_isPaletteChunk = true;
-}
-
-void GameWorld::Voxels::Chunk::recreateChunkFromPalette() noexcept
-{
-	m_voxels.resize(GameWorld::Voxels::Chunk::g_maxSize);
-
-	for (auto& v : m_voxels)
-		v.id = m_voxels[0].id;
-
-	m_isPaletteChunk = false;
 }
 
 
@@ -64,10 +34,13 @@ Render::Data::Voxel* GameWorld::Voxels::Chunk::block_at_ptr(const types::loc& lo
 	return block_at_ptr(loc.x + loc.y * g_size + loc.z * g_size * g_size);
 }
 
-Render::Data::Voxel* GameWorld::Voxels::Chunk::block_at_ptr(const types::chunk_index& index) noexcept
+Render::Data::Voxel* GameWorld::Voxels::Chunk::block_at_ptr(types::chunk_index index) noexcept
 {
 	if (index < 0 || index >= Chunk::g_maxSize)
 		return nullptr;
+
+	if (m_empty)
+		return &m_voxels.front();
 
 	return &m_voxels.at(index);
 }
@@ -80,12 +53,46 @@ const Render::Data::Voxel* GameWorld::Voxels::Chunk::block_at_ptr(const types::l
 	return block_at_ptr(loc.x + loc.y * g_size + loc.z * g_size * g_size);
 }
 
-const Render::Data::Voxel* GameWorld::Voxels::Chunk::block_at_ptr(const types::chunk_index& index) const noexcept
+const Render::Data::Voxel* GameWorld::Voxels::Chunk::block_at_ptr(types::chunk_index index) const noexcept
 {
-	if (index < 0 || index >= Chunk::g_maxSize)
+	if (index < 0 || index >= Chunk::g_maxSize || m_empty)
 		return nullptr;
 
-	if (!m_isPaletteChunk)
-		return &m_voxels.at(index);
-	return &m_voxels.back();
+	if (m_empty)
+		return &m_voxels.front();
+
+	return &block_at(index);
+}
+
+
+// =====================
+// Actors
+// =====================
+
+
+/*private*/ void GameWorld::Voxels::Chunk::make_empty() noexcept
+{
+	if (!m_empty)
+	{
+		bool should_not_be_resized{ false };
+		for (const auto& i : m_voxels)
+			should_not_be_resized = should_not_be_resized || i.id;
+
+		if (!should_not_be_resized)
+		{
+			m_voxels.resize(1);
+			m_voxels.shrink_to_fit();
+
+			m_empty = true;
+		}
+	}
+}
+
+void GameWorld::Voxels::Chunk::make_full() noexcept
+{
+	if (m_empty)
+	{
+		m_voxels.resize(g_maxSize);
+		m_empty = false;
+	}
 }

@@ -37,6 +37,8 @@ namespace Render::GUI
 			return types.at(id - 1);
 		}
 
+		const std::vector<ItemType>& getTypeList() const noexcept { return types; }
+
 
 		std::vector<ItemType> types{};
 

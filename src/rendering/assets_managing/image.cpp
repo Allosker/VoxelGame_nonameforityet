@@ -1,9 +1,9 @@
 #include "image.hpp"
 
 
-Render::Image::Image(const types::path& path_to_image)
+Render::Image::Image(const types::path& path_to_image, bool flip_on_load)
 {
-	load_image(path_to_image);
+	load_image(path_to_image, flip_on_load);
 }
 
 Render::Image::Image(vec2iu size, uint8* ptr, int32 channel, GLenum format)
@@ -76,9 +76,9 @@ void Render::Image::insert(vec2iu pos, const Image& other) noexcept
 }
 
 
-/*private*/ void Render::Image::load_image(const types::path& path)
+/*private*/ void Render::Image::load_image(const types::path& path, bool flip_on_load)
 {
-	stbi_set_flip_vertically_on_load(true);
+	stbi_set_flip_vertically_on_load(flip_on_load);
 
 	vec2i size_truncated{};
 	std::uint8_t* data{ stbi_load(path.string().c_str(), &size_truncated.x, &size_truncated.y, &m_nrChannels, 0) };

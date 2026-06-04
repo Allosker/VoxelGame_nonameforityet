@@ -22,6 +22,28 @@ namespace Render::Data
 	struct Voxel
 	{
 		types::type_id id{0};
+		uint8 blocklight{ 1 };
+		uint8 sunlight{};
+
+		uint8 getBlocklight() const noexcept
+		{
+			return blocklight;
+		}
+
+		void setBlocklight(uint8 val) noexcept
+		{
+			blocklight = val;
+		}
+
+		uint8 getSunlight() const noexcept
+		{
+			return sunlight;
+		}
+
+		void setSunlight(uint8 val) noexcept
+		{
+			sunlight = val;
+		}
 
 		static constexpr std::array<vec3f, 36> faces
 		{

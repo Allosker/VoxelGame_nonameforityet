@@ -16,19 +16,38 @@
 
 #include "rendering/world_managing/data/TypeManagement/voxelTypeManager.hpp"
 
-#include "world/voxels/chunkGrid.hpp"
-
 #include "world/voxels/chunk.hpp"
 
-namespace GameWorld::Voxels
+namespace GameWorld
 {
-	class ChunkGrid;
+	class World;
 }
 
 namespace Render::Data
 {
 	class ChunkMesh
 	{
+	private:
+
+		struct VoxelVertex
+		{
+			VoxelVertex(const vec3f& apos = {}, const vec2f& auv = {}, float ashadow = 1.f, uint8 ablocklight = 10, uint8 asunlight = 10) noexcept
+				: pos{ apos }, uv{ auv }, shadow{ ashadow }, blocklight{ ablocklight }, sunlight { asunlight }
+			{ }
+
+			vec3f pos;
+			vec2f uv;
+			float shadow{ 1.f };
+			uint8 blocklight{};
+			uint8 sunlight{};
+		};
+
+		using Mesh = std::vector<VoxelVertex>;
+		using TMesh = std::vector<std::pair<vec3f, std::array<VoxelVertex, 6>>>;
+		using MeshPair = std::pair<Mesh, TMesh>;
+
+		
+
 	public:
 
 	// = Construction/Destruction
@@ -49,16 +68,16 @@ namespace Render::Data
 
 		void draw() const noexcept;
 
-		void buildMesh(
+		MeshPair buildMesh(
 			const GameWorld::Voxels::Chunk& chunk,
 			const Render::Data::Types::VoxelTypeManager& type_manager,
-			const GameWorld::Voxels::ChunkGrid& grid
+			const GameWorld::World& world
 		) noexcept;
 
-		void updateMeshBuffer() noexcept;
-		void updateTransparentMeshBuffer(const types::pos& camPos) noexcept;
+		void updateMeshBuffer(Mesh&& mesh) noexcept;
+		void updateTransparentMeshBuffer(TMesh&& tmesh, const types::pos& camPos) noexcept;
 
-		void updateBuffers(const types::pos& camPos) noexcept;
+		void updateBuffers(MeshPair&& mp, const types::pos& camPos) noexcept;
 
 		// Free GPU ressources
 		void free() noexcept;
@@ -72,9 +91,6 @@ namespace Render::Data
 
 		size_t m_nbVertices{};
 		size_t m_nbVertices_Transparent{};
-
-		std::vector<std::pair<vec3f, std::array<Vertex, 6>>> m_transparent_mesh{};
-		std::vector<Vertex> m_mesh{};
 
 		GLuint m_vao{};
 		GLuint m_vbo{};
@@ -93,7 +109,7 @@ namespace Render::Data
 
 	public:
 
-		static constexpr std::uint32_t sizeVertex{ sizeof(Vertex) };
+		static constexpr std::uint32_t sizeVertex{ sizeof(VoxelVertex) };
 	};
 
 } // Render::Data

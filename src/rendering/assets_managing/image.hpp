@@ -21,7 +21,7 @@ namespace Render
 	public:
 
 
-		Image(const types::path& path_to_image);
+		Image(const types::path& path_to_image, bool flip_on_load = true);
 
 		Image(vec2iu size, uint8* ptr, int32 channel, GLenum format);
 
@@ -69,7 +69,7 @@ namespace Render
 
 	private:
 
-		void load_image(const types::path& path);
+		void load_image(const types::path& path, bool flip_on_load);
 
 
 	private:

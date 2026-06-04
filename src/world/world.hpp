@@ -9,16 +9,39 @@
 #include "rendering/world_managing/data/typeManagement/voxelTypeManager.hpp"
 #include "rendering/world_managing/data/chunk/chunkMesh.hpp"
 
+#include <queue>
+
 namespace GameWorld
 {
 
 	class World
 	{
+	private:
+
+
+		struct LightNode
+		{
+			types::pos pos;
+		};
+
+		struct LightRemovalNode
+		{
+			types::pos pos;
+			uint16 val;
+		};
+
 	public:
 
 
 
 		void update(const Player& player, bool force_reload=false);
+
+		void update_lighting() noexcept;
+
+		void update_blocklight() noexcept;
+		void update_sunlight() noexcept;
+
+		void gen_nodes_sunlight(const std::vector<types::loc>& chunk_locs) noexcept;
 
 		void generateWorld(const std::vector<types::loc>& new_chunks_loc);
 
@@ -31,12 +54,20 @@ namespace GameWorld
 
 		bool set_voxel_at(const types::pos& block_pos, types::type_id id) noexcept;
 
+
+		Render::Data::Voxel* blockempty_at(const types::pos& block_pos) noexcept;
+		const Render::Data::Voxel* blockempty_at(const types::pos& block_pos) const noexcept;
+
+		Render::Data::Voxel* block_at(const types::pos& block_pos) noexcept;
 		const Render::Data::Voxel* block_at(const types::pos& block_pos) const noexcept;
+
 		const Render::Data::Voxel* block_at(const types::loc& block_loc) const noexcept;
 
 		const GameWorld::Voxels::Chunk* chunk_at(const types::pos& chunk_pos) const noexcept;
 
 		const Render::Data::Types::VoxelTypeManager& getTypeManager() const noexcept { return type_manager; }
+
+		const Voxels::ChunkGrid& getGrid() const noexcept { return grid; }
 
 
 		
@@ -44,6 +75,12 @@ namespace GameWorld
 		Render::Data::Types::VoxelTypeManager type_manager{};
 		std::vector<types::loc> newly_generated_chunks{};
 		std::vector<std::pair<types::pos, types::type_id>> structure_blocks{};
+
+		std::queue<LightNode> lightBfsQueue;
+		std::queue<LightRemovalNode> lightRemovalBfsQueue;
+
+		std::queue<LightNode> sunlightBfsQueue;
+		std::queue<LightNode> sunlightRemovalBfsQueue;
 
 		struct
 		{
@@ -132,6 +169,7 @@ namespace GameWorld
 		{
 			bool update_world{ true };
 			bool draw_chunk_borders{ false };
+			bool create_palettes{ true };
 		} debug_flags;
 
 
@@ -139,6 +177,14 @@ namespace GameWorld
 		double y_max{ 0 };
 
 		const double y_base{ 40 };
+
+		static constexpr uint8 g_maxblocklight{ 15 };
+		static constexpr uint8 g_blocklight_propagation{ 1 };
+
+		static constexpr uint8 g_maxsunlight{ 15 };
+
+		static constexpr uint8 g_ambientlight{ 1 };
+
 	};
 
 

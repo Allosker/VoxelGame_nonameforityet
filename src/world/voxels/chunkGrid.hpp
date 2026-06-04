@@ -27,6 +27,11 @@ namespace Render::Data
 	class ChunkMesh;
 }
 
+namespace GameWorld
+{
+	class World;
+}
+
 namespace GameWorld::Voxels
 {
 
@@ -47,7 +52,7 @@ namespace GameWorld::Voxels
 
 		// Actors
 
-		void update(const Render::Data::Types::VoxelTypeManager& type_manager, const Player& player) noexcept;
+		void update(const World& world, const Render::Data::Types::VoxelTypeManager& type_manager, const Player& player) noexcept;
 
 		void discard_outside_chunks(const types::loc& camPos) noexcept;
 
@@ -62,6 +67,7 @@ namespace GameWorld::Voxels
 		// = Getters
 
 		const bool generatedNewChunks() const noexcept { return m_generated_new_chunks; }
+
 		
 		std::map<types::loc, GameWorld::Voxels::Chunk>& getChunks() noexcept { return m_chunks; }
 		const std::map<types::loc, GameWorld::Voxels::Chunk>& getChunks() const noexcept { return m_chunks; }
@@ -73,6 +79,10 @@ namespace GameWorld::Voxels
 		GameWorld::Voxels::Chunk& chunk_at_loc(const types::loc& loc) noexcept;
 		// No guard against invalid loc
 		const GameWorld::Voxels::Chunk& chunk_at_loc(const types::loc& loc) const noexcept;
+
+		GameWorld::Voxels::Chunk* chunk_at_loc_ptr(const types::loc& loc) noexcept;
+		const GameWorld::Voxels::Chunk* chunk_at_loc_ptr(const types::loc& loc) const noexcept;
+
 
 		// No guards against invalid loc
 		Render::Data::ChunkMesh& chunkmesh_at_loc(const types::loc& loc) noexcept;
@@ -87,6 +97,9 @@ namespace GameWorld::Voxels
 
 		Render::Data::ChunkMesh* chunkmesh_at(const types::pos& pos) noexcept;
 		const Render::Data::ChunkMesh* chunkmesh_at(const types::pos& pos) const noexcept;
+
+		
+		types::type_id block_id_at(const types::pos& block_pos) const noexcept;
 
 
 		// = Predicates
@@ -111,7 +124,8 @@ namespace GameWorld::Voxels
 
 	private: // = Predicates
 
-		std::optional<types::loc> to_loc_opt(const types::pos& camPos) const noexcept;
+		std::optional<types::loc> to_loc_opt_chunks(const types::pos& camPos) const noexcept;
+		std::optional<types::loc> to_loc_opt_chunkMeshes(const types::pos& camPos) const noexcept;
 
 
 	private:

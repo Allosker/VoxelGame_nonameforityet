@@ -31,9 +31,13 @@
 * 
 *	== Fix it so that when you scroll the mouse wheel swiftly, it doesn't break the hotbar
 *	== Fix it so that bounding boxes adapt to the size of the object
+*	== Problem: chunks that were empty and are now full and get their blocks removed won't be empty again
+*	== When you drop some block onto a stack, only one items falls back to the inventory instead of the original size
+*	== When a block is place in another chunk than in the chunk containing light, it doesn't get updated properly
 * 
 */
 
+#include "rendering/skybox.hpp"
 
 #include "uHeaders/debug.hpp"
 
@@ -119,6 +123,7 @@ try
 	Render::Shader shaderCubeDisplay{ SHADER_PATH"shader.vert", SHADER_PATH"shader.frag" };
 	Render::Shader shader2Drectangle{ SHADER_PATH"meshTexture2D.vert", SHADER_PATH"meshTexture2D.frag" };
 	Render::Shader shader2Dtext{ SHADER_PATH"text_render/text2D.vert", SHADER_PATH"text_render/text2D.frag" };
+	Render::Shader S_skybox{ SHADER_PATH"simple/skybox.vert", SHADER_PATH"simple/skybox.frag" };
 
 	// Textures/Images
 	Render::Texturing::Texture textureAtlas{ ASSET_PATH"blocks/world/atlas.png"};
@@ -150,6 +155,8 @@ try
 
 	GameWorld::Entities::EntityChunkGrid entity_chunk_grid{};
 
+
+	Render::Skybox skybox{};
 
 	float lastFrame{};
 	float fps{};
@@ -219,6 +226,10 @@ try
 					world.update(player, true);
 
 				if (window.isKeyPressedOnce(b::R))
+				/*{
+					world.debug_flags.create_palettes = false;
+					world.set_voxel_at(player.getPos(), player.getHotbar().getSelectedItem().id);
+				}*/
 				{
 					player.getCamera().free = !player.getCamera().free;
 					world.debug_flags.update_world = !world.debug_flags.update_world;
@@ -271,6 +282,26 @@ try
 				const types::loc c{ GameWorld::Voxels::ChunkGrid::to_loc(cl->getPos()) };
 
 				ImGui::Text("Chunk Loc : %ld %ld %ld", c.x, c.y, c.z);
+			}
+
+			size_t selectedIndex = 0;
+			if (ImGui::BeginCombo("spawn item", itemTypeManager.getTypeList()[selectedIndex].name.c_str())) {
+				for (size_t i{}; i < itemTypeManager.getTypeList().size(); ++i) {
+					const bool isSelected = (selectedIndex == i);
+
+					if (ImGui::Selectable(itemTypeManager.getTypeList()[i].name.c_str(), isSelected)) 
+					{
+						selectedIndex = i;
+						player.getHotbar().setCurrentSlot({ (uint16)(i + 1) }, itemTypeManager);
+					}
+
+					// Set the initial focus when opening the combo
+					// (scrolling + keyboard navigation focus)
+					if (isSelected) {
+						ImGui::SetItemDefaultFocus();
+					}
+				}
+				ImGui::EndCombo();
 			}
 
 			
@@ -441,6 +472,19 @@ try
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		glEnable(GL_CULL_FACE);
+
+		// Skybox
+		float daytime = glfwGetTime() / 60.f;
+
+		S_skybox.use();
+		mat4f m{ mpml::Identity4<float> };
+		//m = mpml::rotate(m, mpml::Angle<>::fromDegrees((daytime * 360.f) ), { 0.5, 0, 0.5 });
+
+		S_skybox.setValue("model", m);
+		S_skybox.setValue("view", player.getCamera().view);
+		S_skybox.setValue("proj", player.getCamera().proj);
+		skybox.draw(S_skybox);
+
 		glEnable(GL_DEPTH_TEST);
 
 		// World
@@ -448,8 +492,9 @@ try
 
 		textureAtlas.bind();
 
-		
+		//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		world.draw_chunkGrid(player);
+		//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 		// Cube Highlight
 
@@ -466,15 +511,14 @@ try
 
 		
 
-		static auto i = (player.getCamera().view* player.getCamera().proj).inverse()->transpose();
+		// Frustum
+		/*static auto i = (player.getCamera().view* player.getCamera().proj).inverse()->transpose();
 
 		if (!player.getCamera().free)
 			i = (player.getCamera().view * player.getCamera().proj).inverse()->transpose();
 
 
-		Render::Debug::obb({}, { 1 }, { 1, 1, 1 }, i, 0, false);
-
-		//Render::Debug::aabb({}, { 1 }, { 1, 1, 1 }, 0.1);
+		Render::Debug::obb({}, { 1 }, { 1, 1, 1 }, i, 0, false);*/
 
 		auto vp = (player.getCamera().view * player.getCamera().proj);
 		Render::Debug::DebugRenderer::get().render(vp);
@@ -503,11 +547,17 @@ try
 
 		glEnable(GL_CULL_FACE);
 
+		
+
+
 		// Debug 
 
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+		
+		
 
+		// Render all to window
 		window.display();
 
 		// Limit FrameRate
