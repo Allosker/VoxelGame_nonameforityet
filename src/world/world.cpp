@@ -566,7 +566,7 @@ bool GameWorld::World::set_voxel_at(const types::pos& block_pos, types::type_id 
 	grid.create_chunkMesh_for_chunk_at(GameWorld::Voxels::ChunkGrid::to_loc(chunk->getPos()));
 
 	auto voxel_index = grid.getVoxelIndex(block_pos);
-	chunk->block_at(voxel_index).id = id;
+	
 
 	// Update source lights
 	if (id != 0 && type_manager.getType(id).is_lightSource)
@@ -585,14 +585,17 @@ bool GameWorld::World::set_voxel_at(const types::pos& block_pos, types::type_id 
 			for (int32 z{}; z < Voxels::Chunk::g_size; z++)
 			{
 				auto& block = chunk->block_at({ x,y,z });
-				block.setBlocklight(0);
 
 				if (block.id != 0 && type_manager.getType(block.id).is_lightSource)
 				{
-					block.setBlocklight(g_maxblocklight);
-					lightBfsQueue.emplace(static_cast<types::pos>(types::loc{ x,y,z }) + chunk->getPos());
+					auto pos = static_cast<types::pos>(types::loc{ x,y,z }) + chunk->getPos();
+
+					lightRemovalBfsQueue.emplace(pos, block.getBlocklight());
+					lightBfsQueue.emplace(pos);
 				}
 			}
+
+	chunk->block_at(voxel_index).id = id;
 
 	// Sunlight update
 	/*if (id == 0)
