@@ -34,8 +34,7 @@ namespace Render::Data
 			vec3f pos;
 			vec2f uv;
 			float shadow{ 1.f };
-			uint8 blocklight{};
-			uint8 sunlight{};
+			uint16 light{};
 		};
 
 		using Mesh = std::vector<VoxelVertex>;

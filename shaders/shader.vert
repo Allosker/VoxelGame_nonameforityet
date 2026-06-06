@@ -4,8 +4,7 @@
 layout(location = 0) in vec3 aPos;
 layout(location = 1) in vec2 aTextureCoords;
 layout(location = 2) in float aShadowAO;
-layout(location = 3) in uint8_t aBlocklight;
-layout(location = 4) in uint8_t aSunlight;
+layout(location = 3) in uint16_t aLight;
 
 
 uniform mat4 model;
@@ -14,9 +13,8 @@ uniform mat4 proj;
 
 out vec2 textureCoords;
 out float shadowAO;
-
-flat out uint8_t blocklight;
-flat out uint8_t sunlight;
+out float sunlight;
+out vec4 blocklight;
 
 
 void main()
@@ -26,6 +24,15 @@ void main()
 	textureCoords = aTextureCoords;
 	shadowAO = aShadowAO;
 
-	blocklight = aBlocklight;
-	sunlight = aSunlight;
+
+	float r = float((aLight >> 8) & 0xF) / 15.;
+	float g = float((aLight >> 4) & 0xF) / 15.;
+	float b = float((aLight     ) & 0xF) / 15.;
+
+	float asunlight = float((aLight >> 12) & 0xF) / 15.;
+
+	vec4 ablocklight = vec4(r,g,b, 1.);
+
+	sunlight = asunlight;
+	blocklight = ablocklight;
 }

@@ -3,8 +3,9 @@
 
 in vec2 textureCoords;
 in float shadowAO;
-flat in uint8_t blocklight;
-flat in uint8_t sunlight;
+
+in float sunlight;
+in vec4 blocklight;
 
 uniform sampler2D basic_texture;
 
@@ -12,12 +13,13 @@ out vec4 FragColor;
 
 void main()
 {
-	float real_blocklight = float(blocklight) / 15.;
-	float real_sunlight = float(sunlight) / 15.;
+	vec4 color = texture(basic_texture, textureCoords);
 
-	vec4 color = texture(basic_texture, textureCoords) * shadowAO;
+	vec4 bl = blocklight;
+	bl.r *= color.r;
+	bl.g *= color.g;
+	bl.b *= color.b;
 
-
-	FragColor = max(color * real_blocklight, color * real_sunlight);
+	FragColor = clamp(color * (bl + sunlight), 0., 1.) * shadowAO;
 
 }

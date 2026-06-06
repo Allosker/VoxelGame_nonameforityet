@@ -15,6 +15,7 @@
 
 #include <optional>
 #include <map>
+#include <unordered_map>
 #include <vector>
 
 namespace GameWorld
@@ -69,11 +70,11 @@ namespace GameWorld::Voxels
 		const bool generatedNewChunks() const noexcept { return m_generated_new_chunks; }
 
 		
-		std::map<types::loc, GameWorld::Voxels::Chunk>& getChunks() noexcept { return m_chunks; }
-		const std::map<types::loc, GameWorld::Voxels::Chunk>& getChunks() const noexcept { return m_chunks; }
+		std::unordered_map<types::loc, GameWorld::Voxels::Chunk>& getChunks() noexcept { return m_chunks; }
+		const std::unordered_map<types::loc, GameWorld::Voxels::Chunk>& getChunks() const noexcept { return m_chunks; }
 
-		std::map<types::loc, Render::Data::ChunkMesh>& getChunkMeshes() noexcept { return m_chunk_meshes; }
-		const std::map<types::loc, Render::Data::ChunkMesh>& getChunkMeshes() const noexcept { return m_chunk_meshes; }
+		std::unordered_map<types::loc, Render::Data::ChunkMesh>& getChunkMeshes() noexcept { return m_chunk_meshes; }
+		const std::unordered_map<types::loc, Render::Data::ChunkMesh>& getChunkMeshes() const noexcept { return m_chunk_meshes; }
 
 		// No guards against invalid loc
 		GameWorld::Voxels::Chunk& chunk_at_loc(const types::loc& loc) noexcept;
@@ -112,27 +113,16 @@ namespace GameWorld::Voxels
 		void create_chunkMesh_for_chunk_at(const types::loc& key);
 
 
-		// = Getters
-
-		types::chunk_index getVoxelIndex(const types::pos& pos) const;
-
-
 		// Predicates
 
 		static types::loc to_loc(const types::pos& pos) noexcept;
 
 
-	private: // = Predicates
-
-		std::optional<types::loc> to_loc_opt_chunks(const types::pos& camPos) const noexcept;
-		std::optional<types::loc> to_loc_opt_chunkMeshes(const types::pos& camPos) const noexcept;
-
-
 	private:
 
 
-		std::map<types::loc, GameWorld::Voxels::Chunk> m_chunks{};
-		std::map<types::loc, Render::Data::ChunkMesh> m_chunk_meshes{};
+		std::unordered_map<types::loc, GameWorld::Voxels::Chunk> m_chunks{};
+		std::unordered_map<types::loc, Render::Data::ChunkMesh> m_chunk_meshes{};
 
 
 		bool m_generated_new_chunks{};

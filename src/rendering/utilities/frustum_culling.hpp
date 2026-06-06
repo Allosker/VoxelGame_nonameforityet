@@ -8,6 +8,7 @@
 #include "camera.hpp"
 #include "world/voxels/chunk.hpp"
 #include <map>
+#include <unordered_map>
 
 #include "rendering/utilities/debugRenderer.hpp"
 
@@ -65,7 +66,7 @@ namespace Render::Utils
 
 	inline std::vector<types::loc> createViewFrustum(
 		const Camera& cam,
-		const std::map<types::loc, GameWorld::Voxels::Chunk>& chunks) noexcept
+		const std::unordered_map<types::loc, GameWorld::Voxels::Chunk>& chunks) noexcept
 	{
 		Frustum     frustum;
 

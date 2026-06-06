@@ -11,6 +11,19 @@ GameWorld::Voxels::Chunk::Chunk(const types::loc& pos) noexcept
 
 
 // =====================
+// Getters
+// =====================
+
+types::chunk_index GameWorld::Voxels::Chunk::getVoxelIndex(const types::pos& pos) const
+{
+	const auto fpos = static_cast<types::loc>(mpml::floor(pos)) - m_pos;
+	const auto z_stride{ Chunk::g_size * Chunk::g_size };
+	const auto index = static_cast<uint32>(fpos.z * z_stride + fpos.y * Chunk::g_size + fpos.x);
+
+	return index;
+}
+
+// =====================
 // Predicates
 // =====================
 

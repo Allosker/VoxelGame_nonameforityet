@@ -36,9 +36,12 @@ namespace GameWorld
 
 		void update(const Player& player, bool force_reload=false);
 
-		void update_lighting() noexcept;
-
 		void update_blocklight() noexcept;
+		void update_rLighting() noexcept;
+		void update_gLighting() noexcept;
+		void update_bLighting() noexcept;
+
+
 		void update_sunlight() noexcept;
 
 		void gen_nodes_sunlight(const std::vector<types::loc>& chunk_locs) noexcept;
@@ -76,8 +79,12 @@ namespace GameWorld
 		std::vector<types::loc> newly_generated_chunks{};
 		std::vector<std::pair<types::pos, types::type_id>> structure_blocks{};
 
-		std::queue<LightNode> lightBfsQueue;
-		std::queue<LightRemovalNode> lightRemovalBfsQueue;
+		std::queue<LightNode> rBfsQueue;
+		std::queue<LightRemovalNode> rRemovalBfsQueue;
+		std::queue<LightNode> gBfsQueue;
+		std::queue<LightRemovalNode> gRemovalBfsQueue;
+		std::queue<LightNode> bBfsQueue;
+		std::queue<LightRemovalNode> bRemovalBfsQueue;
 
 		std::queue<LightNode> sunlightBfsQueue;
 		std::queue<LightRemovalNode> sunlightRemovalBfsQueue;

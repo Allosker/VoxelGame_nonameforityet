@@ -16,33 +16,51 @@ namespace Render::Data
 	{
 		std::array<vec2f, 6> tex_pos{};
 	};
-
 	
 	
 	struct Voxel
 	{
-		types::type_id id{0};
-		uint8 blocklight{ 1 };
-		uint8 sunlight{};
+		types::type_id id{ 0 };
+		uint16 light{};
 
-		uint8 getBlocklight() const noexcept
+		uint8 getR() const noexcept
 		{
-			return blocklight;
+			return (light >> 8) & 0xF;
 		}
 
-		void setBlocklight(uint8 val) noexcept
+		void setR(uint8 val) noexcept
 		{
-			blocklight = val;
+			light = (light & 0xF0FF) | (val << 8);
+		}
+
+		uint8 getG() const noexcept
+		{
+			return (light >> 4) & 0xF;
+		}
+
+		void setG(uint8 val) noexcept
+		{
+			light = (light & 0xFF0F) | (val << 4);
+		}
+
+		uint8 getB() const noexcept
+		{
+			return light & 0xF;
+		}
+
+		void setB(uint8 val) noexcept
+		{
+			light = (light & 0xFFF0) | val;
 		}
 
 		uint8 getSunlight() const noexcept
 		{
-			return sunlight;
+			return (light >> 12) & 0xF;
 		}
 
 		void setSunlight(uint8 val) noexcept
 		{
-			sunlight = val;
+			light = (light & 0x0FFF) | (val << 12);
 		}
 
 		static constexpr std::array<vec3f, 36> faces

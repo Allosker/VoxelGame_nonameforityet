@@ -43,8 +43,8 @@ namespace Render::Data::Types
 
 		//VoxelType() = delete;
 
-		VoxelType(const std::array<vec2f, 6>& tex_pos, bool transparent = false, bool destructible = true, bool lightSource = false, const std::array<vec3f, 6>& offsets = { 0 })
-			: uvs{ mapTextureUVs_4(tex_pos) }, is_transparent{ transparent }, is_destructible{ destructible }, is_lightSource{ lightSource }, face_offsets{offsets}
+		VoxelType(const std::array<vec2f, 6>& tex_pos, bool transparent = false, bool destructible = true, bool lightSource = false, const mpml::Vector3<uint8>& alight = {}, const std::array<vec3f, 6>& offsets = {0})
+			: uvs{ mapTextureUVs_4(tex_pos) }, is_transparent{ transparent }, is_destructible{ destructible }, is_lightSource{ lightSource }, face_offsets{offsets}, light{alight}
 		{
 		}
 
@@ -58,6 +58,8 @@ namespace Render::Data::Types
 		bool is_transparent{};
 		bool is_destructible{};
 		bool is_lightSource{};
+
+		mpml::Vector3<uint8> light{};
 
 		static constexpr float g_texture_voxel_size{ 32.f };
 		/*uint64 id{};*/

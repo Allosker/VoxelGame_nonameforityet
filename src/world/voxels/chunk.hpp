@@ -38,6 +38,8 @@ namespace GameWorld::Voxels
 
 		const std::vector<Render::Data::Voxel>& getVoxels() const noexcept { return m_voxels; }
 
+		types::chunk_index getVoxelIndex(const types::pos& pos) const;
+
 
 		// = Predicates
 
@@ -88,7 +90,7 @@ namespace GameWorld::Voxels
 		}
 
 
-		// = Actos
+		// = Actors
 
 		void make_empty() noexcept;
 		void make_full() noexcept;
@@ -96,7 +98,7 @@ namespace GameWorld::Voxels
 
 	public:
 
-		bool generated_sunlight{ true };
+		bool generated_sunlight{ false };
 
 	private:
 

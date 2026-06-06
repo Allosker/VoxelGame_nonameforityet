@@ -68,7 +68,7 @@ void GameWorld::World::update(const Player& player, bool force_reload)
 		for (auto& i : grid.getChunks())
 			i.second.make_empty();
 
-		//gen_nodes_sunlight(m);
+		gen_nodes_sunlight(m);
 
 		grid.discard_outside_chunks(camLoc);
 
@@ -77,7 +77,7 @@ void GameWorld::World::update(const Player& player, bool force_reload)
 
 	if (debug_flags.update_world)
 	{
-		update_lighting();
+		update_sunlight();
 
 		if (sunlightBfsQueue.empty())
 			grid.update(*this, type_manager, player);
@@ -86,25 +86,26 @@ void GameWorld::World::update(const Player& player, bool force_reload)
 
 	if (debug_flags.draw_chunk_borders)
 		for (const auto& c : grid.getChunks())
-			Render::Debug::aabb(c.second.getPos() + 16.f, { 16.f }, { 1,1,0 }, 0, false);  
-}
-
-void GameWorld::World::update_lighting() noexcept
-{
-	update_blocklight();
-	update_sunlight();
+			Render::Debug::aabb(c.second.getPos() + 16.f, { 16.f }, (c.second.isEmpty() ? vec3f{0, 1, 1} : vec3f{ 1, 1, 0 }), 0, false);
 }
 
 void GameWorld::World::update_blocklight() noexcept
 {
-	while (!lightRemovalBfsQueue.empty())
+	update_rLighting();
+	update_gLighting();
+	update_bLighting();
+}
+
+void GameWorld::World::update_rLighting() noexcept
+{
+	while (!rRemovalBfsQueue.empty())
 	{
-		LightRemovalNode& node = lightRemovalBfsQueue.front();
+		LightRemovalNode& node = rRemovalBfsQueue.front();
 
 		types::pos pos = node.pos;
 		auto lightlevel = node.val;
 
-		lightRemovalBfsQueue.pop();
+		rRemovalBfsQueue.pop();
 
 		const std::array<types::pos, 6> dirs
 		{
@@ -120,36 +121,36 @@ void GameWorld::World::update_blocklight() noexcept
 		for (const auto& d : dirs)
 			if (auto* v = blockempty_at(d))
 			{
-				if (auto neighborLevel = v->getBlocklight();
+				if (auto neighborLevel = v->getR();
 					neighborLevel != 0 && neighborLevel < lightlevel)
 				{
-					v->setBlocklight(0);
+					v->setR(0);
 
-					lightRemovalBfsQueue.emplace(d, neighborLevel);
+					rRemovalBfsQueue.emplace(d, neighborLevel);
 
 					if (auto* cmesh = grid.chunkmesh_at(d))
 						cmesh->flags.dirty = true;
 				}
 				else if (neighborLevel >= lightlevel)
 				{
-					lightBfsQueue.emplace(d);
+					rBfsQueue.emplace(d);
 				}
 			}
 
 	}
 
-	while (!lightBfsQueue.empty())
+	while (!rBfsQueue.empty())
 	{
-		LightNode& node = lightBfsQueue.front();
+		LightNode& node = rBfsQueue.front();
 
 		types::pos pos = node.pos;
 
-		lightBfsQueue.pop();
+		rBfsQueue.pop();
 
 		auto ptr = blockempty_at(pos);
 		uint8 lightlevel{};
 		if (ptr)
-			lightlevel = ptr->getBlocklight();
+			lightlevel = ptr->getR();
 		else
 			lightlevel = 0;
 
@@ -168,11 +169,11 @@ void GameWorld::World::update_blocklight() noexcept
 			if (auto* v = blockempty_at(d))
 			{
 				if (type_manager.isTypeTransparent(v) &&
-					v->getBlocklight() < lightlevel - 1)
+					v->getR() < lightlevel - 1)
 				{
-					v->setBlocklight(lightlevel - 1);
+					v->setR(lightlevel - 1);
 
-					lightBfsQueue.emplace(d);
+					rBfsQueue.emplace(d);
 
 					if (auto* cmesh = grid.chunkmesh_at(d))
 						cmesh->flags.dirty = true;
@@ -180,6 +181,181 @@ void GameWorld::World::update_blocklight() noexcept
 			}
 	}
 }
+
+void GameWorld::World::update_gLighting() noexcept
+{
+	while (!gRemovalBfsQueue.empty())
+	{
+		LightRemovalNode& node = gRemovalBfsQueue.front();
+
+		types::pos pos = node.pos;
+		auto lightlevel = node.val;
+
+		gRemovalBfsQueue.pop();
+
+		const std::array<types::pos, 6> dirs
+		{
+			types::pos
+			{pos.x + 1, pos.y, pos.z},
+			{pos.x - 1, pos.y, pos.z},
+			{pos.x, pos.y + 1, pos.z},
+			{pos.x, pos.y - 1, pos.z},
+			{pos.x, pos.y, pos.z + 1},
+			{pos.x, pos.y, pos.z - 1}
+		};
+
+		for (const auto& d : dirs)
+			if (auto* v = blockempty_at(d))
+			{
+				if (auto neighborLevel = v->getG();
+					neighborLevel != 0 && neighborLevel < lightlevel)
+				{
+					v->setG(0);
+
+					gRemovalBfsQueue.emplace(d, neighborLevel);
+
+					if (auto* cmesh = grid.chunkmesh_at(d))
+						cmesh->flags.dirty = true;
+				}
+				else if (neighborLevel >= lightlevel)
+				{
+					gBfsQueue.emplace(d);
+				}
+			}
+
+	}
+
+	while (!gBfsQueue.empty())
+	{
+		LightNode& node = gBfsQueue.front();
+
+		types::pos pos = node.pos;
+
+		gBfsQueue.pop();
+
+		auto ptr = blockempty_at(pos);
+		uint8 lightlevel{};
+		if (ptr)
+			lightlevel = ptr->getG();
+		else
+			lightlevel = 0;
+
+		const std::array<types::pos, 6> dirs
+		{
+			types::pos
+			{pos.x + 1, pos.y, pos.z},
+			{pos.x - 1, pos.y, pos.z},
+			{pos.x, pos.y + 1, pos.z},
+			{pos.x, pos.y - 1, pos.z},
+			{pos.x, pos.y, pos.z + 1},
+			{pos.x, pos.y, pos.z - 1}
+		};
+
+		for (const auto& d : dirs)
+			if (auto* v = blockempty_at(d))
+			{
+				if (type_manager.isTypeTransparent(v) &&
+					v->getG() < lightlevel - 1)
+				{
+					v->setG(lightlevel - 1);
+
+					gBfsQueue.emplace(d);
+
+					if (auto* cmesh = grid.chunkmesh_at(d))
+						cmesh->flags.dirty = true;
+				}
+			}
+	}
+}
+
+void GameWorld::World::update_bLighting() noexcept
+{
+	while (!bRemovalBfsQueue.empty())
+	{
+		LightRemovalNode& node = bRemovalBfsQueue.front();
+
+		types::pos pos = node.pos;
+		auto lightlevel = node.val;
+
+		bRemovalBfsQueue.pop();
+
+		const std::array<types::pos, 6> dirs
+		{
+			types::pos
+			{pos.x + 1, pos.y, pos.z},
+			{pos.x - 1, pos.y, pos.z},
+			{pos.x, pos.y + 1, pos.z},
+			{pos.x, pos.y - 1, pos.z},
+			{pos.x, pos.y, pos.z + 1},
+			{pos.x, pos.y, pos.z - 1}
+		};
+
+		for (const auto& d : dirs)
+			if (auto* v = blockempty_at(d))
+			{
+				if (auto neighborLevel = v->getB();
+					neighborLevel != 0 && neighborLevel < lightlevel)
+				{
+					v->setB(0);
+
+					bRemovalBfsQueue.emplace(d, neighborLevel);
+
+					if (auto* cmesh = grid.chunkmesh_at(d))
+						cmesh->flags.dirty = true;
+				}
+				else if (neighborLevel >= lightlevel)
+				{
+					bBfsQueue.emplace(d);
+				}
+			}
+
+	}
+
+	while (!bBfsQueue.empty())
+	{
+		LightNode& node = bBfsQueue.front();
+
+		types::pos pos = node.pos;
+
+		bBfsQueue.pop();
+
+		auto ptr = blockempty_at(pos);
+		uint8 lightlevel{};
+		if (ptr)
+			lightlevel = ptr->getB();
+		else
+			lightlevel = 0;
+
+		const std::array<types::pos, 6> dirs
+		{
+			types::pos
+			{pos.x + 1, pos.y, pos.z},
+			{pos.x - 1, pos.y, pos.z},
+			{pos.x, pos.y + 1, pos.z},
+			{pos.x, pos.y - 1, pos.z},
+			{pos.x, pos.y, pos.z + 1},
+			{pos.x, pos.y, pos.z - 1}
+		};
+
+		for (const auto& d : dirs)
+			if (auto* v = blockempty_at(d))
+			{
+				if (type_manager.isTypeTransparent(v) &&
+					v->getB() < lightlevel - 1)
+				{
+					v->setB(lightlevel - 1);
+
+					bBfsQueue.emplace(d);
+
+					if (auto* cmesh = grid.chunkmesh_at(d))
+						cmesh->flags.dirty = true;
+				}
+			}
+	}
+}
+
+
+
 
 void GameWorld::World::update_sunlight() noexcept
 {
@@ -282,7 +458,9 @@ void GameWorld::World::update_sunlight() noexcept
 void GameWorld::World::gen_nodes_sunlight(const std::vector<types::loc>& chunk_locs) noexcept
 {
 	for(auto& loc : chunk_locs)
-		if (!grid.chunk_at_loc(loc).generated_sunlight)
+	{
+		auto& chunk = grid.chunk_at_loc(loc);
+		if (!chunk.isEmpty() && !chunk.generated_sunlight)
 		{
 			if (auto* c = grid.chunk_at_loc_ptr(loc + types::loc{ 0, 1 , 0 }))
 			{
@@ -296,7 +474,7 @@ void GameWorld::World::gen_nodes_sunlight(const std::vector<types::loc>& chunk_l
 						}
 					}
 
-				grid.chunk_at_loc(loc).generated_sunlight = true;
+				chunk.generated_sunlight = true;
 			}
 			else // if(current chunk is above ground)
 			{
@@ -308,8 +486,9 @@ void GameWorld::World::gen_nodes_sunlight(const std::vector<types::loc>& chunk_l
 				*/
 			}
 
-			grid.chunk_at_loc(loc).generated_sunlight = true;
+			chunk.generated_sunlight = true;
 		}
+	}
 }
 
 void GameWorld::World::generateWorld(const std::vector<types::loc>& new_chunks_loc)
@@ -448,7 +627,7 @@ void GameWorld::World::generateWorld(const std::vector<types::loc>& new_chunks_l
 							current_block.id = 2;
 
 						if (bp <= y_max - 4 && bp >= y_max - 80)
-							current_block.id = 3;
+							current_block.id = 2;//3;
 
 						if (bp <= y_max - 80)
 							current_block.id = 4;
@@ -540,7 +719,7 @@ void GameWorld::World::generateWorld(const std::vector<types::loc>& new_chunks_l
 
 		if (chunk)
 		{
-			chunk->block_at(grid.getVoxelIndex(it->first)).id = it->second;
+			chunk->block_at(chunk->getVoxelIndex(it->first)).id = it->second;
 			it = structure_blocks.erase(it);
 		}
 		else
@@ -565,19 +744,32 @@ bool GameWorld::World::set_voxel_at(const types::pos& block_pos, types::type_id 
 
 	grid.create_chunkMesh_for_chunk_at(GameWorld::Voxels::ChunkGrid::to_loc(chunk->getPos()));
 
-	auto voxel_index = grid.getVoxelIndex(block_pos);
+	auto voxel_index = chunk->getVoxelIndex(block_pos);
+	auto& current_block = chunk->block_at(voxel_index);
 	
 
 	// Update source lights
 	if (id != 0 && type_manager.getType(id).is_lightSource)
 	{
-		lightBfsQueue.emplace(block_pos);
-		chunk->block_at(voxel_index).setBlocklight(g_maxblocklight);
+		const auto& type = type_manager.getType(id);
+
+		rBfsQueue.emplace(block_pos);
+		gBfsQueue.emplace(block_pos);
+		bBfsQueue.emplace(block_pos);
+
+		current_block.setR(type.light.x);
+		current_block.setG(type.light.y);
+		current_block.setB(type.light.z);
 	}
-	else if (chunk->block_at(voxel_index).id != 0 && type_manager.getType(chunk->block_at(voxel_index).id).is_lightSource)
+	else if (current_block.id != 0 && type_manager.getType(current_block.id).is_lightSource)
 	{
-		lightRemovalBfsQueue.emplace(block_pos, chunk->block_at(voxel_index).getBlocklight());
-		chunk->block_at(voxel_index).setBlocklight(0);
+		rRemovalBfsQueue.emplace(block_pos, current_block.getR());
+		gRemovalBfsQueue.emplace(block_pos, current_block.getG());
+		bRemovalBfsQueue.emplace(block_pos, current_block.getB());
+
+		current_block.setR(0);
+		current_block.setG(0);
+		current_block.setB(0);
 	}
 
 	for (int32 x{}; x < Voxels::Chunk::g_size; x++)
@@ -590,15 +782,24 @@ bool GameWorld::World::set_voxel_at(const types::pos& block_pos, types::type_id 
 				{
 					auto pos = static_cast<types::pos>(types::loc{ x,y,z }) + chunk->getPos();
 
-					lightRemovalBfsQueue.emplace(pos, block.getBlocklight());
-					lightBfsQueue.emplace(pos);
+					rRemovalBfsQueue.emplace(pos, block.getR());
+					gRemovalBfsQueue.emplace(pos, block.getG());
+					bRemovalBfsQueue.emplace(pos, block.getB());
+
+					rBfsQueue.emplace(pos);
+					gBfsQueue.emplace(pos);
+					bBfsQueue.emplace(pos);
 				}
 			}
 
 	chunk->block_at(voxel_index).id = id;
 
+	update_blocklight();
+
+	
+
 	// Sunlight update
-	/*if (id == 0)
+	if (id == 0)
 	{
 		const std::array<types::pos, 6> dirs
 		{
@@ -635,7 +836,7 @@ bool GameWorld::World::set_voxel_at(const types::pos& block_pos, types::type_id 
 	{
 		sunlightRemovalBfsQueue.emplace(block_pos, blockempty_at(block_pos)->getSunlight());
 		blockempty_at(block_pos)->setSunlight(0);
-	}*/
+	}
 
 	
 		
@@ -683,7 +884,7 @@ Render::Data::Voxel* GameWorld::World::blockempty_at(const types::pos& block_pos
 	if (!c)
 		return nullptr;
 
-	return c->block_at_ptr(grid.getVoxelIndex(block_pos));
+	return c->block_at_ptr(c->getVoxelIndex(block_pos));
 }
 
 const Render::Data::Voxel* GameWorld::World::blockempty_at(const types::pos& block_pos) const noexcept
@@ -693,7 +894,7 @@ const Render::Data::Voxel* GameWorld::World::blockempty_at(const types::pos& blo
 	if (!c)
 		return nullptr;
 
-	return c->block_at_ptr(grid.getVoxelIndex(block_pos));
+	return c->block_at_ptr(c->getVoxelIndex(block_pos));
 }
 
 Render::Data::Voxel* GameWorld::World::block_at(const types::pos& block_pos) noexcept
@@ -716,7 +917,7 @@ const Render::Data::Voxel const* GameWorld::World::block_at(const types::pos& bl
 	if (!c)
 		return nullptr;
 
-	auto* ptr = c->block_at_ptr(grid.getVoxelIndex(block_pos));
+	auto* ptr = c->block_at_ptr(c->getVoxelIndex(block_pos));
 
 	if (!ptr->id)
 		return nullptr;

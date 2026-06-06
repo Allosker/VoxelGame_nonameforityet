@@ -26,12 +26,8 @@ Render::Data::ChunkMesh::ChunkMesh() noexcept
 			glEnableVertexAttribArray(2);
 
 			// For integers
-			glVertexAttribIPointer(3, 1, GL_BYTE, sizeVertex, std::bit_cast<void*>(offsetof(VoxelVertex, blocklight)));
+			glVertexAttribIPointer(3, 1, GL_UNSIGNED_SHORT, sizeVertex, std::bit_cast<void*>(offsetof(VoxelVertex, light)));
 			glEnableVertexAttribArray(3);
-
-			// For integers
-			glVertexAttribIPointer(4, 1, GL_BYTE, sizeVertex, std::bit_cast<void*>(offsetof(VoxelVertex, sunlight)));
-			glEnableVertexAttribArray(4);
 		} };
 
 	glBindVertexArray(m_vao);
@@ -210,14 +206,10 @@ Render::Data::ChunkMesh::MeshPair Render::Data::ChunkMesh::buildMesh(
 				const auto& offset{ type.face_offsets };
 
 
-				uint8 face_light{};
-				uint8 face_sunlight{};
+				uint16 face_light{};
 
 				if (const auto* v = world.blockempty_at(static_cast<types::pos>(dirs[i]) + chunk.getPos()))
-				{
-					face_light = v->getBlocklight();
-					face_sunlight = v->getSunlight();
-				}
+					face_light = v->light;
 
 
 				if (type.is_transparent)
@@ -225,12 +217,12 @@ Render::Data::ChunkMesh::MeshPair Render::Data::ChunkMesh::buildMesh(
 					mp.second.emplace_back( std::pair<vec3f, std::array<VoxelVertex, 6>>
 					{
 						translation, std::array<VoxelVertex, 6>{
-						VoxelVertex{ Voxel::faces[index + 0] + translation + offset[i], type.uvs[i][0], 1.f, face_light, face_sunlight },
-						VoxelVertex{ Voxel::faces[index + 1] + translation + offset[i], type.uvs[i][1], 1.f, face_light, face_sunlight },
-						VoxelVertex{ Voxel::faces[index + 2] + translation + offset[i], type.uvs[i][2], 1.f, face_light, face_sunlight },
-						VoxelVertex{ Voxel::faces[index + 3] + translation + offset[i], type.uvs[i][1], 1.f, face_light, face_sunlight },
-						VoxelVertex{ Voxel::faces[index + 4] + translation + offset[i], type.uvs[i][3], 1.f, face_light, face_sunlight },
-						VoxelVertex{ Voxel::faces[index + 5] + translation + offset[i], type.uvs[i][2], 1.f, face_light, face_sunlight }
+						VoxelVertex{ Voxel::faces[index + 0] + translation + offset[i], type.uvs[i][0], 1.f, face_light },
+						VoxelVertex{ Voxel::faces[index + 1] + translation + offset[i], type.uvs[i][1], 1.f, face_light },
+						VoxelVertex{ Voxel::faces[index + 2] + translation + offset[i], type.uvs[i][2], 1.f, face_light },
+						VoxelVertex{ Voxel::faces[index + 3] + translation + offset[i], type.uvs[i][1], 1.f, face_light },
+						VoxelVertex{ Voxel::faces[index + 4] + translation + offset[i], type.uvs[i][3], 1.f, face_light },
+						VoxelVertex{ Voxel::faces[index + 5] + translation + offset[i], type.uvs[i][2], 1.f, face_light }
 						}
 					});
 				}
@@ -352,12 +344,12 @@ Render::Data::ChunkMesh::MeshPair Render::Data::ChunkMesh::buildMesh(
 						corners[1] = s_values[3 - (back + right + rb)];
 
 
-					mp.first.push_back({ Voxel::faces[index + 0] + translation + offset[i], type.uvs[i][0], corners[0], face_light, face_sunlight });
-					mp.first.push_back({ Voxel::faces[index + 1] + translation + offset[i], type.uvs[i][1], corners[1], face_light, face_sunlight });
-					mp.first.push_back({ Voxel::faces[index + 2] + translation + offset[i], type.uvs[i][2], corners[2], face_light, face_sunlight });
-					mp.first.push_back({ Voxel::faces[index + 3] + translation + offset[i], type.uvs[i][1], corners[1], face_light, face_sunlight });
-					mp.first.push_back({ Voxel::faces[index + 4] + translation + offset[i], type.uvs[i][3], corners[3], face_light, face_sunlight });
-					mp.first.push_back({ Voxel::faces[index + 5] + translation + offset[i], type.uvs[i][2], corners[2], face_light, face_sunlight });
+					mp.first.push_back({ Voxel::faces[index + 0] + translation + offset[i], type.uvs[i][0], corners[0], face_light });
+					mp.first.push_back({ Voxel::faces[index + 1] + translation + offset[i], type.uvs[i][1], corners[1], face_light });
+					mp.first.push_back({ Voxel::faces[index + 2] + translation + offset[i], type.uvs[i][2], corners[2], face_light });
+					mp.first.push_back({ Voxel::faces[index + 3] + translation + offset[i], type.uvs[i][1], corners[1], face_light });
+					mp.first.push_back({ Voxel::faces[index + 4] + translation + offset[i], type.uvs[i][3], corners[3], face_light });
+					mp.first.push_back({ Voxel::faces[index + 5] + translation + offset[i], type.uvs[i][2], corners[2], face_light });
 				}
 			}																					 					   
 

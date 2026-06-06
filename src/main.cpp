@@ -160,7 +160,7 @@ try
 
 	float lastFrame{};
 	float fps{};
-	constexpr float fps_cap{ 120 };
+	//constexpr float fps_cap{ 120 };
 	while (window.isOpen())
 	{
 		float frameStart = glfwGetTime();
@@ -441,7 +441,7 @@ try
 
 				if (!WO.instant_voxel_placing)
 				{
-					if (window.isMouseButtonPressedOnce(Wai::Buttons::Mouse::Right))
+					if (player.getHotbar().getSelectedItem().id != 0 && window.isMouseButtonPressedOnce(Wai::Buttons::Mouse::Right))
 						world.set_voxel_at(ray_result->pos + ray_result->normal, player.place_voxel().id);
 				}
 				else
@@ -561,11 +561,11 @@ try
 		window.display();
 
 		// Limit FrameRate
-		auto frameExecutionTime = glfwGetTime() - frameStart;
+		/*auto frameExecutionTime = glfwGetTime() - frameStart;
 		if (frameExecutionTime < 1 / fps_cap)
 		{
 			std::this_thread::sleep_for(std::chrono::duration<float>(1 / fps_cap - frameExecutionTime));
-		}
+		}*/
 	}
 
 

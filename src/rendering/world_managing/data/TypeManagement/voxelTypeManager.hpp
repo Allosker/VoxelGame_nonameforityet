@@ -21,9 +21,9 @@ namespace Render::Data::Types
 		{
 			types.push_back(TextureUVperFace::c_dirtGrass);
 			types.push_back(TextureUVperFace::c_dirt);
-			types.push_back(TextureUVperFace::c_stone);
-			types.push_back({ TextureUVperFace::c_deepStone, false, true, true });
-			types.push_back({ TextureUVperFace::c_water1, true, false, false, {0, 0, {0, -0.1, 0}, 0, 0, 0} });
+			types.push_back({ TextureUVperFace::c_stone, false, true, true, {1, 1, 15} });
+			types.push_back({ TextureUVperFace::c_deepStone, false, true, true, {15, 1, 1} });
+			types.push_back({ TextureUVperFace::c_water1, true, false, false, {}, { 0, 0, {0, -0.1, 0}, 0, 0, 0 } });
 			types.push_back(TextureUVperFace::c_tree);
 			types.push_back({ TextureUVperFace::c_leaf });
 		}
