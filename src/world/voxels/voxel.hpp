@@ -24,12 +24,12 @@ namespace Render::Data
 		uint16 light{};
 
 		uint8 getR() const noexcept
-		{
+		{							  
 			return (light >> 8) & 0xF;
 		}
 
 		void setR(uint8 val) noexcept
-		{
+		{                                         
 			light = (light & 0xF0FF) | (val << 8);
 		}
 

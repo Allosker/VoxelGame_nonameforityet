@@ -226,14 +226,13 @@ try
 					world.update(player, true);
 
 				if (window.isKeyPressedOnce(b::R))
-				/*{
-					world.debug_flags.create_palettes = false;
-					world.set_voxel_at(player.getPos(), player.getHotbar().getSelectedItem().id);
-				}*/
 				{
+					world.set_voxel_at(player.getPos(), player.getHotbar().getSelectedItem().id);
+				}
+				/*{
 					player.getCamera().free = !player.getCamera().free;
 					world.debug_flags.update_world = !world.debug_flags.update_world;
-				}
+				}*/
 
 				if (window.isKeyPressedOnce(b::T))
 					world.debug_flags.draw_chunk_borders = !world.debug_flags.draw_chunk_borders;
@@ -265,7 +264,7 @@ try
 			}
 		);
 
-		
+		static uint16 DEBUG_light_value{};
 		{
 			ImGui::Begin("Debug"); // Window beginning
 
@@ -273,6 +272,8 @@ try
 			
 			ImGui::Text("Camera Pos	: %f %f %f", player.getPos().x, player.getPos().y, player.getPos().z);
 			ImGui::Text("Velocity	: %f %f %f", player.getVelocity().x, player.getVelocity().y, player.getVelocity().z);
+
+			ImGui::Text("Sunlight: (%i) Blocklight: (%i, %i, %i)", (DEBUG_light_value >> 12) & 0xF, (DEBUG_light_value >> 8) & 0xF, (DEBUG_light_value >> 4) & 0xF, DEBUG_light_value & 0xF);
 
 			ImGui::Checkbox("Flying", &player.attributes.flags.flying);
 			ImGui::Checkbox("Ghost ", &player.attributes.flags.ghost);
@@ -411,6 +412,7 @@ try
 
 				ch.update(player.getCamera().model, player.getCamera().view, player.getCamera().proj, ray_result->pos);
 
+				DEBUG_light_value = world.blockout_at(ray_result->pos + types::pos{0, 1, 0}).light;
 
 
 				if (window.isMouseButtonPressedOnce(Wai::Buttons::Mouse::Middle))

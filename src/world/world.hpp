@@ -66,6 +66,9 @@ namespace GameWorld
 
 		const Render::Data::Voxel* block_at(const types::loc& block_loc) const noexcept;
 
+		// If the block hasn't been loaded yet, we assume it is an air block with a light value of 0
+		Render::Data::Voxel blockout_at(const types::pos& block_pos) const noexcept;
+
 		const GameWorld::Voxels::Chunk* chunk_at(const types::pos& chunk_pos) const noexcept;
 
 		const Render::Data::Types::VoxelTypeManager& getTypeManager() const noexcept { return type_manager; }

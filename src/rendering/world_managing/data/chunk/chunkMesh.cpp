@@ -139,7 +139,7 @@ Render::Data::ChunkMesh::MeshPair Render::Data::ChunkMesh::buildMesh(
 
 
 		std::array<size_t, 6> CF_block_dirs{};
-		const std::array<types::loc, 6> dirs
+		const std::array<types::loc, 6> bdirs
 		{
 			types::loc
 			{x, y, z + 1},
@@ -152,45 +152,58 @@ Render::Data::ChunkMesh::MeshPair Render::Data::ChunkMesh::buildMesh(
 			{x - 1, y, z},
 			
 		};
+		const std::array<types::loc, 6> bdirs2
+		{
+			types::loc
+			{x, y, z + 2},
+			{x, y, z - 2},
+
+			{x, y + 2, z},
+			{x, y - 2, z},
+
+			{x + 2, y, z},
+			{x - 2, y, z},
+
+		};
 		
 
 		// Voxel Face Visibility
 		if (z + 1 < GameWorld::Voxels::Chunk::g_size)
 			CF_block_dirs[0] = chunk.block_at(block_index + z_stride).id;
 		else
-			if (const auto* c{ world.chunk_at(static_cast<types::pos>(dirs[0]) + chunk.getPos())})
+			if (const auto* c{ world.chunk_at(static_cast<types::pos>(bdirs[0]) + chunk.getPos())})
 				CF_block_dirs[0] = c->block_id_at(static_cast<types::loc>(vec3i{ x, y, 0 }));
 
 		if (z - 1 >= 0)
 			CF_block_dirs[1] = chunk.block_at(block_index - z_stride).id;
 		else
-			if (const auto* c{ world.chunk_at(static_cast<types::pos>(dirs[1]) + chunk.getPos()) })
+			if (const auto* c{ world.chunk_at(static_cast<types::pos>(bdirs[1]) + chunk.getPos()) })
 				CF_block_dirs[1] = c->block_id_at(types::loc{ x, y, GameWorld::Voxels::Chunk::g_size - 1 });
 
 
 		if (y + 1 < GameWorld::Voxels::Chunk::g_size)
 			CF_block_dirs[2] = chunk.block_at(block_index + GameWorld::Voxels::Chunk::g_size).id;
 		else
-			if (const auto* c{ world.chunk_at(static_cast<types::pos>(dirs[2]) + chunk.getPos()) })
+			if (const auto* c{ world.chunk_at(static_cast<types::pos>(bdirs[2]) + chunk.getPos()) })
 				CF_block_dirs[2] = c->block_id_at(types::loc{ x, 0, z });
 
 		if (y - 1 >= 0)
 			CF_block_dirs[3] = chunk.block_at(block_index - GameWorld::Voxels::Chunk::g_size).id;
 		else
-			if (const auto* c{ world.chunk_at(static_cast<types::pos>(dirs[3]) + chunk.getPos()) })
+			if (const auto* c{ world.chunk_at(static_cast<types::pos>(bdirs[3]) + chunk.getPos()) })
 				CF_block_dirs[3] = c->block_id_at(types::loc{ x, GameWorld::Voxels::Chunk::g_size - 1, z });
 
 
 		if (x + 1 < GameWorld::Voxels::Chunk::g_size)
 			CF_block_dirs[4] = chunk.block_at(block_index + 1).id;
 		else
-			if (const auto* c{ world.chunk_at(static_cast<types::pos>(dirs[4]) + chunk.getPos()) })
+			if (const auto* c{ world.chunk_at(static_cast<types::pos>(bdirs[4]) + chunk.getPos()) })
 				CF_block_dirs[4] = c->block_id_at(types::loc{ 0, y, z });
 
 		if (x - 1 >= 0)
 			CF_block_dirs[5] = chunk.block_at(block_index - 1).id;
 		else
-			if (const auto* c{ world.chunk_at(static_cast<types::pos>(dirs[5]) + chunk.getPos()) })
+			if (const auto* c{ world.chunk_at(static_cast<types::pos>(bdirs[5]) + chunk.getPos()) })
 				CF_block_dirs[5] = c->block_id_at(types::loc{ GameWorld::Voxels::Chunk::g_size - 1, y, z });
 
 
@@ -206,23 +219,210 @@ Render::Data::ChunkMesh::MeshPair Render::Data::ChunkMesh::buildMesh(
 				const auto& offset{ type.face_offsets };
 
 
-				uint16 face_light{};
+				const std::array<std::array<types::loc, 8>, 6> dirs
+				{
+					std::array<types::loc, 8>
+					{
+						types::loc
+						{ x	   ,	y - 1,	  z + 1 },
+						{ x	   ,	y + 1,	  z + 1 },
+						{ x - 1,	y    ,	  z + 1 },
+						{ x + 1,	y    ,	  z + 1 },
 
-				if (const auto* v = world.blockempty_at(static_cast<types::pos>(dirs[i]) + chunk.getPos()))
-					face_light = v->light;
+						{ x - 1,	y - 1,	  z + 1 },
+						{ x - 1,	y + 1,	  z + 1 },
+						{ x + 1,	y - 1,	  z + 1 },
+						{ x + 1,	y + 1,	  z + 1 },
+					},
+					{
+						types::loc
+						{ x	   ,	y - 1,	  z - 1 },
+						{ x	   ,	y + 1,	  z - 1 },
+						{ x + 1,	y    ,	  z - 1 },
+						{ x - 1,	y    ,	  z - 1 },
 
+						{ x + 1,	y - 1,	  z - 1 },
+						{ x + 1,	y + 1,	  z - 1 },
+						{ x - 1,	y - 1,	  z - 1 },
+						{ x - 1,	y + 1,	  z - 1 },
+					},
+					{
+						types::loc
+						{ x + 1,	y + 1,	  z		},
+						{ x - 1,	y + 1,	  z		},
+						{ x	   ,	y + 1,	  z + 1 },
+						{ x	   ,	y + 1,	  z - 1 },
+
+						{ x + 1,	y + 1,	  z + 1 },
+						{ x - 1,	y + 1,	  z + 1 },
+						{ x + 1,	y + 1,	  z - 1 },
+						{ x - 1,	y + 1,	  z - 1 },
+					},
+					{
+						types::loc
+						{ x + 1,	y - 1,	  z		},
+						{ x - 1,	y - 1,	  z		},
+						{ x	   ,	y - 1,	  z - 1 },
+						{ x	   ,	y - 1,	  z + 1 },
+
+						{ x + 1,	y - 1,	  z - 1 },
+						{ x - 1,	y - 1,	  z - 1 },
+						{ x + 1,	y - 1,	  z + 1 },
+						{ x - 1,	y - 1,	  z + 1 },
+					},
+					{
+						types::loc
+						{ x + 1,	y - 1,	  z		},
+						{ x + 1,	y + 1,	  z		},
+						{ x + 1,	y    ,	  z + 1 },
+						{ x + 1,	y    ,	  z - 1 },
+
+						{ x + 1,	y - 1,	  z + 1 },
+						{ x + 1,	y + 1,	  z + 1 },
+						{ x + 1,	y - 1,	  z - 1 },
+						{ x + 1,	y + 1,	  z - 1 },
+					},
+					{
+						types::loc
+						{ x - 1,	y - 1,	  z		},
+						{ x - 1,	y + 1,	  z		},
+						{ x - 1,	y    ,	  z - 1 },
+						{ x - 1,	y    ,	  z + 1 },
+
+
+						{ x - 1,	y - 1,	  z - 1 },
+						{ x - 1,	y + 1,	  z - 1 },
+						{ x - 1,	y - 1,	  z + 1 },
+						{ x - 1,	y + 1,	  z + 1 },
+					}
+
+				};
+				std::array<uint16, 4> light_corners{};
+
+				auto right	= world.blockout_at(static_cast<types::pos>(dirs[i][0]) + chunk.getPos());
+				auto left	= world.blockout_at(static_cast<types::pos>(dirs[i][1]) + chunk.getPos());
+				auto front	= world.blockout_at(static_cast<types::pos>(dirs[i][2]) + chunk.getPos());
+				auto back	= world.blockout_at(static_cast<types::pos>(dirs[i][3]) + chunk.getPos());
+				auto rf		= world.blockout_at(static_cast<types::pos>(dirs[i][4]) + chunk.getPos());
+				auto lf		= world.blockout_at(static_cast<types::pos>(dirs[i][5]) + chunk.getPos());
+				auto rb		= world.blockout_at(static_cast<types::pos>(dirs[i][6]) + chunk.getPos());
+				auto lb		= world.blockout_at(static_cast<types::pos>(dirs[i][7]) + chunk.getPos());
+				auto up		= world.blockout_at(static_cast<types::pos>(bdirs[i]) + chunk.getPos());
+
+			
+				const auto& aproximate_shadows = [&](auto& a, auto& b, auto& c)
+					{
+						if (world.blockout_at(static_cast<types::pos>(bdirs2[i]) + chunk.getPos()).getSunlight() < up.getSunlight())
+						{
+							{
+								auto l1 = a.getSunlight();
+								a.setSunlight(l1 == 0 ? 0 : l1 - 1);
+
+								auto l2 = b.getSunlight();
+								b.setSunlight(l2 == 0 ? 0 : l2 - 1);
+
+								auto l3 = c.getSunlight();
+								c.setSunlight(l3 == 0 ? 0 : l3 - 1);
+							}
+
+
+							{
+								auto l1 = a.getR();
+								a.setR(l1 == 0 ? 0 : l1 - 1);
+
+								auto l2 = b.getR();
+								b.setR(l2 == 0 ? 0 : l2 - 1);
+
+								auto l3 = c.getR();
+								c.setR(l3 == 0 ? 0 : l3 - 1);
+							}
+
+
+							{
+								auto l1 = a.getG();
+								a.setG(l1 == 0 ? 0 : l1 - 1);
+
+								auto l2 = b.getG();
+								b.setG(l2 == 0 ? 0 : l2 - 1);
+
+								auto l3 = c.getG();
+								c.setG(l3 == 0 ? 0 : l3 - 1);
+							}
+
+
+							{
+								auto l1 = a.getB();
+								a.setB(l1 == 0 ? 0 : l1 - 1);
+
+								auto l2 = b.getB();
+								b.setB(l2 == 0 ? 0 : l2 - 1);
+
+								auto l3 = c.getB();
+								c.setB(l3 == 0 ? 0 : l3 - 1);
+							}
+						}
+					};
+
+				aproximate_shadows(front, left,  lf);
+				aproximate_shadows(front, right, rf);
+				aproximate_shadows(back,  left,  lb);
+				aproximate_shadows(back,  right, rb);
+
+
+				const auto& interpolate_light = [&](size_t index, auto a, auto b, auto c)
+					{
+						auto consider_a = type_manager.isTypeTransparent(a.id);
+						auto consider_b = type_manager.isTypeTransparent(b.id);
+						auto consider_c = type_manager.isTypeTransparent(c.id);
+
+
+						auto eff	= (consider_a || type_manager.isTypeLightsource(a.id)) + (consider_b || type_manager.isTypeLightsource(b.id)) + 1;
+						auto effsun = consider_a + consider_b + 1;
+
+						auto R      = a.getR() + b.getR() + up.getR();
+						auto G		= a.getG() + b.getG() + up.getG();
+						auto B		= a.getB() + b.getB() + up.getB();
+						auto sunlight = a.getSunlight() + b.getSunlight() + up.getSunlight();
+
+						if ((consider_a || type_manager.isTypeLightsource(a.id)) || (consider_b || type_manager.isTypeLightsource(b.id)))
+						{
+							eff += (consider_c || type_manager.isTypeLightsource(c.id));
+							R += c.getR();
+							G += c.getG();
+							B += c.getB();
+						}
+
+						if (consider_a || consider_b)
+						{
+							effsun += consider_c;
+							sunlight += c.getSunlight();
+						}
+
+
+						light_corners[index] = ((sunlight / effsun) << 12) // sunlight
+							| ((R / eff) << 8)  // blocklight
+							| ((G / eff) << 4)  // blocklight
+							| ((B / eff)	 ); // blocklight
+					};
+
+				interpolate_light(2, front, left,  lf);
+				interpolate_light(0, front, right, rf);
+				interpolate_light(3, back,  left,  lb);
+				interpolate_light(1, back,  right, rb);
+
+				
 
 				if (type.is_transparent)
 				{
 					mp.second.emplace_back( std::pair<vec3f, std::array<VoxelVertex, 6>>
 					{
 						translation, std::array<VoxelVertex, 6>{
-						VoxelVertex{ Voxel::faces[index + 0] + translation + offset[i], type.uvs[i][0], 1.f, face_light },
-						VoxelVertex{ Voxel::faces[index + 1] + translation + offset[i], type.uvs[i][1], 1.f, face_light },
-						VoxelVertex{ Voxel::faces[index + 2] + translation + offset[i], type.uvs[i][2], 1.f, face_light },
-						VoxelVertex{ Voxel::faces[index + 3] + translation + offset[i], type.uvs[i][1], 1.f, face_light },
-						VoxelVertex{ Voxel::faces[index + 4] + translation + offset[i], type.uvs[i][3], 1.f, face_light },
-						VoxelVertex{ Voxel::faces[index + 5] + translation + offset[i], type.uvs[i][2], 1.f, face_light }
+						VoxelVertex{ Voxel::faces[index + 0] + translation + offset[i], type.uvs[i][0], 1.f, light_corners[0] },  
+						VoxelVertex{ Voxel::faces[index + 1] + translation + offset[i], type.uvs[i][1], 1.f, light_corners[1] },
+						VoxelVertex{ Voxel::faces[index + 2] + translation + offset[i], type.uvs[i][2], 1.f, light_corners[2] },
+						VoxelVertex{ Voxel::faces[index + 3] + translation + offset[i], type.uvs[i][1], 1.f, light_corners[1] },
+						VoxelVertex{ Voxel::faces[index + 4] + translation + offset[i], type.uvs[i][3], 1.f, light_corners[3] },
+						VoxelVertex{ Voxel::faces[index + 5] + translation + offset[i], type.uvs[i][2], 1.f, light_corners[2] }
 						}
 					});
 				}
@@ -230,126 +430,46 @@ Render::Data::ChunkMesh::MeshPair Render::Data::ChunkMesh::buildMesh(
 				{
 					std::array<float, 4> corners{ 1.f, 1.f, 1.f, 1.f };
 
-					const std::array<std::array<types::loc, 8>, 6> dirs
-					{
-						std::array<types::loc, 8>
-						{
-							types::loc
-							{ x	   ,	y - 1,	  z + 1 },
-							{ x	   ,	y + 1,	  z + 1 },
-							{ x - 1,	y    ,	  z + 1 },
-							{ x + 1,	y    ,	  z + 1 },
-							
-							{ x - 1,	y - 1,	  z + 1 },
-							{ x - 1,	y + 1,	  z + 1 },
-							{ x + 1,	y - 1,	  z + 1 },
-							{ x + 1,	y + 1,	  z + 1 },
-						},
-						{
-							types::loc
-							{ x	   ,	y - 1,	  z - 1 },
-							{ x	   ,	y + 1,	  z - 1 },
-							{ x + 1,	y    ,	  z - 1 },
-							{ x - 1,	y    ,	  z - 1 },
-													
-							{ x + 1,	y - 1,	  z - 1 },
-							{ x + 1,	y + 1,	  z - 1 },
-							{ x - 1,	y - 1,	  z - 1 },
-							{ x - 1,	y + 1,	  z - 1 },
-							
-						},
-						{
-							types::loc
-							{ x + 1,	y + 1,	  z		},
-							{ x - 1,	y + 1,	  z		},
-							{ x	   ,	y + 1,	  z + 1 },
-							{ x	   ,	y + 1,	  z - 1 },
-							{ x + 1,	y + 1,	  z + 1 },
-							{ x - 1,	y + 1,	  z + 1 },
-							{ x + 1,	y + 1,	  z - 1 },
-							{ x - 1,	y + 1,	  z - 1 }
-						},
-						{
-							types::loc
-							{ x + 1,	y - 1,	  z		},
-							{ x - 1,	y - 1,	  z		},
-							{ x	   ,	y - 1,	  z - 1 },
-							{ x	   ,	y - 1,	  z + 1 },
-
-							{ x + 1,	y - 1,	  z - 1 },
-							{ x - 1,	y - 1,	  z - 1 },
-							{ x + 1,	y - 1,	  z + 1 },
-							{ x - 1,	y - 1,	  z + 1 },
-						},
-						{
-							types::loc
-							{ x + 1,	y - 1,	  z		},
-							{ x + 1,	y + 1,	  z		},
-							{ x	+ 1,	y    ,	  z + 1 },
-							{ x	+ 1,	y    ,	  z - 1 },
-
-							{ x + 1,	y - 1,	  z + 1 },
-							{ x + 1,	y + 1,	  z + 1 },
-							{ x + 1,	y - 1,	  z - 1 },
-							{ x + 1,	y + 1,	  z - 1 },
-							
-						},
-						{
-							types::loc
-							{ x - 1,	y - 1,	  z		},
-							{ x - 1,	y + 1,	  z		},
-							{ x - 1,	y    ,	  z - 1 },
-							{ x - 1,	y    ,	  z + 1 },
-							
-
-							{ x - 1,	y - 1,	  z - 1 },
-							{ x - 1,	y + 1,	  z - 1 },
-							{ x - 1,	y - 1,	  z + 1 },
-							{ x - 1,	y + 1,	  z + 1 },
-						}
-						
-					};
 					static constexpr std::array<float, 4> s_values{ 0.5f, 0.7f, 0.8f, 1.f };
 
 
-					bool right	= world.getGrid().block_id_at(static_cast<types::pos>(dirs[i][0]) + chunk.getPos());
-					bool left	= world.getGrid().block_id_at(static_cast<types::pos>(dirs[i][1]) + chunk.getPos());
-					bool front	= world.getGrid().block_id_at(static_cast<types::pos>(dirs[i][2]) + chunk.getPos());
-					bool back	= world.getGrid().block_id_at(static_cast<types::pos>(dirs[i][3]) + chunk.getPos());
-					bool rf		= world.getGrid().block_id_at(static_cast<types::pos>(dirs[i][4]) + chunk.getPos());
-					bool lf		= world.getGrid().block_id_at(static_cast<types::pos>(dirs[i][5]) + chunk.getPos());
-					bool rb		= world.getGrid().block_id_at(static_cast<types::pos>(dirs[i][6]) + chunk.getPos());
-					bool lb		= world.getGrid().block_id_at(static_cast<types::pos>(dirs[i][7]) + chunk.getPos());
-					//auto sum	= right + left + front + back + rf + lf + rb + lb;
+					bool bright	= right.id;
+					bool bleft	= left.id;
+					bool bfront = front.id;
+					bool bback	= back.id;
+					bool brf	= rf.id;
+					bool blf	= lf.id;
+					bool brb	= rb.id;
+					bool blb	= lb.id;
 
 
-					if (front && left)
+					if (bfront && bleft)
 						corners[2] = s_values[0];
-					else if (left || right || front || back || rf || lf || rb || lb)
-						corners[2] = s_values[3 - (front + left + lf)];
+					else if (bleft || bright || bfront || bback || brf || blf || brb || blb)
+						corners[2] = s_values[3 - (bfront + bleft + blf)];
 
-					if (front && right)
+					if (bfront && bright)
 						corners[0] = s_values[0];
-					else if (left || right || front || back || rf || lf || rb || lb)
-						corners[0] = s_values[3 - (front + right + rf)];
+					else if (bleft || bright || bfront || bback || brf || blf || brb || blb)
+						corners[0] = s_values[3 - (bfront + bright + brf)];
 
-					if (back && left)
+					if (bback && bleft)
 						corners[3] = s_values[0];
-					else if (left || right || front || back || rf || lf || rb || lb)
-						corners[3] = s_values[3 - (back + left + lb)];
+					else if (bleft || bright || bfront || bback || brf || blf || brb || blb)
+						corners[3] = s_values[3 - (bback + bleft + blb)];
 
-					if (back && right)
+					if (bback && bright)
 						corners[1] = s_values[0];
-					else if (left || right || front || back || rf || lf || rb || lb)
-						corners[1] = s_values[3 - (back + right + rb)];
+					else if (bleft || bright || bfront || bback || brf || blf || brb || blb)
+						corners[1] = s_values[3 - (bback + bright + brb)];
 
 
-					mp.first.push_back({ Voxel::faces[index + 0] + translation + offset[i], type.uvs[i][0], corners[0], face_light });
-					mp.first.push_back({ Voxel::faces[index + 1] + translation + offset[i], type.uvs[i][1], corners[1], face_light });
-					mp.first.push_back({ Voxel::faces[index + 2] + translation + offset[i], type.uvs[i][2], corners[2], face_light });
-					mp.first.push_back({ Voxel::faces[index + 3] + translation + offset[i], type.uvs[i][1], corners[1], face_light });
-					mp.first.push_back({ Voxel::faces[index + 4] + translation + offset[i], type.uvs[i][3], corners[3], face_light });
-					mp.first.push_back({ Voxel::faces[index + 5] + translation + offset[i], type.uvs[i][2], corners[2], face_light });
+					mp.first.push_back({ Voxel::faces[index + 0] + translation + offset[i], type.uvs[i][0], /*corners[0]*/1.f, light_corners[0] });
+					mp.first.push_back({ Voxel::faces[index + 1] + translation + offset[i], type.uvs[i][1], /*corners[1]*/1.f, light_corners[1] });
+					mp.first.push_back({ Voxel::faces[index + 2] + translation + offset[i], type.uvs[i][2], /*corners[2]*/1.f, light_corners[2] });
+					mp.first.push_back({ Voxel::faces[index + 3] + translation + offset[i], type.uvs[i][1], /*corners[1]*/1.f, light_corners[1] });
+					mp.first.push_back({ Voxel::faces[index + 4] + translation + offset[i], type.uvs[i][3], /*corners[3]*/1.f, light_corners[3] });
+					mp.first.push_back({ Voxel::faces[index + 5] + translation + offset[i], type.uvs[i][2], /*corners[2]*/1.f, light_corners[2] });
 				}
 			}																					 					   
 
@@ -399,7 +519,7 @@ void Render::Data::ChunkMesh::updateTransparentMeshBuffer(TMesh&& tmesh, const t
 	glBindVertexArray(m_vaoTransparent);
 	glBindBuffer(GL_ARRAY_BUFFER, m_vboTransparent);
 
-	glBufferData(GL_ARRAY_BUFFER, vertex_data.size() * sizeVertex, vertex_data.data(), GL_DYNAMIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, vertex_data.size() * sizeVertex, vertex_data.data(), GL_STREAM_DRAW);
 
 	m_nbVertices_Transparent = vertex_data.size();
 

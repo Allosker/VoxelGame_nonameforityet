@@ -21,8 +21,8 @@ namespace Render::Data::Types
 		{
 			types.push_back(TextureUVperFace::c_dirtGrass);
 			types.push_back(TextureUVperFace::c_dirt);
-			types.push_back({ TextureUVperFace::c_stone, false, true, true, {1, 1, 15} });
-			types.push_back({ TextureUVperFace::c_deepStone, false, true, true, {15, 1, 1} });
+			types.push_back({ TextureUVperFace::c_stone, false, true, true, {0, 0, 15} });
+			types.push_back({ TextureUVperFace::c_deepStone, false, true, true, {15, 0, 0} });
 			types.push_back({ TextureUVperFace::c_water1, true, false, false, {}, { 0, 0, {0, -0.1, 0}, 0, 0, 0 } });
 			types.push_back(TextureUVperFace::c_tree);
 			types.push_back({ TextureUVperFace::c_leaf });
@@ -46,6 +46,22 @@ namespace Render::Data::Types
 				return true;
 			
 			return getType(voxel->id).is_transparent;
+		}
+
+		const bool isTypeTransparent(types::type_id id) const noexcept
+		{
+			if (id == 0)
+				return true;
+
+			return getType(id).is_transparent;
+		}
+
+		const bool isTypeLightsource(types::type_id id) const noexcept
+		{
+			if (id == 0)
+				return false;
+
+			return getType(id).is_lightSource;
 		}
 
 

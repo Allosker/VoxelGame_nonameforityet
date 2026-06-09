@@ -25,11 +25,11 @@ void main()
 	shadowAO = aShadowAO;
 
 
-	float r = float((aLight >> 8) & 0xF) / 15.;
-	float g = float((aLight >> 4) & 0xF) / 15.;
-	float b = float((aLight     ) & 0xF) / 15.;
+	float r = float(int(aLight >> 8) & 0xF) / 15.;
+	float g = float(int(aLight >> 4) & 0xF) / 15.;
+	float b = float(int(aLight     ) & 0xF) / 15.;
 
-	float asunlight = float((aLight >> 12) & 0xF) / 15.;
+	float asunlight = float(int(aLight >> 12) & 0xF) / 15.;
 
 	vec4 ablocklight = vec4(r,g,b, 1.);
 
