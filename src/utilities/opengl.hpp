@@ -10,7 +10,7 @@
 #include <GLFW/glfw3.h>
 #include <mpml/mpml.hpp>
 
-#include "uHeaders/types.hpp"
+#include "utilities/types.hpp"
 
 #include <cstdint>
 #include <stdexcept>

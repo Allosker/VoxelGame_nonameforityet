@@ -220,7 +220,7 @@ void Render::GUI::Hotbar::draw(
 	});
 	m_items_slots.back().setPosition({
 		static_cast<float>(-g_slot_size.x / 2) * size_mult - g_slot_size.x * size_mult,
-		-Wai::Window::g_guiViewSize.y / 2 + g_slot_size.y / 1.5 });
+		-Window::g_guiViewSize.y / 2 + g_slot_size.y / 1.5 });
 	// Set its corresponding item
 	m_slots.emplace_back(Rectangle{ g_slot_size, {g_slot_size.x / 2, g_slot_size.y / 2 }, types::Rect<types::uvs>{ {}, texture_slot.getSize() } });
 	m_slots.back().setPosition(m_items_slots.back().getPosition());
@@ -234,7 +234,7 @@ void Render::GUI::Hotbar::draw(
 	});
 	m_items_slots.back().setPosition({
 		static_cast<float>(g_slot_size.x / 2) * size_mult + g_slot_size.x * size_mult,
-		-Wai::Window::g_guiViewSize.y / 2 + g_slot_size.y / 1.5 });
+		-Window::g_guiViewSize.y / 2 + g_slot_size.y / 1.5 });
 	// Set its corresponding item
 	m_slots.emplace_back(Rectangle{ g_slot_size, {g_slot_size.x / 2, g_slot_size.y / 2 }, types::Rect<types::uvs>{ {}, texture_slot.getSize() } });
 	m_slots.back().setPosition(m_items_slots.back().getPosition());

@@ -5,7 +5,7 @@
 // Small class that creates a buffer on the GPU for drawing stuff on screen
 // ---------------------------------------
 
-#include "uHeaders/opengl.hpp"
+#include "utilities/opengl.hpp"
 
 #include "rendering/shader.hpp"
 #include "rendering/world_managing/data/basic/vertex.hpp"

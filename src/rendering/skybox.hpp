@@ -5,7 +5,7 @@
 // Defines its own textures, this is a dynamic skybox class which rotates slowly as time passes by.
 // ---------------------------------------
 
-#include "uHeaders/opengl.hpp"
+#include "utilities/opengl.hpp"
 #include "rendering/assets_managing/image.hpp"
 #include "rendering/shader.hpp"
 

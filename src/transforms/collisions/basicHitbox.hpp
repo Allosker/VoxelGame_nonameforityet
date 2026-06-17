@@ -5,7 +5,7 @@
 // The aim of the class is to provide a basic system for AABB vs. AABB collision tests and response
 // ---------------------------------------
 
-#include "uHeaders/opengl.hpp"
+#include "utilities/opengl.hpp"
 #include "world/world.hpp"
 
 namespace Physics::Collisions

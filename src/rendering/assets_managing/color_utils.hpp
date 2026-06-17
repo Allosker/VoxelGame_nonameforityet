@@ -5,7 +5,7 @@
 // Define some functions for color formating
 // ---------------------------------------
 
-#include "uHeaders/opengl.hpp"
+#include "utilities/opengl.hpp"
 #include <cmath>
 
 namespace Color

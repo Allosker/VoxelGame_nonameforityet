@@ -23,7 +23,7 @@ void GameWorld::Voxels::ChunkGrid::update(const World& world, const Render::Data
 
 	for (auto& [k, c] : m_chunks)
 	{
-		if (!c.isEmpty() && c.generated_sunlight)
+		if (!c.isEmpty() /*&& c.generated_sunlight*/)
 		{
 			if (!m_chunk_meshes.contains(k))
 				create_chunkMesh_for_chunk_at(k);

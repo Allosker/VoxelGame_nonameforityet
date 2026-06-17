@@ -5,7 +5,7 @@
 // Basic entity, this entity can be rotated but its hitbox is basic and it cannot
 // ---------------------------------------
 
-#include "uHeaders/opengl.hpp"
+#include "utilities/opengl.hpp"
 
 #include "rendering/mesh/mesh.hpp"
 

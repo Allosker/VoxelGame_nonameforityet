@@ -4,7 +4,7 @@
 // Simple struct for the item
 // ---------------------------------------
 
-#include "uHeaders/types.hpp"
+#include "utilities/types.hpp"
 
 namespace GameWorld::Inventory
 {

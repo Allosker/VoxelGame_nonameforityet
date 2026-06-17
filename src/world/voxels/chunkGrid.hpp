@@ -5,7 +5,7 @@
 // Generates a grid of chunks around the player, discards all chunks that are outside of the grid
 // ---------------------------------------
 
-#include "uHeaders/types.hpp"
+#include "utilities/types.hpp"
 #include "rendering/world_managing/data/typeManagement/voxelTypeManager.hpp"
 #include "rendering/utilities/frustum_culling.hpp"
 

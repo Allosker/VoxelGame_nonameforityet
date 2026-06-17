@@ -6,8 +6,8 @@
 // Note: blocks may share similar IDs.
 // ---------------------------------------
 
-#include "uHeaders/opengl.hpp"
-#include "uHeaders/types.hpp"
+#include "utilities/opengl.hpp"
+#include "utilities/types.hpp"
 
 #include "rendering/assets_managing/utilities.hpp"
 

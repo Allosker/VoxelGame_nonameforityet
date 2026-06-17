@@ -52,7 +52,7 @@ namespace GameWorld
 
 		// = Actors
 
-		void update(const Wai::Window& window, const GameWorld::World& world, const Render::GUI::ItemTypeManager& itm, float deltaTime) noexcept;
+		void update(const Window& window, const GameWorld::World& world, const Render::GUI::ItemTypeManager& itm, float deltaTime) noexcept;
 
 		void updatePosition(const GameWorld::World& world, float deltaTime) noexcept;
 

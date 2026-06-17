@@ -68,7 +68,7 @@ void GameWorld::World::update(const Player& player, bool force_reload)
 		for (auto& i : grid.getChunks())
 			i.second.make_empty();
 
-		gen_nodes_sunlight(m);
+		//gen_nodes_sunlight(m);
 
 		grid.discard_outside_chunks(camLoc);
 
@@ -91,9 +91,9 @@ void GameWorld::World::update(const Player& player, bool force_reload)
 
 void GameWorld::World::update_blocklight() noexcept
 {
-	update_rLighting();
+	/*update_rLighting();
 	update_gLighting();
-	update_bLighting();
+	update_bLighting();*/
 }
 
 void GameWorld::World::update_rLighting() noexcept
@@ -500,93 +500,12 @@ void GameWorld::World::generateWorld(const std::vector<types::loc>& new_chunks_l
 	const SeedType seed{ 1232356u };
 	siv::PerlinNoise perlin{ seed };
 
-	/*
-	Spline spline1
-	{
-		Spline
-		{
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-		}
-	};
 
-	Spline spline2
-	{
-		Spline
-		{
-			vec2d
-			{-0.982032,		-34.9367, },
-			{-0.889426,		-30.8249, },
-			{-0.773324,		-31.3389, },
-			{-0.672426,		-19.0036, },
-			{-0.535591,		-9.75213, },
-			{-0.449794,		0.573507, },
-			{-0.371389,		5.692,    },
-			{-0.246217,		9.23496,  },
-			{-0.171939,		14.7805,  },
-			{-0.10729,		18.9396,  },
-			{-0.00275103,	21.4043,  },
-			{0.065024,		22.0204,  },
-			{0.114305,		22.2515,  },
-			{0.18412,		22.0204,  },
-			{0.238877,		22.3285,  },
-			{0.318275,		22.1745,  },
-			{0.364819,		22.0975,  },
-			{0.420945,		24.4851,  },
-			{0.497604,		25.1013,  },
-			{0.570157,		24.9472,  },
-			{0.653662,		24.9472,  },
-			{0.71937,		22.7136,  },
-			{0.748118,		21.8664,  },
-			{0.774127,		22.0975,  },
-			{0.819302,		23.4068,  },
-			{0.86037,		24.7162,  },
-			{0.900068,		27.0268,  },
-			{0.932923,		29.0293,  },
-			{0.979466,		31.1089,  },
-		}
-	};
-
-	std::vector<std::pair<vec2d, Spline>> splineOfSpline
-	{
-		{ 0, std::move(spline1) },
-		{ 0.4, std::move(spline2) }
-	};*/
-
-
-	Spline spline{};
+	/*Spline spline{};
 	spline.reserve(debug.c_points.size());
 
 	for (size_t i{}; i < debug.c_points.size(); i++)
-		spline.emplace_back(vec2d{ debug.c_thresholds[i], debug.c_points[i] });
+		spline.emplace_back(vec2d{ debug.c_thresholds[i], debug.c_points[i] });*/
 
 	for (const auto& loc : new_chunks_loc)
 	{
@@ -601,12 +520,9 @@ void GameWorld::World::generateWorld(const std::vector<types::loc>& new_chunks_l
 				vec2d bpz{ x + chunk.getPos().x, z + chunk.getPos().z };
 
 
-				double continentalness = perlin.octave2D_11(bpz.x * debug.continentalness_frequency, bpz.y * debug.continentalness_frequency, 6);
-				
-				//double erosion = perlin.octave2D_11(bpz.x * debug.continentalness_frequency, bpz.y * debug.continentalness_frequency, 6);
+				double continentalness = perlin.noise2D(bpz.x * 0.0001, bpz.y * 0.0001);
 			
-				y_max = sampleSpline(spline, continentalness);
-			
+				y_max = continentalness * 100.;
 
 				// Choose Which block type goes where
 				for (int64 y{}; y < GameWorld::Voxels::Chunk::g_size; y++)
@@ -922,6 +838,9 @@ const Render::Data::Voxel* GameWorld::World::block_at(const types::pos& block_po
 		return nullptr;
 
 	auto* ptr = c->block_at_ptr(c->getVoxelIndex(block_pos));
+
+	if (!ptr)
+		return nullptr;
 
 	if (!ptr->id)
 		return nullptr;

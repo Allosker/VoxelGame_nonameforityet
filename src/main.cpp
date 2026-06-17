@@ -5,15 +5,15 @@
 
 #include "mpml/vectors/special_overloads/print_vectors.hpp"
 
-#include "window_and_inputs/window.hpp"
-#include "window_and_inputs/inputs.hpp"
+#include "utilities/window.hpp"
+#include "utilities/inputs.hpp"
 
 #include "rendering/shader.hpp"
 
 // Block Hitting
 #include "world/voxels/utilities/ray.hpp"
 #include <utility>
-//
+
 
 #include "world/world.hpp"
 
@@ -32,14 +32,13 @@
 *	== Fix it so that when you scroll the mouse wheel swiftly, it doesn't break the hotbar
 *	== Fix it so that bounding boxes adapt to the size of the object
 *	== Problem: chunks that were empty and are now full and get their blocks removed won't be empty again
-*	== When you drop some block onto a stack, only one items falls back to the inventory instead of the original size
 *	== When a block is place in another chunk than in the chunk containing light, it doesn't get updated properly
 * 
 */
 
 #include "rendering/skybox.hpp"
 
-#include "uHeaders/debug.hpp"
+#include "utilities/debug.hpp"
 
 #include "transforms/collisions/basicHitbox.hpp"
 #include "world/players/player/player.hpp"
@@ -83,7 +82,7 @@ try
 
 	//glfwWindowHint(GLFW_SAMPLES, 4);
 
-	Wai::Window window{ {640, 480}, "Test", nullptr, nullptr };
+	Window window{ {640, 480}, "Test", nullptr, nullptr };
 
 	GLint flags{};
 	glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
@@ -183,7 +182,6 @@ try
 		window.processInputs(
 			[&]()
 			{
-				using namespace Wai;
 				using namespace GameWorld;
 				using b = Buttons;
 
@@ -259,7 +257,7 @@ try
 					file.close();
 				}*/
 
-				if (window.isKeyPressedOnce(Wai::Buttons::F))
+				if (window.isKeyPressedOnce(Buttons::F))
 					window.alternateCursorVisibility();
 			}
 		);
@@ -306,16 +304,16 @@ try
 			}
 
 			
-			/* {
+			 {
 				const double c_mi{ 0.00001 }, c_ma{ 1 };
 
 				const double s_mi{ 0 }, s_ma{ 1000 };
 				ImGui::SliderScalar("Sea level: ", ImGuiDataType_Double, &world.debug.sea_level, &s_mi, &s_ma);
 
 				if (ImGui::SliderScalar("Continentalness: ", ImGuiDataType_Double, &world.debug.continentalness_frequency, &c_mi, &c_ma))
-					world.update(player.getPos(), true);
+					world.update(player, true);
 
-				if (ImGui::Button("Add element to vector: ", { 20, 20 }))
+				/*if (ImGui::Button("Add element to vector: ", { 20, 20 }))
 				{
 					world.debug.c_thresholds.push_back({});
 					world.debug.c_points.push_back({});
@@ -347,8 +345,8 @@ try
 					}
 
 					ImPlot::EndPlot();
-				}
-			}*/
+				}*/
+			}
 
 
 			ImGui::SliderFloat("Player Speed   ", &player.attributes.physics.speed, 0.0f, 500.0f);
@@ -367,7 +365,7 @@ try
 		}
 
 		
-		//std::println("{}", Wai::Window::toGUICoordinates(window, window.getMousePos()));
+		//std::println("{}", Window::toGUICoordinates(window, window.getMousePos()));
 
 		// Window Events check
 
@@ -415,7 +413,7 @@ try
 				DEBUG_light_value = world.blockout_at(ray_result->pos + types::pos{0, 1, 0}).light;
 
 
-				if (window.isMouseButtonPressedOnce(Wai::Buttons::Mouse::Middle))
+				if (window.isMouseButtonPressedOnce(Buttons::Mouse::Middle))
 				{
 					auto id{ world.block_at(ray_result->pos)->id };
 
@@ -424,7 +422,7 @@ try
 
 				if (!WO.instant_voxel_breaking)
 				{
-					if (window.isMouseButtonPressedOnce(Wai::Buttons::Mouse::Left))
+					if (window.isMouseButtonPressedOnce(Buttons::Mouse::Left))
 					{
 						auto id{ world.block_at(ray_result->pos)->id };
 
@@ -437,18 +435,18 @@ try
 				}
 				else
 				{
-					if (window.isMouseButtonPressed(Wai::Buttons::Mouse::Left))
+					if (window.isMouseButtonPressed(Buttons::Mouse::Left))
 						world.set_voxel_at(ray_result->pos, 0);
 				}
 
 				if (!WO.instant_voxel_placing)
 				{
-					if (player.getHotbar().getSelectedItem().id != 0 && window.isMouseButtonPressedOnce(Wai::Buttons::Mouse::Right))
+					if (player.getHotbar().getSelectedItem().id != 0 && window.isMouseButtonPressedOnce(Buttons::Mouse::Right))
 						world.set_voxel_at(ray_result->pos + ray_result->normal, player.place_voxel().id);
 				}
 				else
 				{
-					if (window.isMouseButtonPressed(Wai::Buttons::Mouse::Right))
+					if (window.isMouseButtonPressed(Buttons::Mouse::Right))
 						world.set_voxel_at(ray_result->pos + ray_result->normal, player.getHotbar().getSelectedItem().id);
 				}
 
@@ -531,7 +529,7 @@ try
 		glDisable(GL_DEPTH_TEST);
 		
 		// ortho mat
-		mat4f proj2D{ mpml::orthographic_projection(Wai::Window::g_guiViewSize.x, Wai::Window::g_guiViewSize.y, 0.f, 1.f) };
+		mat4f proj2D{ mpml::orthographic_projection(Window::g_guiViewSize.x, Window::g_guiViewSize.y, 0.f, 1.f) };
 
 		shader2Dtext.use();
 		shader2Dtext.setValue("proj", proj2D);
@@ -589,7 +587,7 @@ catch (const std::runtime_error& e)
 
 void framebuffersize_callback(GLFWwindow* window, int width, int height) noexcept
 {
-	static_cast<Wai::Window*>(glfwGetWindowUserPointer(window))->onFramebufferResize({ width, height });
+	static_cast<Window*>(glfwGetWindowUserPointer(window))->onFramebufferResize({ width, height });
 }
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos) noexcept
@@ -604,13 +602,13 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos) noexcept
 
 	offset *= sensitivity;
 
-	if (!static_cast<Wai::Window*>(glfwGetWindowUserPointer(window))->isCursorHidden())
-		static_cast<Wai::Window*>(glfwGetWindowUserPointer(window))->onMouseMovement(offset);
+	if (!static_cast<Window*>(glfwGetWindowUserPointer(window))->isCursorHidden())
+		static_cast<Window*>(glfwGetWindowUserPointer(window))->onMouseMovement(offset);
 
-	static_cast<Wai::Window*>(glfwGetWindowUserPointer(window))->onMouseCursorPosChange({ static_cast<float>(xpos), static_cast<float>(ypos) });
+	static_cast<Window*>(glfwGetWindowUserPointer(window))->onMouseCursorPosChange({ static_cast<float>(xpos), static_cast<float>(ypos) });
 }
 
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) noexcept
 {
-	static_cast<Wai::Window*>(glfwGetWindowUserPointer(window))->onMouseWheelScroll({ static_cast<float>(xoffset), static_cast<float>(yoffset) });
+	static_cast<Window*>(glfwGetWindowUserPointer(window))->onMouseWheelScroll({ static_cast<float>(xoffset), static_cast<float>(yoffset) });
 }

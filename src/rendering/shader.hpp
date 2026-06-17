@@ -5,7 +5,7 @@
 // Get a shader up and running like it should
 // ---------------------------------------
 
-#include "uHeaders/opengl.hpp"
+#include "utilities/opengl.hpp"
 
 #include <fstream>
 #include <sstream>

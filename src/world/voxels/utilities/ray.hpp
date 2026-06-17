@@ -8,7 +8,7 @@
 #include <optional>
 
 #include "world/voxels/chunkGrid.hpp"
-#include "uHeaders/types.hpp"
+#include "utilities/types.hpp"
 
 
 namespace GameWorld::Voxels::Utils

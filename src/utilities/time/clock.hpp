@@ -5,7 +5,7 @@
 // Small class for a ready-to-use, all-in-one clock!
 // ---------------------------------------
 
-#include "uHeaders/opengl.hpp"
+#include "utilities/opengl.hpp"
 #include <chrono>
 
 namespace GameTime

@@ -9,7 +9,7 @@
 
 #include "rendering/GUI/Items/itemTypeManager.hpp"
 #include "rendering/GUI/shapes/rectangle.hpp"
-#include "window_and_inputs/window.hpp"
+#include "utilities/window.hpp"
 
 #include "hotbar.hpp"
 
@@ -34,7 +34,7 @@ namespace Render::GUI
 
 		// = Actors
 
-		void update(const Wai::Window& window, const ItemTypeManager& itm, Hotbar& hotbar) noexcept;
+		void update(const Window& window, const ItemTypeManager& itm, Hotbar& hotbar) noexcept;
 
 		void newPairOfSlots(const Texturing::Texture& texture_slot) noexcept;
 
@@ -43,9 +43,9 @@ namespace Render::GUI
 		bool removeItem(const GameWorld::Inventory::Item& item, uint16 count) noexcept;
 
 
-		void enable(Wai::Window& window, Hotbar& hotbar) noexcept;
-		void disable(Wai::Window& window, Hotbar& hotbar) noexcept;
-		void process(Wai::Window& window, Hotbar& hotbar) noexcept;
+		void enable(Window& window, Hotbar& hotbar) noexcept;
+		void disable(Window& window, Hotbar& hotbar) noexcept;
+		void process(Window& window, Hotbar& hotbar) noexcept;
 
 		void draw(const Shader& shader, const Shader& text_shader, const Texturing::Texture& texture_inventory, const Texturing::Texture& texture_slot, const Render::Texturing::Texture& texture_block_gui_atlas, const ItemTypeManager& itm) noexcept;
 
@@ -58,7 +58,7 @@ namespace Render::GUI
 	public: // = Global Constants
 
 		static constexpr vec2f g_slot_size{ 80 * 1.5 };
-		static constexpr vec2f g_size_inventory{ Wai::Window::g_guiViewSize.x / 4 * 1.5,  Wai::Window::g_guiViewSize.y / 2 * 1.5 }; 
+		static constexpr vec2f g_size_inventory{ Window::g_guiViewSize.x / 4 * 1.5,  Window::g_guiViewSize.y / 2 * 1.5 }; 
 
 		static constexpr std::size_t g_max_nb_slots{ 12 };
 

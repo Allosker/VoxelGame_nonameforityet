@@ -16,6 +16,6 @@ void main()
 	vec4 color = texture(basic_texture, textureCoords);
 
 
-	FragColor = clamp(color * (blocklight + sunlight), 0., 1.) * shadowAO;
+	FragColor = clamp(color /** (blocklight + sunlight)*/, 0., 1.) * shadowAO;
 
 }

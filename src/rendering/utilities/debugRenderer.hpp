@@ -5,7 +5,7 @@
 // Debug Renderer Class 
 // ---------------------------------------
 
-#include "uHeaders/opengl.hpp"
+#include "utilities/opengl.hpp"
 
 namespace Render::Debug
 {

@@ -5,7 +5,7 @@
 // Define a simple vertex struct which holds the most basic and important information for the program.
 // ---------------------------------------
 
-#include "uHeaders/opengl.hpp"
+#include "utilities/opengl.hpp"
 
 namespace Render
 {

@@ -24,7 +24,7 @@ Render::GUI::Inventory::Inventory(const Texturing::Texture& texture_inventory, c
 // Actors
 // =====================
 
-void Render::GUI::Inventory::update(const Wai::Window& window, const ItemTypeManager& itm, Hotbar& hotbar) noexcept
+void Render::GUI::Inventory::update(const Window& window, const ItemTypeManager& itm, Hotbar& hotbar) noexcept
 {
 	if (!m_activated)
 		return;
@@ -32,7 +32,7 @@ void Render::GUI::Inventory::update(const Wai::Window& window, const ItemTypeMan
 	bool isWithinSlot{ false };
 	bool isWithinHotbar{ false };
 
-	vec2f point{ Wai::Window::toGUICoordinates(window, window.getMousePos()) };
+	vec2f point{ Window::toGUICoordinates(window, window.getMousePos()) };
 
 	for (std::size_t i{}; i < m_slots.size(); i++)
 		if (m_slots[i].contains(point))
@@ -67,7 +67,7 @@ void Render::GUI::Inventory::update(const Wai::Window& window, const ItemTypeMan
 			}
 
 	// Set Moving Object
-	if (window.isMouseButtonPressedOnce(Wai::Buttons::Mouse::Left) && !m_clickedOnce)
+	if (window.isMouseButtonPressedOnce(Buttons::Mouse::Left) && !m_clickedOnce)
 	{
 		if (isWithinSlot)
 		{
@@ -92,7 +92,7 @@ void Render::GUI::Inventory::update(const Wai::Window& window, const ItemTypeMan
 		}
 	}
 
-	if (window.isMouseButtonReleased(Wai::Buttons::Mouse::Left) && m_clickedOnce)
+	if (window.isMouseButtonReleased(Buttons::Mouse::Left) && m_clickedOnce)
 	{
 		auto& old_slot_item = (m_wasWithinHotbar ? hotbar.getItems()[m_clicked_slot] : m_items_slots[m_clicked_slot]);
 
@@ -105,7 +105,7 @@ void Render::GUI::Inventory::update(const Wai::Window& window, const ItemTypeMan
 				slot_item.stack_item = m_moving_item.stack_item;
 				
 				// If there are extra items
-				if (auto extra = addItems(slot_item, m_moving_item.count) && m_clicked_slot != m_cursor)
+				if (auto extra = addItems(slot_item, m_moving_item.count); extra && m_clicked_slot != m_cursor)
 				{
 					slot_item.count = slot_item.max_count;
 					m_moving_item.count = extra;
@@ -166,7 +166,7 @@ void Render::GUI::Inventory::update(const Wai::Window& window, const ItemTypeMan
 	}
 
 
-	if (m_draw_moving && window.isMouseButtonPressed(Wai::Buttons::Mouse::Left))
+	if (m_draw_moving && window.isMouseButtonPressed(Buttons::Mouse::Left))
 			m_moving_item.setPosition(point);
 }
 
@@ -231,21 +231,21 @@ bool Render::GUI::Inventory::removeItem(const GameWorld::Inventory::Item& item, 
 	return false;
 }
 
-void Render::GUI::Inventory::enable(Wai::Window& window, Hotbar& hotbar) noexcept
+void Render::GUI::Inventory::enable(Window& window, Hotbar& hotbar) noexcept
 {
 	m_activated = true;
 	window.alternateCursorVisibility();
 	hotbar.disable();
 }
 
-void Render::GUI::Inventory::disable(Wai::Window& window, Hotbar& hotbar) noexcept
+void Render::GUI::Inventory::disable(Window& window, Hotbar& hotbar) noexcept
 {
 	m_activated = false;
 	window.alternateCursorVisibility();
 	hotbar.enable();
 }
 
-void Render::GUI::Inventory::process(Wai::Window& window, Hotbar& hotbar) noexcept
+void Render::GUI::Inventory::process(Window& window, Hotbar& hotbar) noexcept
 {
 	if (m_activated)
 		disable(window, hotbar);

@@ -5,7 +5,7 @@
 // Basic class for most GUI related meshes, basic rectangle for basically anything and everything displayed on screen for the GUI
 // ---------------------------------------
 
-#include "uHeaders/openGL.hpp"
+#include "utilities/openGL.hpp"
 
 #include "rendering/mesh/mesh.hpp"
 

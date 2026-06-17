@@ -5,7 +5,7 @@
 // Basic chunk class responsible for everything related to gameplay that happens within it.
 // ---------------------------------------
 
-#include "uHeaders/types.hpp"
+#include "utilities/types.hpp"
 #include "world/voxels/voxel.hpp"
 
 #include <vector>

@@ -5,7 +5,7 @@
 // Construction/Destruction
 // =====================
 
-Wai::Window::Window(const vec2i& size_, const std::string& name, GLFWmonitor* monitor, GLFWwindow* share)
+Window::Window(const vec2i& size_, const std::string& name, GLFWmonitor* monitor, GLFWwindow* share)
 {
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
@@ -29,7 +29,7 @@ Wai::Window::Window(const vec2i& size_, const std::string& name, GLFWmonitor* mo
 }
 
 
-Wai::Window::~Window() noexcept
+Window::~Window() noexcept
 {
 	glfwDestroyWindow(m_window);
 }
@@ -39,7 +39,7 @@ Wai::Window::~Window() noexcept
 // Actors
 // =====================
 
-void Wai::Window::clearEvents() noexcept
+void Window::clearEvents() noexcept
 {
 	updateKeys();
 	updateMouseButtons();
@@ -55,12 +55,12 @@ void Wai::Window::clearEvents() noexcept
 // CallBacks
 // =====================
 
-void Wai::Window::processInputs(const std::function<void()>& inputs)
+void Window::processInputs(const std::function<void()>& inputs)
 {
 	inputs();
 }
 
-bool Wai::Window::alternateCursorVisibility() noexcept
+bool Window::alternateCursorVisibility() noexcept
 {
 	m_cursorHidden = !m_cursorHidden;
 
@@ -68,14 +68,14 @@ bool Wai::Window::alternateCursorVisibility() noexcept
 	return m_cursorHidden;
 }
 
-void Wai::Window::onFramebufferResize(vec2i newSize) noexcept
+void Window::onFramebufferResize(vec2i newSize) noexcept
 {
 	m_wasFrameBufferResized = true;
 	m_size = newSize;
 	glViewport(0, 0, newSize.x, newSize.y);
 }
 
-void Wai::Window::onMouseMovement(vec2f offset) noexcept
+void Window::onMouseMovement(vec2f offset) noexcept
 {
 	static float yaw{ -90 }, pitch{};
 
@@ -102,12 +102,12 @@ void Wai::Window::onMouseMovement(vec2f offset) noexcept
 	m_dirChangedThisFrame = true;
 }
 
-void Wai::Window::onMouseWheelScroll(vec2f delta) noexcept
+void Window::onMouseWheelScroll(vec2f delta) noexcept
 {
 	m_mouseWheel_delta = delta;
 }
 
-void Wai::Window::onMouseCursorPosChange(vec2f newCursorPos) noexcept
+void Window::onMouseCursorPosChange(vec2f newCursorPos) noexcept
 {
 	m_mousePos = newCursorPos;
 }
@@ -117,7 +117,7 @@ void Wai::Window::onMouseCursorPosChange(vec2f newCursorPos) noexcept
 // Getters
 // =====================
 
-std::uint32_t Wai::Window::getMods() const noexcept
+std::uint32_t Window::getMods() const noexcept
 {
 	using b = Buttons;
 
@@ -143,14 +143,14 @@ std::uint32_t Wai::Window::getMods() const noexcept
 // Predicates
 // =====================
 
-bool Wai::Window::isKeyPressedOnce(int key) const noexcept
+bool Window::isKeyPressedOnce(int key) const noexcept
 {
 	m_keyDowns[key] = glfwGetKey(m_window, key) == Buttons::Pressed;
 
 	return m_keyDowns[key] && !m_lastKeyDowns[key];
 }
 
-bool Wai::Window::isMouseButtonPressedOnce(int key) const noexcept
+bool Window::isMouseButtonPressedOnce(int key) const noexcept
 {
 	m_mouseButtonsDown[key] = glfwGetMouseButton(m_window, key) == Buttons::Pressed;
 
@@ -162,13 +162,13 @@ bool Wai::Window::isMouseButtonPressedOnce(int key) const noexcept
 // Setters
 // =====================
 
-void Wai::Window::resize(const mpml::Vector2<int>& new_size) noexcept
+void Window::resize(const mpml::Vector2<int>& new_size) noexcept
 {
 	glfwSetWindowSize(m_window, new_size.x, new_size.y);
 	m_size = new_size;
 }
 
-vec2f Wai::Window::toGUICoordinates(const Window& window, vec2f point) noexcept
+vec2f Window::toGUICoordinates(const Window& window, vec2f point) noexcept
 {
 	vec2f mult1{ point - vec2f(window.m_size / 2) };
 	vec2f mult2{ g_guiViewSize.x / window.m_size.x,  g_guiViewSize.y / -window.m_size.y };

@@ -23,7 +23,7 @@ GameWorld::Player::Player(
 // Actors
 // =====================
 
-void GameWorld::Player::update(const Wai::Window& window, const GameWorld::World& world, const Render::GUI::ItemTypeManager& itm, float deltaTime) noexcept
+void GameWorld::Player::update(const Window& window, const GameWorld::World& world, const Render::GUI::ItemTypeManager& itm, float deltaTime) noexcept
 {
 	updatePosition(world, deltaTime);
 	resolve_collisions(world);

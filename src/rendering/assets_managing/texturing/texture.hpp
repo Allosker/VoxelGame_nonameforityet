@@ -5,8 +5,8 @@
 // Implement a small class that allocates a texture on the GPU (be it an atlas or anything). Based on a dynamic array of image data.
 // ---------------------------------------
 
-#include "uHeaders/opengl.hpp"
-#include "uHeaders/types.hpp"
+#include "utilities/opengl.hpp"
+#include "utilities/types.hpp"
 #include <filesystem>
 #include "STB/stb_image.h"
 

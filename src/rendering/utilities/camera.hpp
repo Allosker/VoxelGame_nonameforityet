@@ -5,7 +5,7 @@
 // Define a basic Camera struct with three basic positions. Note: this is subject to changes.
 // ---------------------------------------
 
-#include "uHeaders/opengl.hpp"
+#include "utilities/opengl.hpp"
 
 namespace Render::Utils
 {

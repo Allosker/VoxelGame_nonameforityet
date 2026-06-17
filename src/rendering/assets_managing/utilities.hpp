@@ -5,8 +5,8 @@
 // A set of utilities for texture managing
 // ---------------------------------------
 
-#include "uHeaders/openGL.hpp"
-#include "uHeaders/types.hpp"
+#include "utilities/openGL.hpp"
+#include "utilities/types.hpp"
 
 #include <cmath>
 

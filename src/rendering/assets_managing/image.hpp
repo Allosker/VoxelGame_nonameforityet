@@ -5,8 +5,8 @@
 // This class manages an image on RAM to allow for trasnformation thereof. This class is mainly a helper for managing image data before sending it back to the GPU as a Texture.
 // ---------------------------------------
 
-#include "uHeaders/types.hpp"
-#include "uHeaders/opengl.hpp"
+#include "utilities/types.hpp"
+#include "utilities/opengl.hpp"
 
 #include "STB/stb_image.h"
 

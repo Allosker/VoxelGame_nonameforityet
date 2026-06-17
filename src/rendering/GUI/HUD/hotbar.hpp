@@ -10,7 +10,7 @@
 
 #include "rendering/GUI/Items/itemTypeManager.hpp"
 #include "rendering/GUI/shapes/rectangle.hpp"
-#include "window_and_inputs/window.hpp"
+#include "utilities/window.hpp"
 
 #include "world/entities/items/item.hpp"
 
