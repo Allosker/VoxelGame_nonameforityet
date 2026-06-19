@@ -1,7 +1,7 @@
 #include "world/voxels/chunkGrid.hpp"
 
-#include "rendering/world_managing/data/chunk/chunkMesh.hpp"
-#include "world/players/player/player.hpp"
+#include "rendering/chunkMesh/chunkMesh.hpp"
+#include "world/entities/player/player.hpp"
 #include "world/world.hpp"
 
 namespace Render::Data
@@ -13,11 +13,11 @@ namespace Render::Data
 // Actor
 // =====================
 
-GameWorld::Voxels::ChunkGrid::ChunkGrid() noexcept
+Voxels::ChunkGrid::ChunkGrid() noexcept
 {
 }
 
-void GameWorld::Voxels::ChunkGrid::update(const World& world, const Render::Data::Types::VoxelTypeManager& type_manager, const Player& player) noexcept
+void Voxels::ChunkGrid::update(const World& world, const Render::Types::VoxelTypeManager& type_manager, const Player& player) noexcept
 {
 	bool shouldBreak{};
 
@@ -41,7 +41,7 @@ void GameWorld::Voxels::ChunkGrid::update(const World& world, const Render::Data
 	}
 }
 
-void GameWorld::Voxels::ChunkGrid::discard_outside_chunks(const types::loc& camLoc) noexcept
+void Voxels::ChunkGrid::discard_outside_chunks(const types::loc& camLoc) noexcept
 {
 	types::loc min{ camLoc - ChunkSettings::world_render_distance };
 	types::loc max{ camLoc + ChunkSettings::world_render_distance };
@@ -68,26 +68,26 @@ void GameWorld::Voxels::ChunkGrid::discard_outside_chunks(const types::loc& camL
 	}
 }
 
-void GameWorld::Voxels::ChunkGrid::discard_all_chunks() noexcept
+void Voxels::ChunkGrid::discard_all_chunks() noexcept
 {
 	for (auto& key : m_chunk_meshes)
 		key.second.free();
 
-	std::unordered_map<types::loc, GameWorld::Voxels::Chunk> empty_chunks{};
+	std::unordered_map<types::loc, Voxels::Chunk> empty_chunks{};
 	m_chunks.swap(empty_chunks);
 
-	std::unordered_map<types::loc, Render::Data::ChunkMesh> empty_chunk_meshes{};
+	std::unordered_map<types::loc, Render::ChunkMesh> empty_chunk_meshes{};
 	m_chunk_meshes.swap(empty_chunk_meshes);
 }
 
-std::vector<types::loc> GameWorld::Voxels::ChunkGrid::generate_new_chunks(const types::loc& camLoc) noexcept
+std::vector<types::loc> Voxels::ChunkGrid::generate_new_chunks(const types::loc& camLoc) noexcept
 {
 	std::vector<types::loc> locations{};
 
 	if (ChunkSettings::world_render_distance == 0)
 	{
 		m_chunks.emplace(
-			camLoc, GameWorld::Voxels::Chunk{ types::loc{
+			camLoc, Voxels::Chunk{ types::loc{
 			camLoc.x * static_cast<int64>(Chunk::g_size),
 			camLoc.y * static_cast<int64>(Chunk::g_size),
 			camLoc.z * static_cast<int64>(Chunk::g_size)} 
@@ -106,7 +106,7 @@ std::vector<types::loc> GameWorld::Voxels::ChunkGrid::generate_new_chunks(const 
 				{
 					if (types::loc location{ x,y,z }; !m_chunks.contains(location))
 					{
-						const auto& chunk = m_chunks.emplace(location, GameWorld::Voxels::Chunk{ types::loc{
+						const auto& chunk = m_chunks.emplace(location, Voxels::Chunk{ types::loc{
 							location.x * static_cast<int64>(Chunk::g_size),
 							location.y * static_cast<int64>(Chunk::g_size),
 							location.z * static_cast<int64>(Chunk::g_size)} }).first->second;
@@ -142,7 +142,7 @@ std::vector<types::loc> GameWorld::Voxels::ChunkGrid::generate_new_chunks(const 
 	return locations;
 }
 
-void GameWorld::Voxels::ChunkGrid::draw_all(const GameWorld::Player& player) const noexcept
+void Voxels::ChunkGrid::draw_all(const Player& player) const noexcept
 {
 	static std::vector<types::loc> visible_chunks{};
 
@@ -162,7 +162,7 @@ void GameWorld::Voxels::ChunkGrid::draw_all(const GameWorld::Player& player) con
 				chunks.emplace_back(i);
 		}
 
-	auto playerLoc = GameWorld::Voxels::ChunkGrid::to_loc(player.getPos());
+	auto playerLoc = Voxels::ChunkGrid::to_loc(player.getPos());
 	std::sort(chunk_transparents.begin(), chunk_transparents.end(), [&](const auto& a, const auto& b)
 		{
 			return
@@ -182,7 +182,7 @@ void GameWorld::Voxels::ChunkGrid::draw_all(const GameWorld::Player& player) con
 // Predicates
 // =====================-
 
-bool GameWorld::Voxels::ChunkGrid::is_empty(const types::pos& block_pos, const Render::Data::Types::VoxelTypeManager& type_manager) const noexcept
+bool Voxels::ChunkGrid::is_empty(const types::pos& block_pos, const Render::Types::VoxelTypeManager& type_manager) const noexcept
 {
 	auto* c{ chunk_at(block_pos) };
 
@@ -202,9 +202,9 @@ bool GameWorld::Voxels::ChunkGrid::is_empty(const types::pos& block_pos, const R
 // Mutators
 // =====================
 
-void GameWorld::Voxels::ChunkGrid::create_chunkMesh_for_chunk_at(const types::loc& key)
+void Voxels::ChunkGrid::create_chunkMesh_for_chunk_at(const types::loc& key)
 {
-	m_chunk_meshes.try_emplace(key, Render::Data::ChunkMesh{});
+	m_chunk_meshes.try_emplace(key, Render::ChunkMesh{});
 }
 
 
@@ -212,48 +212,48 @@ void GameWorld::Voxels::ChunkGrid::create_chunkMesh_for_chunk_at(const types::lo
 // Getters
 // =====================
 
-GameWorld::Voxels::Chunk& GameWorld::Voxels::ChunkGrid::chunk_at_loc(const types::loc& loc) noexcept
+Voxels::Chunk& Voxels::ChunkGrid::chunk_at_loc(const types::loc& loc) noexcept
 {
 	return m_chunks.at(loc);
 }
 
-const GameWorld::Voxels::Chunk& const GameWorld::Voxels::ChunkGrid::chunk_at_loc(const types::loc& loc) const noexcept
+const Voxels::Chunk& const Voxels::ChunkGrid::chunk_at_loc(const types::loc& loc) const noexcept
 {
 	return m_chunks.at(loc);
 }
 
 
-GameWorld::Voxels::Chunk* GameWorld::Voxels::ChunkGrid::chunk_at_loc_ptr(const types::loc& loc) noexcept
+Voxels::Chunk* Voxels::ChunkGrid::chunk_at_loc_ptr(const types::loc& loc) noexcept
 {
 	return m_chunks.contains(loc) ? &m_chunks.at(loc) : nullptr;
 }
 
-const GameWorld::Voxels::Chunk* GameWorld::Voxels::ChunkGrid::chunk_at_loc_ptr(const types::loc& loc) const noexcept
+const Voxels::Chunk* Voxels::ChunkGrid::chunk_at_loc_ptr(const types::loc& loc) const noexcept
 {
 	return m_chunks.contains(loc) ? &m_chunks.at(loc) : nullptr;
 }
 
-Render::Data::ChunkMesh& GameWorld::Voxels::ChunkGrid::chunkmesh_at_loc(const types::loc& loc) noexcept
+Render::ChunkMesh& Voxels::ChunkGrid::chunkmesh_at_loc(const types::loc& loc) noexcept
 {
 	return m_chunk_meshes.at(loc);
 }
 
-const Render::Data::ChunkMesh& GameWorld::Voxels::ChunkGrid::chunkmesh_at_loc(const types::loc& loc) const noexcept
+const Render::ChunkMesh& Voxels::ChunkGrid::chunkmesh_at_loc(const types::loc& loc) const noexcept
 {
 	return m_chunk_meshes.at(loc);
 }
 
-Render::Data::ChunkMesh* GameWorld::Voxels::ChunkGrid::chunkmesh_at_loc_ptr(const types::loc& loc) noexcept
+Render::ChunkMesh* Voxels::ChunkGrid::chunkmesh_at_loc_ptr(const types::loc& loc) noexcept
 {
 	return m_chunk_meshes.contains(loc) ? &m_chunk_meshes.at(loc) : nullptr;
 }
 
-const Render::Data::ChunkMesh* GameWorld::Voxels::ChunkGrid::chunkmesh_at_loc_ptr(const types::loc& loc) const noexcept
+const Render::ChunkMesh* Voxels::ChunkGrid::chunkmesh_at_loc_ptr(const types::loc& loc) const noexcept
 {
 	return m_chunk_meshes.contains(loc) ? &m_chunk_meshes.at(loc) : nullptr;
 }
 
-GameWorld::Voxels::Chunk* GameWorld::Voxels::ChunkGrid::chunk_at(const types::pos& pos) noexcept
+Voxels::Chunk* Voxels::ChunkGrid::chunk_at(const types::pos& pos) noexcept
 {
 	auto loc = ChunkGrid::to_loc(pos);
 	if (m_chunks.contains(loc))
@@ -262,7 +262,7 @@ GameWorld::Voxels::Chunk* GameWorld::Voxels::ChunkGrid::chunk_at(const types::po
 	return nullptr;
 }
 
-const GameWorld::Voxels::Chunk const* GameWorld::Voxels::ChunkGrid::chunk_at(const types::pos& pos) const noexcept
+const Voxels::Chunk const* Voxels::ChunkGrid::chunk_at(const types::pos& pos) const noexcept
 {
 	auto loc = ChunkGrid::to_loc(pos);
 	if (m_chunks.contains(loc))
@@ -271,7 +271,7 @@ const GameWorld::Voxels::Chunk const* GameWorld::Voxels::ChunkGrid::chunk_at(con
 	return nullptr;
 }
 
-Render::Data::ChunkMesh* GameWorld::Voxels::ChunkGrid::chunkmesh_at(const types::pos& pos) noexcept
+Render::ChunkMesh* Voxels::ChunkGrid::chunkmesh_at(const types::pos& pos) noexcept
 {
 	auto loc = ChunkGrid::to_loc(pos);
 	if (m_chunk_meshes.contains(loc))
@@ -280,7 +280,7 @@ Render::Data::ChunkMesh* GameWorld::Voxels::ChunkGrid::chunkmesh_at(const types:
 	return nullptr;
 }
 
-const Render::Data::ChunkMesh const* GameWorld::Voxels::ChunkGrid::chunkmesh_at(const types::pos& pos) const noexcept
+const Render::ChunkMesh const* Voxels::ChunkGrid::chunkmesh_at(const types::pos& pos) const noexcept
 {
 	auto loc = ChunkGrid::to_loc(pos);
 	if (m_chunk_meshes.contains(loc))
@@ -289,7 +289,7 @@ const Render::Data::ChunkMesh const* GameWorld::Voxels::ChunkGrid::chunkmesh_at(
 	return nullptr;
 }
 
-types::type_id GameWorld::Voxels::ChunkGrid::block_id_at(const types::pos& block_pos) const noexcept
+types::type_id Voxels::ChunkGrid::block_id_at(const types::pos& block_pos) const noexcept
 {
 	const Chunk* chunk{ chunk_at(block_pos) };
 
@@ -299,7 +299,7 @@ types::type_id GameWorld::Voxels::ChunkGrid::block_id_at(const types::pos& block
 	return chunk->block_at(chunk->getVoxelIndex(block_pos)).id;
 }
 
-types::loc GameWorld::Voxels::ChunkGrid::to_loc(const types::pos& pos) noexcept
+types::loc Voxels::ChunkGrid::to_loc(const types::pos& pos) noexcept
 {
 	return { 
 		static_cast<int32>(std::floor(pos.x / Chunk::g_size)),

@@ -5,15 +5,15 @@
 // Manages a chunk of entities to scan through them and update each one of them
 // ---------------------------------------
 
-#include "rendering/GUI/Items/item3DMesh.hpp"
+#include "world/entities/items/itemEntity.hpp"
 #include "utilities/types.hpp"
 
 #include "rendering/shader.hpp"
 
-#include "world/players/player/player.hpp"
-#include "rendering/GUI/Items/itemTypeManager.hpp"
+#include "world/entities/player/player.hpp"
+#include "world/types/itemTypeManager.hpp"
 
-namespace GameWorld::Entities
+namespace Entities
 {
 
 	class EntityChunk
@@ -33,16 +33,16 @@ namespace GameWorld::Entities
 
 		// = Mass Overloads
 
-			void addEntity(Render::Item3DMesh&& item, const vec3f& pos) noexcept;
+			void addEntity(Render::ItemEntity&& item, const vec3f& pos) noexcept;
 
 
-		void draw(const Render::Shader& shader, const Render::Texturing::Texture& items_texture) noexcept;
+		void draw(const Render::Shader& shader, const Render::Texture& items_texture) noexcept;
 
 
 	private:
 
 
-		std::vector<Render::Item3DMesh> m_items{};
+		std::vector<Render::ItemEntity> m_items{};
 
 	public:
 

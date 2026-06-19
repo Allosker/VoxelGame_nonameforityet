@@ -10,7 +10,7 @@
 #include "inputs.hpp"
 #include "utilities/time/clock.hpp"
 
-#include "rendering/utilities/camera.hpp"
+#include "world/entities/player/camera.hpp"
 
 #include <string>
 #include <array>

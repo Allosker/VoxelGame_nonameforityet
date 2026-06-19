@@ -6,34 +6,30 @@
 // ---------------------------------------
 
 #include "utilities/types.hpp"
-#include "rendering/world_managing/data/typeManagement/voxelTypeManager.hpp"
+#include "world/types/voxelTypeManager.hpp"
 #include "rendering/utilities/frustum_culling.hpp"
 
 #include "world/voxels/chunk.hpp"
 
-#include "rendering/mesh/mesh.hpp"
+#include "rendering/mesh.hpp"
 
 #include <optional>
 #include <map>
 #include <unordered_map>
 #include <vector>
 
-namespace GameWorld
-{
-	class Player;
-}
 
-namespace Render::Data
+class Player;
+
+namespace Render
 {
 	class ChunkMesh;
 }
 
-namespace GameWorld
-{
-	class World;
-}
 
-namespace GameWorld::Voxels
+class World;
+
+namespace Voxels
 {
 
 	namespace ChunkSettings
@@ -53,7 +49,7 @@ namespace GameWorld::Voxels
 
 		// Actors
 
-		void update(const World& world, const Render::Data::Types::VoxelTypeManager& type_manager, const Player& player) noexcept;
+		void update(const World& world, const Render::Types::VoxelTypeManager& type_manager, const Player& player) noexcept;
 
 		void discard_outside_chunks(const types::loc& camPos) noexcept;
 
@@ -62,7 +58,7 @@ namespace GameWorld::Voxels
 		std::vector<types::loc> generate_new_chunks(const types::loc& camPos) noexcept;
 
 
-		void draw_all(const GameWorld::Player& player) const noexcept;
+		void draw_all(const Player& player) const noexcept;
 
 
 		// = Getters
@@ -70,34 +66,34 @@ namespace GameWorld::Voxels
 		const bool generatedNewChunks() const noexcept { return m_generated_new_chunks; }
 
 		
-		std::unordered_map<types::loc, GameWorld::Voxels::Chunk>& getChunks() noexcept { return m_chunks; }
-		const std::unordered_map<types::loc, GameWorld::Voxels::Chunk>& getChunks() const noexcept { return m_chunks; }
+		std::unordered_map<types::loc, Voxels::Chunk>& getChunks() noexcept { return m_chunks; }
+		const std::unordered_map<types::loc, Voxels::Chunk>& getChunks() const noexcept { return m_chunks; }
 
-		std::unordered_map<types::loc, Render::Data::ChunkMesh>& getChunkMeshes() noexcept { return m_chunk_meshes; }
-		const std::unordered_map<types::loc, Render::Data::ChunkMesh>& getChunkMeshes() const noexcept { return m_chunk_meshes; }
+		std::unordered_map<types::loc, Render::ChunkMesh>& getChunkMeshes() noexcept { return m_chunk_meshes; }
+		const std::unordered_map<types::loc, Render::ChunkMesh>& getChunkMeshes() const noexcept { return m_chunk_meshes; }
 
 		// No guards against invalid loc
-		GameWorld::Voxels::Chunk& chunk_at_loc(const types::loc& loc) noexcept;
+		Voxels::Chunk& chunk_at_loc(const types::loc& loc) noexcept;
 		// No guard against invalid loc
-		const GameWorld::Voxels::Chunk& chunk_at_loc(const types::loc& loc) const noexcept;
+		const Voxels::Chunk& chunk_at_loc(const types::loc& loc) const noexcept;
 
-		GameWorld::Voxels::Chunk* chunk_at_loc_ptr(const types::loc& loc) noexcept;
-		const GameWorld::Voxels::Chunk* chunk_at_loc_ptr(const types::loc& loc) const noexcept;
+		Voxels::Chunk* chunk_at_loc_ptr(const types::loc& loc) noexcept;
+		const Voxels::Chunk* chunk_at_loc_ptr(const types::loc& loc) const noexcept;
 
 
 		// No guards against invalid loc
-		Render::Data::ChunkMesh& chunkmesh_at_loc(const types::loc& loc) noexcept;
+		Render::ChunkMesh& chunkmesh_at_loc(const types::loc& loc) noexcept;
 		// No guards against invalid loc
-		const Render::Data::ChunkMesh& chunkmesh_at_loc(const types::loc& loc) const noexcept;
+		const Render::ChunkMesh& chunkmesh_at_loc(const types::loc& loc) const noexcept;
 
-		Render::Data::ChunkMesh* chunkmesh_at_loc_ptr(const types::loc& loc) noexcept;
-		const Render::Data::ChunkMesh* chunkmesh_at_loc_ptr(const types::loc& loc) const noexcept;
+		Render::ChunkMesh* chunkmesh_at_loc_ptr(const types::loc& loc) noexcept;
+		const Render::ChunkMesh* chunkmesh_at_loc_ptr(const types::loc& loc) const noexcept;
 
-		GameWorld::Voxels::Chunk* chunk_at(const types::pos& pos) noexcept;
-		const GameWorld::Voxels::Chunk* chunk_at(const types::pos& pos) const noexcept;
+		Voxels::Chunk* chunk_at(const types::pos& pos) noexcept;
+		const Voxels::Chunk* chunk_at(const types::pos& pos) const noexcept;
 
-		Render::Data::ChunkMesh* chunkmesh_at(const types::pos& pos) noexcept;
-		const Render::Data::ChunkMesh* chunkmesh_at(const types::pos& pos) const noexcept;
+		Render::ChunkMesh* chunkmesh_at(const types::pos& pos) noexcept;
+		const Render::ChunkMesh* chunkmesh_at(const types::pos& pos) const noexcept;
 
 		
 		types::type_id block_id_at(const types::pos& block_pos) const noexcept;
@@ -105,7 +101,7 @@ namespace GameWorld::Voxels
 
 		// = Predicates
 
-		bool is_empty(const types::pos& block_pos, const Render::Data::Types::VoxelTypeManager& type_manager) const noexcept;
+		bool is_empty(const types::pos& block_pos, const Render::Types::VoxelTypeManager& type_manager) const noexcept;
 
 
 		// = Mutators
@@ -121,8 +117,8 @@ namespace GameWorld::Voxels
 	private:
 
 
-		std::unordered_map<types::loc, GameWorld::Voxels::Chunk> m_chunks{};
-		std::unordered_map<types::loc, Render::Data::ChunkMesh> m_chunk_meshes{};
+		std::unordered_map<types::loc, Voxels::Chunk> m_chunks{};
+		std::unordered_map<types::loc, Render::ChunkMesh> m_chunk_meshes{};
 
 
 		bool m_generated_new_chunks{};

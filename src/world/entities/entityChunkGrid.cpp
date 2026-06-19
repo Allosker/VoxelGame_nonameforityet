@@ -2,12 +2,12 @@
 
 
 
-void GameWorld::Entities::EntityChunkGrid::update(Player& player, const Render::GUI::ItemTypeManager& itm) noexcept
+void Entities::EntityChunkGrid::update(Player& player, const Render::GUI::ItemTypeManager& itm) noexcept
 {
 	const types::loc player_loc = to_loc(player.getPos());
 
-	types::loc min{ player_loc - GameWorld::Voxels::ChunkSettings::world_render_distance };
-	types::loc max{ player_loc + GameWorld::Voxels::ChunkSettings::world_render_distance };
+	types::loc min{ player_loc - Voxels::ChunkSettings::world_render_distance };
+	types::loc max{ player_loc + Voxels::ChunkSettings::world_render_distance };
 
 	for (auto it = m_chunks.begin(); it != m_chunks.end();)
 	{
@@ -26,7 +26,7 @@ void GameWorld::Entities::EntityChunkGrid::update(Player& player, const Render::
 	}
 }
 
-void GameWorld::Entities::EntityChunkGrid::update_items(Player& player, const Render::GUI::ItemTypeManager& itm) noexcept
+void Entities::EntityChunkGrid::update_items(Player& player, const Render::GUI::ItemTypeManager& itm) noexcept
 {
 	auto* current_chunk = chunk_at(player.getPos());
 
@@ -34,13 +34,13 @@ void GameWorld::Entities::EntityChunkGrid::update_items(Player& player, const Re
 		current_chunk->update_items(player, itm);
 }
 
-void GameWorld::Entities::EntityChunkGrid::draw(const Render::Shader& shader, const Render::Texturing::Texture& items_texture) noexcept
+void Entities::EntityChunkGrid::draw(const Render::Shader& shader, const Render::Texture& items_texture) noexcept
 {
 	for (auto& i : m_chunks)
 		i.second.draw(shader, items_texture);
 }
 
-types::loc GameWorld::Entities::EntityChunkGrid::to_loc(const types::pos& pos) noexcept
+types::loc Entities::EntityChunkGrid::to_loc(const types::pos& pos) noexcept
 {
 	return {
 		static_cast<int32>(std::floor(pos.x / EntityChunk::g_size)),
@@ -48,7 +48,7 @@ types::loc GameWorld::Entities::EntityChunkGrid::to_loc(const types::pos& pos) n
 		static_cast<int32>(std::floor(pos.z / EntityChunk::g_size)) };
 }
 
-size_t GameWorld::Entities::EntityChunkGrid::to_index(const types::loc& loc) noexcept
+size_t Entities::EntityChunkGrid::to_index(const types::loc& loc) noexcept
 {
 	/*const auto z_stride{ EntityChunk::g_size * Chunk::g_size };
 	auto index = (size_t)(std::abs(std::floor(fpos.z) * z_stride + std::floor(fpos.y) * Chunk::g_size + std::floor(fpos.x)));*/

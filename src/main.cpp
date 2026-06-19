@@ -6,7 +6,7 @@
 #include "mpml/vectors/special_overloads/print_vectors.hpp"
 
 #include "utilities/window.hpp"
-#include "utilities/inputs.hpp"
+#include "utilities/inputs.hpp" 
 
 #include "rendering/shader.hpp"
 
@@ -14,18 +14,32 @@
 #include "world/voxels/utilities/ray.hpp"
 #include <utility>
 
-
 #include "world/world.hpp"
 
-#include "rendering/assets_managing/texturing/texture.hpp"
+#include "rendering/texture.hpp"
 
 #include "rendering/utilities/cubeHighlight.hpp"
 
-#include "rendering/mesh/mesh.hpp"
+#include "rendering/mesh.hpp"
 
-#include "rendering/GUI/shapes/rectangle.hpp"
+#include "rendering/GUI/elements/rectangle.hpp"
 
 #include "world/entities/basic_entity.hpp"
+
+#include "rendering/skybox.hpp"
+
+#include "utilities/debug.hpp"
+
+#include "physics/collisions/basicHitbox.hpp"
+#include "world/entities/player/player.hpp"
+
+#include "world/entities/items/itemEntity.hpp"
+#include "world/types/itemTypeManager.hpp"
+
+#include "rendering/text/text.hpp"
+
+
+#include "world/entities/entityChunkGrid.hpp"
 
 /* TOFIXLIST -- TODOLIST on Trello
 * 
@@ -35,21 +49,6 @@
 *	== When a block is place in another chunk than in the chunk containing light, it doesn't get updated properly
 * 
 */
-
-#include "rendering/skybox.hpp"
-
-#include "utilities/debug.hpp"
-
-#include "transforms/collisions/basicHitbox.hpp"
-#include "world/players/player/player.hpp"
-
-#include "rendering/GUI/Items/item3DMesh.hpp"
-#include "rendering/GUI/Items/itemTypeManager.hpp"
-
-#include "rendering/GUI/text/text.hpp"
-#include "rendering/GUI/text/font.hpp"
-
-#include "world/entities/entityChunkGrid.hpp"
 
 static void framebuffersize_callback(GLFWwindow* window, int width, int height) noexcept;
 
@@ -125,14 +124,14 @@ try
 	Render::Shader S_skybox{ SHADER_PATH"simple/skybox.vert", SHADER_PATH"simple/skybox.frag" };
 
 	// Textures/Images
-	Render::Texturing::Texture textureAtlas{ ASSET_PATH"blocks/world/atlas.png"};
-	Render::Texturing::Texture crossAirAtlas{ ASSET_PATH"hud/crossair_atlas.png" };
+	Render::Texture textureAtlas{ ASSET_PATH"blocks/world/atlas.png"};
+	Render::Texture crossAirAtlas{ ASSET_PATH"hud/crossair_atlas.png" };
 
 	Render::Image atlas_image_guiBlocks{ ASSET_PATH"blocks/gui/block_inventory_atlas.png" };
-	Render::Texturing::Texture atlas_guiBlocks{ atlas_image_guiBlocks };
+	Render::Texture atlas_guiBlocks{ atlas_image_guiBlocks };
 
 	// World
-	GameWorld::World world{};
+	World world{};
 	WorldOptions WO{};
 
 	/// Utils
@@ -140,19 +139,19 @@ try
 	Render::GUI::ItemTypeManager itemTypeManager{};
 
 	// GUI
-	Render::GUI::Rectangle crossair{ {50, 50}, {0, 0}, types::Rect<types::uvs>{{0, 17}, {17, 17}} };
+	Render::GUI::Elems::Rectangle crossair{ {50, 50}, {0, 0}, types::Rect<types::uvs>{{0, 17}, {17, 17}} };
 	crossair.setPosition({ -crossair.getSize().x / 2, -crossair.getSize().y / 2 });
 
 
 	// Player
-	GameWorld::Player player{ ASSET_PATH"hud/slot.png", ASSET_PATH"hud/inventory.png", ASSET_PATH"hud/slot_inventory.png", itemTypeManager, FONT_PATH"pixelated.ttf" };
+	Player player{ ASSET_PATH"hud/slot.png", ASSET_PATH"hud/inventory.png", ASSET_PATH"hud/slot_inventory.png", itemTypeManager, FONT_PATH"pixelated.ttf" };
 	player.getCamera().updateProjMatrix(window.getSize()); // First Cam update
 
 	// Test					 		
 
-	Render::GUI::Font font{ FONT_PATH"pixelated.ttf" };
+	Render::Font font{ FONT_PATH"pixelated.ttf" };
 
-	GameWorld::Entities::EntityChunkGrid entity_chunk_grid{};
+	Entities::EntityChunkGrid entity_chunk_grid{};
 
 
 	Render::Skybox skybox{};
@@ -182,7 +181,6 @@ try
 		window.processInputs(
 			[&]()
 			{
-				using namespace GameWorld;
 				using b = Buttons;
 
 				if (window.isKeyPressed(b::Escape))
@@ -278,7 +276,7 @@ try
 
 			if(const auto* cl{ world.chunk_at(player.getPos()) })
 			{
-				const types::loc c{ GameWorld::Voxels::ChunkGrid::to_loc(cl->getPos()) };
+				const types::loc c{ Voxels::ChunkGrid::to_loc(cl->getPos()) };
 
 				ImGui::Text("Chunk Loc : %ld %ld %ld", c.x, c.y, c.z);
 			}
@@ -359,7 +357,7 @@ try
 			ImGui::Checkbox("Instant Vox. Break", &WO.instant_voxel_breaking);
 			ImGui::Checkbox("Instant Vox. Place", &WO.instant_voxel_placing);
 
-			ImGui::VSliderScalar("Render Distance", { 15, 100 }, ImGuiDataType_S64, &GameWorld::Voxels::ChunkSettings::world_render_distance, &WO.rm, &WO.rma);
+			ImGui::VSliderScalar("Render Distance", { 15, 100 }, ImGuiDataType_S64, &Voxels::ChunkSettings::world_render_distance, &WO.rm, &WO.rma);
 
 			ImGui::End(); // Window end
 		}
@@ -401,7 +399,7 @@ try
 		}
 		
 
-		const auto& ray_result{ GameWorld::Voxels::Utils::raycast(player.getPos(), player.getCamera().front_dir, world.grid, WO.rayDist, world.getTypeManager())};
+		const auto& ray_result{ Voxels::Utils::raycast(player.getPos(), player.getCamera().front_dir, world.grid, WO.rayDist, world.getTypeManager())};
 
 		bool drawHighlight{ false };
 		if(!window.isCursorHidden())

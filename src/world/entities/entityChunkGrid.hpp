@@ -9,7 +9,7 @@
 
 #include "world/voxels/chunkGrid.hpp"
 
-namespace GameWorld::Entities
+namespace Entities
 {
 
 	class EntityChunkGrid
@@ -21,9 +21,9 @@ namespace GameWorld::Entities
 		
 		void update_items(Player& player, const Render::GUI::ItemTypeManager& itm) noexcept;
 
-		void addEntity(Render::Item3DMesh&& item, const vec3f& pos) noexcept { chunk_at_emplace(pos).addEntity(std::move(item), pos); }
+		void addEntity(Render::ItemEntity&& item, const vec3f& pos) noexcept { chunk_at_emplace(pos).addEntity(std::move(item), pos); }
 
-		void draw(const Render::Shader& shader, const Render::Texturing::Texture& items_texture) noexcept;
+		void draw(const Render::Shader& shader, const Render::Texture& items_texture) noexcept;
 
 
 

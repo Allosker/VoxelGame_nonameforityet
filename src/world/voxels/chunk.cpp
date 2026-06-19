@@ -4,7 +4,7 @@
 // Construction/Destruction
 // =====================
 
-GameWorld::Voxels::Chunk::Chunk(const types::loc& pos) noexcept
+Voxels::Chunk::Chunk(const types::loc& pos) noexcept
 	: m_pos(pos), m_voxels(g_maxSize)
 {
 }
@@ -14,7 +14,7 @@ GameWorld::Voxels::Chunk::Chunk(const types::loc& pos) noexcept
 // Getters
 // =====================
 
-types::chunk_index GameWorld::Voxels::Chunk::getVoxelIndex(const types::pos& pos) const
+types::chunk_index Voxels::Chunk::getVoxelIndex(const types::pos& pos) const
 {
 	const auto fpos = static_cast<types::loc>(mpml::floor(pos)) - m_pos;
 	const auto z_stride{ Chunk::g_size * Chunk::g_size };
@@ -27,7 +27,7 @@ types::chunk_index GameWorld::Voxels::Chunk::getVoxelIndex(const types::pos& pos
 // Predicates
 // =====================
 
-const bool GameWorld::Voxels::Chunk::isWithinChunk(const types::pos& point) const noexcept
+const bool Voxels::Chunk::isWithinChunk(const types::pos& point) const noexcept
 {
 	const types::loc corner{ getOppositeCorner() };
 
@@ -39,7 +39,7 @@ const bool GameWorld::Voxels::Chunk::isWithinChunk(const types::pos& point) cons
 	return false;
 }
 
-Render::Data::Voxel* GameWorld::Voxels::Chunk::block_at_ptr(const types::loc& loc) noexcept
+Data::Voxel* Voxels::Chunk::block_at_ptr(const types::loc& loc) noexcept
 {
 	if ((loc.x >= g_size || loc.y >= g_size || loc.z >= g_size) || (loc.x < 0 || loc.y < 0 || loc.z < 0))
 		return nullptr;
@@ -47,7 +47,7 @@ Render::Data::Voxel* GameWorld::Voxels::Chunk::block_at_ptr(const types::loc& lo
 	return block_at_ptr(loc.x + loc.y * g_size + loc.z * g_size * g_size);
 }
 
-Render::Data::Voxel* GameWorld::Voxels::Chunk::block_at_ptr(types::chunk_index index) noexcept
+Data::Voxel* Voxels::Chunk::block_at_ptr(types::chunk_index index) noexcept
 {
 	if (index < 0 || index >= Chunk::g_maxSize)
 		return nullptr;
@@ -58,7 +58,7 @@ Render::Data::Voxel* GameWorld::Voxels::Chunk::block_at_ptr(types::chunk_index i
 	return &m_voxels.at(index);
 }
 
-const Render::Data::Voxel* GameWorld::Voxels::Chunk::block_at_ptr(const types::loc& loc) const noexcept
+const Data::Voxel* Voxels::Chunk::block_at_ptr(const types::loc& loc) const noexcept
 {
 	if ((loc.x >= g_size || loc.y >= g_size || loc.z >= g_size) || (loc.x < 0 || loc.y < 0 || loc.z < 0))
 		return nullptr;
@@ -66,7 +66,7 @@ const Render::Data::Voxel* GameWorld::Voxels::Chunk::block_at_ptr(const types::l
 	return block_at_ptr(loc.x + loc.y * g_size + loc.z * g_size * g_size);
 }
 
-const Render::Data::Voxel* GameWorld::Voxels::Chunk::block_at_ptr(types::chunk_index index) const noexcept
+const Data::Voxel* Voxels::Chunk::block_at_ptr(types::chunk_index index) const noexcept
 {
 	if (index < 0 || index >= Chunk::g_maxSize || m_empty)
 		return nullptr;
@@ -83,7 +83,7 @@ const Render::Data::Voxel* GameWorld::Voxels::Chunk::block_at_ptr(types::chunk_i
 // =====================
 
 
-/*private*/ void GameWorld::Voxels::Chunk::make_empty() noexcept
+/*private*/ void Voxels::Chunk::make_empty() noexcept
 {
 	if (!m_empty)
 	{
@@ -101,7 +101,7 @@ const Render::Data::Voxel* GameWorld::Voxels::Chunk::block_at_ptr(types::chunk_i
 	}
 }
 
-void GameWorld::Voxels::Chunk::make_full() noexcept
+void Voxels::Chunk::make_full() noexcept
 {
 	if (m_empty)
 	{

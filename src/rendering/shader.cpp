@@ -61,7 +61,7 @@ try
 
 
 	// Compile
-	compile(v_ID, "vertex");
+	compile(v_ID, "::data::vertex");
 	compile(f_ID, "fragment");
 	if (!geomShader.empty())
 		compile(g_ID, "geometry");

@@ -5,7 +5,7 @@
 
 #include "PerlinNoiseHO/PerlinNoise.hpp"
 
-#include "players/player/player.hpp"
+#include "entities/player/player.hpp"
 
 
 using Spline = std::vector<vec2d>;
@@ -51,10 +51,10 @@ static inline double pickSpline(const std::vector<std::pair<vec2d, std::vector<v
 };
 
 
-void GameWorld::World::update(const Player& player, bool force_reload)
+void World::update(const Player& player, bool force_reload)
 {
 	static types::loc lastCamLoc{};
-	types::loc camLoc{ GameWorld::Voxels::ChunkGrid::to_loc(player.getPos()) };
+	types::loc camLoc{ Voxels::ChunkGrid::to_loc(player.getPos()) };
 
 	if (force_reload)
 		grid.discard_all_chunks();
@@ -89,14 +89,14 @@ void GameWorld::World::update(const Player& player, bool force_reload)
 			Render::Debug::aabb(c.second.getPos() + 16.f, { 16.f }, (c.second.isEmpty() ? vec3f{0, 1, 1} : vec3f{ 1, 1, 0 }), 0, false);
 }
 
-void GameWorld::World::update_blocklight() noexcept
+void World::update_blocklight() noexcept
 {
 	/*update_rLighting();
 	update_gLighting();
 	update_bLighting();*/
 }
 
-void GameWorld::World::update_rLighting() noexcept
+void World::update_rLighting() noexcept
 {
 	while (!rRemovalBfsQueue.empty())
 	{
@@ -182,7 +182,7 @@ void GameWorld::World::update_rLighting() noexcept
 	}
 }
 
-void GameWorld::World::update_gLighting() noexcept
+void World::update_gLighting() noexcept
 {
 	while (!gRemovalBfsQueue.empty())
 	{
@@ -268,7 +268,7 @@ void GameWorld::World::update_gLighting() noexcept
 	}
 }
 
-void GameWorld::World::update_bLighting() noexcept
+void World::update_bLighting() noexcept
 {
 	while (!bRemovalBfsQueue.empty())
 	{
@@ -357,7 +357,7 @@ void GameWorld::World::update_bLighting() noexcept
 
 
 
-void GameWorld::World::update_sunlight() noexcept
+void World::update_sunlight() noexcept
 {
 	while (!sunlightRemovalBfsQueue.empty())
 	{
@@ -455,7 +455,7 @@ void GameWorld::World::update_sunlight() noexcept
 	}
 }
 
-void GameWorld::World::gen_nodes_sunlight(const std::vector<types::loc>& chunk_locs) noexcept
+void World::gen_nodes_sunlight(const std::vector<types::loc>& chunk_locs) noexcept
 {
 	for(auto& loc : chunk_locs)
 	{
@@ -491,11 +491,11 @@ void GameWorld::World::gen_nodes_sunlight(const std::vector<types::loc>& chunk_l
 	}
 }
 
-void GameWorld::World::generateWorld(const std::vector<types::loc>& new_chunks_loc)
+void World::generateWorld(const std::vector<types::loc>& new_chunks_loc)
 {
 	using SeedType = siv::PerlinNoise::seed_type;
 
-	static const auto z_stride{ GameWorld::Voxels::Chunk::g_size * GameWorld::Voxels::Chunk::g_size };
+	static const auto z_stride{ Voxels::Chunk::g_size * Voxels::Chunk::g_size };
 
 	const SeedType seed{ 1232356u };
 	siv::PerlinNoise perlin{ seed };
@@ -512,8 +512,8 @@ void GameWorld::World::generateWorld(const std::vector<types::loc>& new_chunks_l
 		auto& chunk{ grid.chunk_at_loc(loc) };
 
 		// Every Block of the Chunk
-		for (int64 x{}; x < GameWorld::Voxels::Chunk::g_size; x++)
-			for (int64 z{}; z < GameWorld::Voxels::Chunk::g_size; z++)
+		for (int64 x{}; x < Voxels::Chunk::g_size; x++)
+			for (int64 z{}; z < Voxels::Chunk::g_size; z++)
 			{
 				// Generate Depth for the world
 
@@ -525,9 +525,9 @@ void GameWorld::World::generateWorld(const std::vector<types::loc>& new_chunks_l
 				y_max = continentalness * 100.;
 
 				// Choose Which block type goes where
-				for (int64 y{}; y < GameWorld::Voxels::Chunk::g_size; y++)
+				for (int64 y{}; y < Voxels::Chunk::g_size; y++)
 				{
-					auto& current_block{ chunk.block_at(z * z_stride + y * GameWorld::Voxels::Chunk::g_size + x) };
+					auto& current_block{ chunk.block_at(z * z_stride + y * Voxels::Chunk::g_size + x) };
 
 					double bp = y + chunk.getPos().y; // block pos in world coords
 
@@ -643,14 +643,14 @@ void GameWorld::World::generateWorld(const std::vector<types::loc>& new_chunks_l
 	}
 }
 
-void GameWorld::World::draw_chunkGrid(const Player& player) const noexcept
+void World::draw_chunkGrid(const Player& player) const noexcept
 {
 	grid.draw_all(player);
 }
 
-bool GameWorld::World::set_voxel_at(const types::pos& block_pos, types::type_id id) noexcept
+bool World::set_voxel_at(const types::pos& block_pos, types::type_id id) noexcept
 {
-	const auto chunk_loc = GameWorld::Voxels::ChunkGrid::to_loc(block_pos);
+	const auto chunk_loc = Voxels::ChunkGrid::to_loc(block_pos);
 	auto* chunk{ grid.chunk_at_loc_ptr(chunk_loc) };
 
 	if (chunk == nullptr)
@@ -662,7 +662,7 @@ bool GameWorld::World::set_voxel_at(const types::pos& block_pos, types::type_id 
 		gen_nodes_sunlight({ chunk_loc });
 	}
 
-	grid.create_chunkMesh_for_chunk_at(GameWorld::Voxels::ChunkGrid::to_loc(chunk->getPos()));
+	grid.create_chunkMesh_for_chunk_at(Voxels::ChunkGrid::to_loc(chunk->getPos()));
 
 	auto voxel_index = chunk->getVoxelIndex(block_pos);
 	auto& current_block = chunk->block_at(voxel_index);
@@ -797,7 +797,7 @@ bool GameWorld::World::set_voxel_at(const types::pos& block_pos, types::type_id 
 	return true;
 }
 
-Render::Data::Voxel* GameWorld::World::blockempty_at(const types::pos& block_pos) noexcept
+Data::Voxel* World::blockempty_at(const types::pos& block_pos) noexcept
 {
 	auto* c{ grid.chunk_at(block_pos) };
 
@@ -807,7 +807,7 @@ Render::Data::Voxel* GameWorld::World::blockempty_at(const types::pos& block_pos
 	return c->block_at_ptr(c->getVoxelIndex(block_pos));
 }
 
-const Render::Data::Voxel* GameWorld::World::blockempty_at(const types::pos& block_pos) const noexcept
+const Data::Voxel* World::blockempty_at(const types::pos& block_pos) const noexcept
 {
 	auto* c{ grid.chunk_at(block_pos) };
 
@@ -817,7 +817,7 @@ const Render::Data::Voxel* GameWorld::World::blockempty_at(const types::pos& blo
 	return c->block_at_ptr(c->getVoxelIndex(block_pos));
 }
 
-Render::Data::Voxel* GameWorld::World::block_at(const types::pos& block_pos) noexcept
+Data::Voxel* World::block_at(const types::pos& block_pos) noexcept
 {
 	auto* ptr = blockempty_at(block_pos);
 
@@ -830,7 +830,7 @@ Render::Data::Voxel* GameWorld::World::block_at(const types::pos& block_pos) noe
 	return ptr;
 }
 
-const Render::Data::Voxel* GameWorld::World::block_at(const types::pos& block_pos) const noexcept
+const Data::Voxel* World::block_at(const types::pos& block_pos) const noexcept
 {
 	auto* c{ grid.chunk_at(block_pos) };
 
@@ -848,24 +848,24 @@ const Render::Data::Voxel* GameWorld::World::block_at(const types::pos& block_po
 	return ptr;
 }
 
-Render::Data::Voxel const* GameWorld::World::block_at(const types::loc& block_loc) const noexcept
+Data::Voxel const* World::block_at(const types::loc& block_loc) const noexcept
 {
 	return block_at(static_cast<types::pos>(block_loc));
 }
 
-Render::Data::Voxel GameWorld::World::blockout_at(const types::pos& block_pos) const noexcept
+Data::Voxel World::blockout_at(const types::pos& block_pos) const noexcept
 {
 	auto* c{ grid.chunk_at(block_pos) };
 
 	if (!c)
-		return Render::Data::Voxel{0, 15};
+		return Data::Voxel{0, 15};
 
 	auto block = c->block_at(c->getVoxelIndex(block_pos));
 
 	return block;
 }
 
-const GameWorld::Voxels::Chunk* GameWorld::World::chunk_at(const types::pos& chunk_pos) const noexcept
+const Voxels::Chunk* World::chunk_at(const types::pos& chunk_pos) const noexcept
 {
 	return grid.chunk_at(chunk_pos);
 }

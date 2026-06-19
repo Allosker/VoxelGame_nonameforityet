@@ -3,7 +3,7 @@
 
 
 
-void GameWorld::Entities::EntityChunk::update_items(Player& player, const Render::GUI::ItemTypeManager& itm) noexcept
+void Entities::EntityChunk::update_items(Player& player, const Render::GUI::ItemTypeManager& itm) noexcept
 {
 	for (size_t i{}; i < m_items.size(); i++)
 		if (m_items.at(i).getHitbox().intersects(player.getHitbox()))
@@ -13,7 +13,7 @@ void GameWorld::Entities::EntityChunk::update_items(Player& player, const Render
 	// Update the physics for them
 }
 
-void GameWorld::Entities::EntityChunk::addEntity(Render::Item3DMesh&& item, const vec3f& pos) noexcept
+void Entities::EntityChunk::addEntity(Render::ItemEntity&& item, const vec3f& pos) noexcept
 {
 	item.rotate(mpml::Quaternion<float>::fromAxis(vec3f{ 1, 0, 0 }, mpml::Angle<>::fromDegrees(90.f)));
 	item.setPosition(mpml::floor(pos) + vec3f{ 0.5, 0.01, 0.5 });
@@ -21,7 +21,7 @@ void GameWorld::Entities::EntityChunk::addEntity(Render::Item3DMesh&& item, cons
 	m_items.emplace_back(std::move(item));
 }
 
-void GameWorld::Entities::EntityChunk::draw(const Render::Shader& shader, const Render::Texturing::Texture& items_texture) noexcept
+void Entities::EntityChunk::draw(const Render::Shader& shader, const Render::Texture& items_texture) noexcept
 {
 	for (auto& i : m_items)
 		i.draw(shader, items_texture);

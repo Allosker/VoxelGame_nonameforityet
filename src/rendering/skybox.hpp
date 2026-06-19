@@ -6,7 +6,7 @@
 // ---------------------------------------
 
 #include "utilities/opengl.hpp"
-#include "rendering/assets_managing/image.hpp"
+#include "data/image.hpp"
 #include "rendering/shader.hpp"
 
 

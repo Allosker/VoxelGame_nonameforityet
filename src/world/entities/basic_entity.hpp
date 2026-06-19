@@ -7,18 +7,18 @@
 
 #include "utilities/opengl.hpp"
 
-#include "rendering/mesh/mesh.hpp"
+#include "rendering/mesh.hpp"
 
 #include "rendering/shader.hpp"
 
-#include "rendering/assets_managing/utilities.hpp"
+#include "rendering/utilities/atlas.hpp"
 
-#include "transforms/collisions/basicHitbox.hpp"
+#include "physics/collisions/basicHitbox.hpp"
 
-#include "transforms/transform3D.hpp"
+#include "physics/transforms/transform3D.hpp"
 
 
-namespace GameWorld::Entities
+namespace Entities
 {
 	
 	class BasicEntity

@@ -6,11 +6,11 @@
 // ---------------------------------------
 
 #include "utilities/types.hpp"
-#include "world/voxels/voxel.hpp"
+#include "data/voxel.hpp"
 
 #include <vector>
 
-namespace GameWorld::Voxels
+namespace Voxels
 {
 
 	class Chunk
@@ -36,7 +36,7 @@ namespace GameWorld::Voxels
 
 		types::pos getOppositeCorner() const noexcept { return static_cast<types::pos>(m_pos + static_cast<int64>(32)); }
 
-		const std::vector<Render::Data::Voxel>& getVoxels() const noexcept { return m_voxels; }
+		const std::vector<Data::Voxel>& getVoxels() const noexcept { return m_voxels; }
 
 		types::chunk_index getVoxelIndex(const types::pos& pos) const;
 
@@ -52,11 +52,11 @@ namespace GameWorld::Voxels
 
 		// = Mutators
 
-		Render::Data::Voxel& block_at(const types::loc& loc) 
+		Data::Voxel& block_at(const types::loc& loc) 
 		{ 
 			return block_at(loc.x + loc.y * g_size + loc.z * g_size * g_size );
 		}
-		Render::Data::Voxel& block_at(types::chunk_index index)
+		Data::Voxel& block_at(types::chunk_index index)
 		{
 			if (m_empty)
 				return m_voxels.front();
@@ -64,24 +64,24 @@ namespace GameWorld::Voxels
 			return m_voxels.at(index);
 		}
 
-		Render::Data::Voxel* block_at_ptr(const types::loc& loc) noexcept;
-		Render::Data::Voxel* block_at_ptr(types::chunk_index index) noexcept;
+		Data::Voxel* block_at_ptr(const types::loc& loc) noexcept;
+		Data::Voxel* block_at_ptr(types::chunk_index index) noexcept;
 
-		const Render::Data::Voxel* block_at_ptr(const types::loc& loc) const noexcept;
-		const Render::Data::Voxel* block_at_ptr(types::chunk_index index) const noexcept;
+		const Data::Voxel* block_at_ptr(const types::loc& loc) const noexcept;
+		const Data::Voxel* block_at_ptr(types::chunk_index index) const noexcept;
 
-		const Render::Data::Voxel& block_at(types::chunk_index index) const
+		const Data::Voxel& block_at(types::chunk_index index) const
 		{ 
 			if (m_empty)
 				return m_voxels.front();
 
 			return m_voxels.at(index);
 		}
-		const Render::Data::Voxel& block_at(const types::loc& loc) const { return block_at(loc.x + loc.y * g_size + loc.z * g_size * g_size); }
+		const Data::Voxel& block_at(const types::loc& loc) const { return block_at(loc.x + loc.y * g_size + loc.z * g_size * g_size); }
 
 		const types::type_id block_id_at(const types::loc& loc) const noexcept
 		{
-			const Render::Data::Voxel* block = block_at_ptr(loc.x + loc.y * g_size + loc.z * g_size * g_size);
+			const Data::Voxel* block = block_at_ptr(loc.x + loc.y * g_size + loc.z * g_size * g_size);
 
 			if (block)
 				return block->id;
@@ -103,7 +103,7 @@ namespace GameWorld::Voxels
 	private:
 
 
-		std::vector<Render::Data::Voxel> m_voxels;
+		std::vector<Data::Voxel> m_voxels;
 
 		types::loc m_pos{};
 

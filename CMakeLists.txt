@@ -59,16 +59,16 @@ file(GLOB IMPLOT_FILES CMAKE_CONFIGURE_DEPENDS
 	"${IMPLOT_DIR}/implot_internal.h" 
 	"${IMPLOT_DIR}/implot.cpp"
 	"${IMPLOT_DIR}/implot_items.cpp"
-)   
+)     
  
-# Create Project       
+# Create Project           
 
-add_executable( MYPROJECT
+add_executable( MYPROJECT  
 	${CPP_FILES}
 	${HPP_FILES}
 	${LIB_FILES}
 	${IMGUI_FILES}
-	${IMPLOT_FILES}
+	${IMPLOT_FILES} 
 )  
 
 target_include_directories(MYPROJECT PUBLIC ${INCLUDE_DIR})

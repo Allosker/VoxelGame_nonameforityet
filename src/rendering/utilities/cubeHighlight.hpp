@@ -2,7 +2,7 @@
 
 #include "utilities/opengl.hpp"
 #include "rendering/shader.hpp"
-#include "rendering/world_managing/data/basic/vertex.hpp"
+#include "data/vertex.hpp"
 
 #include <vector>
 
@@ -22,12 +22,12 @@ namespace Render::Utils
 			glGenBuffers(1, &vbo);
 			glBindBuffer(GL_ARRAY_BUFFER, vbo);
 
-			glBufferData(GL_ARRAY_BUFFER, data.size() * sizeof(Render::Data::VertexColor), data.data(), GL_STATIC_DRAW);
+			glBufferData(GL_ARRAY_BUFFER, data.size() * sizeof(Data::VertexRGB), data.data(), GL_STATIC_DRAW);
 
-			glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(Render::Data::VertexColor), std::bit_cast<void*>(offsetof(Render::Data::VertexColor, pos)));
+			glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(Data::VertexRGB), std::bit_cast<void*>(offsetof(Data::VertexRGB, pos)));
 			glEnableVertexAttribArray(0);
 
-			glVertexAttribPointer(1, 3, GL_FLOAT, false, sizeof(Render::Data::VertexColor), std::bit_cast<void*>(offsetof(Render::Data::VertexColor, color)));
+			glVertexAttribPointer(1, 3, GL_FLOAT, false, sizeof(Data::VertexRGB), std::bit_cast<void*>(offsetof(Data::VertexRGB, color)));
 			glEnableVertexAttribArray(1);
 
 			glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -75,9 +75,9 @@ namespace Render::Utils
 		GLuint vao{};
 		GLuint vbo{};
 
-		const std::vector<Render::Data::VertexColor> data
+		const std::vector<Data::VertexRGB> data
 		{
-			Render::Data::VertexColor
+			Data::VertexRGB
 			{
 				vec3f
 				{
@@ -146,7 +146,7 @@ namespace Render::Utils
 			},
 
 
-			Render::Data::VertexColor
+			Data::VertexRGB
 			{
 				vec3f
 				{
@@ -216,7 +216,7 @@ namespace Render::Utils
 
 
 
-			Render::Data::VertexColor
+			Data::VertexRGB
 			{
 				vec3f
 				{
