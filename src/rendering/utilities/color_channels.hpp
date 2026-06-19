@@ -8,7 +8,7 @@
 #include "utilities/opengl.hpp"
 #include <cmath>
 
-namespace Render::Utils
+namespace render::utils
 {
 
 	inline constexpr vec3f to_rgb(float h, float s, float v) noexcept

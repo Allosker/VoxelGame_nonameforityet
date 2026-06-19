@@ -13,7 +13,7 @@
 #include <vector>
 #include <filesystem>
 
-namespace Render
+namespace render
 {
 
 	class Image

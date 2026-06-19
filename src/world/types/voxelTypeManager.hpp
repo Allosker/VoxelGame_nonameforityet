@@ -11,7 +11,7 @@
 
 #include "data/voxel.hpp"
 
-namespace Render::Types
+namespace render::Types
 {
 	class VoxelTypeManager
 	{

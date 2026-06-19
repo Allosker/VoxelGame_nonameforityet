@@ -4,7 +4,7 @@
 // Construction/Destruction
 // =====================
 
-Render::GUI::Hotbar::Hotbar(const Render::Texture& texture_slot, const ItemTypeManager& itm, const Font* font_)
+render::gui::Hotbar::Hotbar(const render::Texture& texture_slot, const ItemTypeManager& itm, const Font* font_)
 	: font{ font_ }
 {
 	create_new_slots(texture_slot);
@@ -15,7 +15,7 @@ Render::GUI::Hotbar::Hotbar(const Render::Texture& texture_slot, const ItemTypeM
 // Getters
 // =====================
 
-Render::GUI::Elems::Rectangle* Render::GUI::Hotbar::getSlotRender_at(std::size_t index) noexcept
+render::gui::elems::Rectangle* render::gui::Hotbar::getSlotRender_at(std::size_t index) noexcept
 {
 	if (index < 0 || index >= m_items_slots.size())
 		return nullptr;
@@ -23,7 +23,7 @@ Render::GUI::Elems::Rectangle* Render::GUI::Hotbar::getSlotRender_at(std::size_t
 	return &m_items_slots[index];
 }
 
-std::optional<Data::Item> Render::GUI::Hotbar::getSlot_at(std::size_t index) const noexcept
+std::optional<Data::Item> render::gui::Hotbar::getSlot_at(std::size_t index) const noexcept
 {
 	if (index < 0 || index >= m_items_slots.size())
 		return std::nullopt;
@@ -36,7 +36,7 @@ std::optional<Data::Item> Render::GUI::Hotbar::getSlot_at(std::size_t index) con
 // Setters
 // =====================
 
-void Render::GUI::Hotbar::setCurrentSlot(Data::Item item, const ItemTypeManager& itm) noexcept
+void render::gui::Hotbar::setCurrentSlot(Data::Item item, const ItemTypeManager& itm) noexcept
 {
 	m_items_slots[m_cursor_position].stack_item = item;
 	m_items_slots[m_cursor_position].count = 1;
@@ -48,7 +48,7 @@ void Render::GUI::Hotbar::setCurrentSlot(Data::Item item, const ItemTypeManager&
 // Actors
 // =====================
 
-Data::Item Render::GUI::Hotbar::nextSlot(int8 index) noexcept
+Data::Item render::gui::Hotbar::nextSlot(int8 index) noexcept
 {
 	if (m_disabled)
 		return m_items_slots[m_cursor_position].stack_item;
@@ -63,7 +63,7 @@ Data::Item Render::GUI::Hotbar::nextSlot(int8 index) noexcept
 	return m_items_slots[m_cursor_position].stack_item;
 }
 
-void Render::GUI::Hotbar::newPairOfSlots(const Render::Texture& texture_slot) noexcept
+void render::gui::Hotbar::newPairOfSlots(const render::Texture& texture_slot) noexcept
 {
 	if (m_items_slots.size() < g_max_nb_slots)
 	{
@@ -78,7 +78,7 @@ void Render::GUI::Hotbar::newPairOfSlots(const Render::Texture& texture_slot) no
 	}
 }
 
-bool Render::GUI::Hotbar::addItem(const Data::Item& item, int64 count, const ItemTypeManager& itm) noexcept
+bool render::gui::Hotbar::addItem(const Data::Item& item, int64 count, const ItemTypeManager& itm) noexcept
 {
 	for (auto& i : m_items_slots)
 	{
@@ -112,7 +112,7 @@ bool Render::GUI::Hotbar::addItem(const Data::Item& item, int64 count, const Ite
 	return false;
 }
 
-bool Render::GUI::Hotbar::removeItem(const Data::Item& item, int64 count) noexcept
+bool render::gui::Hotbar::removeItem(const Data::Item& item, int64 count) noexcept
 {
 	auto& i = m_items_slots[m_cursor_position];
 	if (count <= i.count && (i.stack_item.id == item.id || i.stack_item.id == 0))
@@ -133,7 +133,7 @@ bool Render::GUI::Hotbar::removeItem(const Data::Item& item, int64 count) noexce
 	return false;
 }
 
-void Render::GUI::Hotbar::disable() noexcept
+void render::gui::Hotbar::disable() noexcept
 {
 	m_cursor_changed = false;
 	last_cursor = -1;
@@ -146,7 +146,7 @@ void Render::GUI::Hotbar::disable() noexcept
 	m_slots[m_cursor_position].move({ 0, -g_slot_size.x / 2 });
 }
 
-void Render::GUI::Hotbar::enable() noexcept
+void render::gui::Hotbar::enable() noexcept
 {
 	m_disabled = false;
 
@@ -157,10 +157,10 @@ void Render::GUI::Hotbar::enable() noexcept
 	}
 } 
 
-void Render::GUI::Hotbar::draw(
+void render::gui::Hotbar::draw(
 	const Shader& shader, 
 	const Shader& text_shader,
-	const Render::Texture& texture_slot, const Render::Texture& texture_block_gui_atlas, 
+	const render::Texture& texture_slot, const render::Texture& texture_block_gui_atlas, 
 	const ItemTypeManager& itm) noexcept
 {
 	for (std::size_t i{}; i < m_items_slots.size(); i++)
@@ -208,7 +208,7 @@ void Render::GUI::Hotbar::draw(
 	}
 }
 
-/*private*/ void Render::GUI::Hotbar::create_new_slots(const Render::Texture& texture_slot) noexcept
+/*private*/ void render::gui::Hotbar::create_new_slots(const render::Texture& texture_slot) noexcept
 {
 	int64 size_mult = m_items_slots.size() / 2 + 1;
 
@@ -222,7 +222,7 @@ void Render::GUI::Hotbar::draw(
 		static_cast<float>(-g_slot_size.x / 2) * size_mult - g_slot_size.x * size_mult,
 		-Window::g_guiViewSize.y / 2 + g_slot_size.y / 1.5 });
 	// Set its corresponding item
-	m_slots.emplace_back(Elems::Rectangle{ g_slot_size, {g_slot_size.x / 2, g_slot_size.y / 2 }, types::Rect<types::uvs>{ {}, texture_slot.getSize() } });
+	m_slots.emplace_back(elems::Rectangle{ g_slot_size, {g_slot_size.x / 2, g_slot_size.y / 2 }, types::Rect<types::uvs>{ {}, texture_slot.getSize() } });
 	m_slots.back().setPosition(m_items_slots.back().getPosition());
 
 
@@ -236,7 +236,7 @@ void Render::GUI::Hotbar::draw(
 		static_cast<float>(g_slot_size.x / 2) * size_mult + g_slot_size.x * size_mult,
 		-Window::g_guiViewSize.y / 2 + g_slot_size.y / 1.5 });
 	// Set its corresponding item
-	m_slots.emplace_back(Elems::Rectangle{ g_slot_size, {g_slot_size.x / 2, g_slot_size.y / 2 }, types::Rect<types::uvs>{ {}, texture_slot.getSize() } });
+	m_slots.emplace_back(elems::Rectangle{ g_slot_size, {g_slot_size.x / 2, g_slot_size.y / 2 }, types::Rect<types::uvs>{ {}, texture_slot.getSize() } });
 	m_slots.back().setPosition(m_items_slots.back().getPosition());
 
 

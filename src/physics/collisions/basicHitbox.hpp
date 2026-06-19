@@ -8,7 +8,7 @@
 #include "utilities/opengl.hpp"
 #include "world/world.hpp"
 
-namespace Physics::Collisions
+namespace physics::collisions
 {
 
 	// AABB vs. AABB
@@ -115,4 +115,4 @@ namespace Physics::Collisions
 		vec3f realMax{};
 	};
 
-} // Physics::Collisions
+} // physics::collisions

@@ -16,12 +16,12 @@
 
 #include "world/types/voxelTypeManager.hpp"
 
-#include "world/voxels/chunk.hpp"
+#include "world/chunks/chunk.hpp"
 
 
 class World;
 
-namespace Render
+namespace render
 {
 	class ChunkMesh
 	{
@@ -62,8 +62,8 @@ namespace Render
 		void draw() const noexcept;
 
 		MeshPair buildMesh(
-			const Voxels::Chunk& chunk,
-			const Render::Types::VoxelTypeManager& type_manager,
+			const chunks::Chunk& chunk,
+			const render::Types::VoxelTypeManager& type_manager,
 			const World& world
 		) noexcept;
 
@@ -105,4 +105,4 @@ namespace Render
 		static constexpr std::uint32_t sizeVertex{ sizeof(VoxelVertex) };
 	};
 
-} // Render::Data
+} // render::Data

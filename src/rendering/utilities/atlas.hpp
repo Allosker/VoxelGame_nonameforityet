@@ -7,7 +7,7 @@
 
 #include "utilities/types.hpp"
 
-namespace Render::Utils
+namespace render::utils
 {
 	inline types::uvs fromAtlasToPixels(vec2f point, vec2f unitSize) noexcept
 	{

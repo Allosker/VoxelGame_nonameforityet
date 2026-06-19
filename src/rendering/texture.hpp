@@ -13,7 +13,7 @@
 #include "rendering/shader.hpp"
 #include "data/image.hpp"
 
-namespace Render
+namespace render
 {
 
 	class Texture
@@ -64,4 +64,4 @@ namespace Render
 
 	};
 
-} // Render
+} // render

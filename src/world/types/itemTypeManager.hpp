@@ -10,13 +10,13 @@
 
 #include <vector>
 
-namespace Render::GUI
+namespace render::gui
 {
 	class ItemTypeManager
 	{
 	public:
 
-		// Order msut be same as Voxels
+		// Order msut be same as chunks
 		ItemTypeManager()
 		{
 			types.push_back({ ItemTextureUvsAtlas::c_dirtGrass	, "grass" });
@@ -63,7 +63,7 @@ namespace Render::GUI
 
 	inline types::Rect<types::uvs> mapTextureUvs(types::type_id id, const ItemTypeManager& manager) noexcept
 	{
-		return Utils::fromAtlasToPixels(toAtlasUnits(id, manager));
+		return utils::fromAtlasToPixels(toAtlasUnits(id, manager));
 	}
 
 }

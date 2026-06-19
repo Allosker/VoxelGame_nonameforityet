@@ -7,7 +7,7 @@
 
 #include "utilities/opengl.hpp"
 
-namespace 
+namespace physics
 {
 
 	class Transform2D

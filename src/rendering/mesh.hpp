@@ -12,7 +12,7 @@
 
 #include <vector>
 
-namespace Render
+namespace render
 {
 
 	class Mesh
@@ -162,4 +162,4 @@ namespace Render
 		glBindVertexArray(0);
 	}
 
-} // Render
+} // render

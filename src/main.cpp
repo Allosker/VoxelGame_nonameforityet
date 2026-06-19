@@ -11,7 +11,7 @@
 #include "rendering/shader.hpp"
 
 // Block Hitting
-#include "world/voxels/utilities/ray.hpp"
+#include "world/chunks/utilities/ray.hpp"
 #include <utility>
 
 #include "world/world.hpp"
@@ -22,7 +22,7 @@
 
 #include "rendering/mesh.hpp"
 
-#include "rendering/GUI/elements/rectangle.hpp"
+#include "rendering/gui/elements/rectangle.hpp"
 
 #include "world/entities/basic_entity.hpp"
 
@@ -116,30 +116,30 @@ try
 	ImGui_ImplOpenGL3_Init();
 
 	// Shaders 
-	Render::Shader shader3Dworld{ SHADER_PATH"shader.vert", SHADER_PATH"shader.frag" };
-	Render::Shader shader3Ditem{ SHADER_PATH"shader3Ditem.vert", SHADER_PATH"shader3Ditem.frag" };
-	Render::Shader shaderCubeDisplay{ SHADER_PATH"shader.vert", SHADER_PATH"shader.frag" };
-	Render::Shader shader2Drectangle{ SHADER_PATH"meshTexture2D.vert", SHADER_PATH"meshTexture2D.frag" };
-	Render::Shader shader2Dtext{ SHADER_PATH"text_render/text2D.vert", SHADER_PATH"text_render/text2D.frag" };
-	Render::Shader S_skybox{ SHADER_PATH"simple/skybox.vert", SHADER_PATH"simple/skybox.frag" };
+	render::Shader shader3Dworld{ SHADER_PATH"shader.vert", SHADER_PATH"shader.frag" };
+	render::Shader shader3Ditem{ SHADER_PATH"shader3Ditem.vert", SHADER_PATH"shader3Ditem.frag" };
+	render::Shader shaderCubeDisplay{ SHADER_PATH"shader.vert", SHADER_PATH"shader.frag" };
+	render::Shader shader2Drectangle{ SHADER_PATH"meshTexture2D.vert", SHADER_PATH"meshTexture2D.frag" };
+	render::Shader shader2Dtext{ SHADER_PATH"text_render/text2D.vert", SHADER_PATH"text_render/text2D.frag" };
+	render::Shader S_skybox{ SHADER_PATH"simple/skybox.vert", SHADER_PATH"simple/skybox.frag" };
 
 	// Textures/Images
-	Render::Texture textureAtlas{ ASSET_PATH"blocks/world/atlas.png"};
-	Render::Texture crossAirAtlas{ ASSET_PATH"hud/crossair_atlas.png" };
+	render::Texture textureAtlas{ ASSET_PATH"blocks/world/atlas.png"};
+	render::Texture crossAirAtlas{ ASSET_PATH"hud/crossair_atlas.png" };
 
-	Render::Image atlas_image_guiBlocks{ ASSET_PATH"blocks/gui/block_inventory_atlas.png" };
-	Render::Texture atlas_guiBlocks{ atlas_image_guiBlocks };
+	render::Image atlas_image_guiBlocks{ ASSET_PATH"blocks/gui/block_inventory_atlas.png" };
+	render::Texture atlas_guiBlocks{ atlas_image_guiBlocks };
 
 	// World
 	World world{};
 	WorldOptions WO{};
 
-	/// Utils
-	Render::Utils::CubeHighlight ch;
-	Render::GUI::ItemTypeManager itemTypeManager{};
+	/// utils
+	render::utils::CubeHighlight ch;
+	render::gui::ItemTypeManager itemTypeManager{};
 
-	// GUI
-	Render::GUI::Elems::Rectangle crossair{ {50, 50}, {0, 0}, types::Rect<types::uvs>{{0, 17}, {17, 17}} };
+	// gui
+	render::gui::elems::Rectangle crossair{ {50, 50}, {0, 0}, types::Rect<types::uvs>{{0, 17}, {17, 17}} };
 	crossair.setPosition({ -crossair.getSize().x / 2, -crossair.getSize().y / 2 });
 
 
@@ -149,12 +149,12 @@ try
 
 	// Test					 		
 
-	Render::Font font{ FONT_PATH"pixelated.ttf" };
+	render::Font font{ FONT_PATH"pixelated.ttf" };
 
-	Entities::EntityChunkGrid entity_chunk_grid{};
+	entities::EntityChunkGrid entity_chunk_grid{};
 
 
-	Render::Skybox skybox{};
+	render::Skybox skybox{};
 
 	float lastFrame{};
 	float fps{};
@@ -276,9 +276,9 @@ try
 
 			if(const auto* cl{ world.chunk_at(player.getPos()) })
 			{
-				const types::loc c{ Voxels::ChunkGrid::to_loc(cl->getPos()) };
+				const types::loc c{ chunks::ChunkGrid::to_loc(cl->getPos()) };
 
-				ImGui::Text("Chunk Loc : %ld %ld %ld", c.x, c.y, c.z);
+				ImGui::Text("chunks::Chunk Loc : %ld %ld %ld", c.x, c.y, c.z);
 			}
 
 			size_t selectedIndex = 0;
@@ -357,7 +357,7 @@ try
 			ImGui::Checkbox("Instant Vox. Break", &WO.instant_voxel_breaking);
 			ImGui::Checkbox("Instant Vox. Place", &WO.instant_voxel_placing);
 
-			ImGui::VSliderScalar("Render Distance", { 15, 100 }, ImGuiDataType_S64, &Voxels::ChunkSettings::world_render_distance, &WO.rm, &WO.rma);
+			ImGui::VSliderScalar("render Distance", { 15, 100 }, ImGuiDataType_S64, &ChunkSettings::world_render_distance, &WO.rm, &WO.rma);
 
 			ImGui::End(); // Window end
 		}
@@ -399,7 +399,7 @@ try
 		}
 		
 
-		const auto& ray_result{ Voxels::Utils::raycast(player.getPos(), player.getCamera().front_dir, world.grid, WO.rayDist, world.getTypeManager())};
+		const auto& ray_result{ utils::raycast(player.getPos(), player.getCamera().front_dir, world.grid, WO.rayDist, world.getTypeManager())};
 
 		bool drawHighlight{ false };
 		if(!window.isCursorHidden())
@@ -425,7 +425,7 @@ try
 						auto id{ world.block_at(ray_result->pos)->id };
 
 						entity_chunk_grid.addEntity(
-							{ atlas_image_guiBlocks, Render::GUI::toPixelUnits(id, itemTypeManager), id },
+							{ atlas_image_guiBlocks, render::gui::toPixelUnits(id, itemTypeManager), id },
 							ray_result->pos);
 
 						world.set_voxel_at(ray_result->pos, 0);
@@ -461,7 +461,7 @@ try
 
 
 		// Debug
-		Render::Debug::DebugRenderer::get().update(glfwGetTime());
+		render::debug::DebugRenderer::get().update(glfwGetTime());
 
 
 		// Rendering
@@ -516,10 +516,10 @@ try
 			i = (player.getCamera().view * player.getCamera().proj).inverse()->transpose();
 
 
-		Render::Debug::obb({}, { 1 }, { 1, 1, 1 }, i, 0, false);*/
+		render::debug::obb({}, { 1 }, { 1, 1, 1 }, i, 0, false);*/
 
 		auto vp = (player.getCamera().view * player.getCamera().proj);
-		Render::Debug::DebugRenderer::get().render(vp);
+		render::debug::DebugRenderer::get().render(vp);
 
 		
 		// UI
@@ -555,7 +555,7 @@ try
 		
 		
 
-		// Render all to window
+		// render all to window
 		window.display();
 
 		// Limit FrameRate

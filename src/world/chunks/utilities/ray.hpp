@@ -7,11 +7,11 @@
 
 #include <optional>
 
-#include "world/voxels/chunkGrid.hpp"
+#include "world/chunks/chunkGrid.hpp"
 #include "utilities/types.hpp"
 
 
-namespace Voxels::Utils
+namespace utils
 {
 
 	struct Ray
@@ -68,7 +68,7 @@ namespace Voxels::Utils
 	};
 
 	// Returns the location of the block that was hit by the ray alongside its corresponding chunk, if no block was hit, std::nullopt is returned
-	static inline std::optional<RayCastResult> raycast(const types::pos& origin, const types::pos& dir, const Voxels::ChunkGrid& grid, uint64 maxLength, const Render::Types::VoxelTypeManager& type_manager) noexcept
+	static inline std::optional<RayCastResult> raycast(const types::pos& origin, const types::pos& dir, const chunks::ChunkGrid& grid, uint64 maxLength, const render::Types::VoxelTypeManager& type_manager) noexcept
 	{
 		Ray ray{ origin, dir };
 		vec3f normal{};
@@ -117,7 +117,7 @@ namespace Voxels::Utils
 		return std::nullopt;
 	}
 
-	static inline std::optional<RayCastResult> raycast_chunk(const types::pos& origin, const types::pos& dir, const Voxels::ChunkGrid& grid, uint64 render_distance, const Render::Types::VoxelTypeManager& type_manager) noexcept
+	static inline std::optional<RayCastResult> raycast_chunk(const types::pos& origin, const types::pos& dir, const chunks::ChunkGrid& grid, uint64 render_distance, const render::Types::VoxelTypeManager& type_manager) noexcept
 	{
 		Ray ray{ origin, dir };
 		vec3f normal{};
@@ -161,4 +161,4 @@ namespace Voxels::Utils
 	}
 
 
-} // Render::Utils
+} // render::utils

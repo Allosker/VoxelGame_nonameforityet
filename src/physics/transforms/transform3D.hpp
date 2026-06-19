@@ -8,7 +8,7 @@
 #include "utilities/opengl.hpp"
 #include "mpml/quaternions/quaternion.hpp"
 
-namespace
+namespace physics
 {
 
 	class Transform3D

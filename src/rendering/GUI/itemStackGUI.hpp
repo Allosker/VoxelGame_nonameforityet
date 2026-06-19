@@ -5,19 +5,19 @@
 // Small class managing an item
 // ---------------------------------------
 
-#include "rendering/GUI/elements/rectangle.hpp"
+#include "rendering/gui/elements/rectangle.hpp"
 #include "data/item.hpp"
 #include "rendering/text/text.hpp"
 
-namespace Render::GUI
+namespace render::gui
 {
 
 	struct ItemStackGUI
-		: public Elems::Rectangle 
+		: public elems::Rectangle 
 	{
 
 		ItemStackGUI(vec2f size, vec2f ori, const types::Rect<types::uvs>& attributes, Data::Item item, const Font& font)
-			: Elems::Rectangle{ size, ori, attributes },
+			: elems::Rectangle{ size, ori, attributes },
 			stack_item{ item }, text{ font }
 		{
 			text.setScale(g_scale_text_rest);
@@ -48,19 +48,19 @@ namespace Render::GUI
 
 		void setPosition(vec2f pos) noexcept override
 		{
-			Transform2D::setPosition(pos);
+			physics::Transform2D::setPosition(pos);
 			text.setPosition(vec3f{ m_position - getSize() / 2.f, 0 });
 		}
 
 		void setScale(vec2f scale) noexcept override
 		{
-			Transform2D::setScale(scale);
+			physics::Transform2D::setScale(scale);
 			text.setPosition(vec3f{ m_position - getSize() / 2.f, 0 });
 		}
 
 		void draw(const Shader& shader, const Shader& text_shader) noexcept
 		{
-			Elems::Rectangle::draw_transparent(shader);
+			elems::Rectangle::draw_transparent(shader);
 
 			if (count == 1)
 				return;
@@ -95,4 +95,4 @@ namespace Render::GUI
 	};
 
 
-} //  Render::GUI
+} //  render::gui

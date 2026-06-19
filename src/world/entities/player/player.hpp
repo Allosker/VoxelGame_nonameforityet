@@ -11,8 +11,8 @@
 
 #include "rendering/shader.hpp"
 
-#include "rendering/GUI/hotbar.hpp"
-#include "rendering/GUI/inventory.hpp"
+#include "rendering/gui/hotbar.hpp"
+#include "rendering/gui/inventory.hpp"
 
 #include "world/types/itemTypeManager.hpp"
 
@@ -44,30 +44,30 @@ public:
 		const types::path& p_hotbarSlot,
 		const types::path& p_inv,
 		const types::path& p_slotInv,
-		const Render::GUI::ItemTypeManager& itm,
+		const render::gui::ItemTypeManager& itm,
 		const types::path& p_font
 	);
 
 	// = Actors
 
-	void update(const Window& window, const World& world, const Render::GUI::ItemTypeManager& itm, float deltaTime) noexcept;
+	void update(const Window& window, const World& world, const render::gui::ItemTypeManager& itm, float deltaTime) noexcept;
 
 	void updatePosition(const World& world, float deltaTime) noexcept;
 
 	void resolve_collisions(const World& world) noexcept;
 
 	// Trasnform to pick up item with item chunk manager or smth
-	bool addItem(const Data::Item& item, int64 count, const Render::GUI::ItemTypeManager& itm) noexcept;
+	bool addItem(const Data::Item& item, int64 count, const render::gui::ItemTypeManager& itm) noexcept;
 
-	bool removeItem(const Data::Item& item, int64 count, const Render::GUI::ItemTypeManager& itm) noexcept;
+	bool removeItem(const Data::Item& item, int64 count, const render::gui::ItemTypeManager& itm) noexcept;
 
 	const Data::Item& place_voxel() noexcept;
 
 	void draw_attributes(
-		const Render::Shader& shader,
-		const Render::Shader& text_shader,
-		const Render::Texture& gui_block_atlas,
-		const Render::GUI::ItemTypeManager& itm) noexcept;
+		const render::Shader& shader,
+		const render::Shader& text_shader,
+		const render::Texture& gui_block_atlas,
+		const render::gui::ItemTypeManager& itm) noexcept;
 
 
 	// = Mutators
@@ -83,17 +83,17 @@ public:
 
 	const vec3f& getPos() const noexcept { return m_camera.pos; }
 
-	Physics::Collisions::BasicHitbox& getHitbox() noexcept { return m_hitbox; }
-	const Physics::Collisions::BasicHitbox& getHitbox() const noexcept { return m_hitbox; }
+	physics::collisions::BasicHitbox& getHitbox() noexcept { return m_hitbox; }
+	const physics::collisions::BasicHitbox& getHitbox() const noexcept { return m_hitbox; }
 
-	Render::Utils::Camera& getCamera() noexcept { return m_camera; }
-	const Render::Utils::Camera& getCamera() const noexcept { return m_camera; }
+	render::utils::Camera& getCamera() noexcept { return m_camera; }
+	const render::utils::Camera& getCamera() const noexcept { return m_camera; }
 
-	Render::GUI::Inventory& getInventory() noexcept { return m_inventory; }
-	const Render::GUI::Inventory& getInventory() const noexcept { return m_inventory; }
+	render::gui::Inventory& getInventory() noexcept { return m_inventory; }
+	const render::gui::Inventory& getInventory() const noexcept { return m_inventory; }
 
-	Render::GUI::Hotbar& getHotbar() noexcept { return m_hotbar; }
-	const Render::GUI::Hotbar& getHotbar() const noexcept { return m_hotbar; }
+	render::gui::Hotbar& getHotbar() noexcept { return m_hotbar; }
+	const render::gui::Hotbar& getHotbar() const noexcept { return m_hotbar; }
 
 
 public:
@@ -127,17 +127,17 @@ public:
 
 		
 
-	Render::Utils::Camera				m_camera{};
-	Physics::Collisions::BasicHitbox	m_hitbox{};
+	render::utils::Camera				m_camera{};
+	physics::collisions::BasicHitbox	m_hitbox{};
 
-	Render::Texture			m_texHotbarSlot;
-	Render::Texture			m_texInv;
-	Render::Texture			m_texInvSlot;
+	render::Texture			m_texHotbarSlot;
+	render::Texture			m_texInv;
+	render::Texture			m_texInvSlot;
 
-	Render::Font					m_font;
+	render::Font					m_font;
 
-	Render::GUI::Inventory				m_inventory;
-	Render::GUI::Hotbar					m_hotbar;
+	render::gui::Inventory				m_inventory;
+	render::gui::Hotbar					m_hotbar;
 
 
 	vec3f								m_velocity{};

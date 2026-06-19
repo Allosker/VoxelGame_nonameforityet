@@ -4,7 +4,7 @@
 // Construction/Destruction
 // =====================
 
-Render::Texture::Texture(const types::path& tex_path, Type type)
+render::Texture::Texture(const types::path& tex_path, Type type)
 	: m_type{type}
 {
 	glGenTextures(1, &m_tex);
@@ -19,7 +19,7 @@ Render::Texture::Texture(const types::path& tex_path, Type type)
 	loadTexture(tex_path);
 }
 
-Render::Texture::Texture(const Image& image, Type type)
+render::Texture::Texture(const Image& image, Type type)
 	: m_type{ type }, m_width{ static_cast<int32>(image.getSize().x) }, m_height{ static_cast<int32>(image.getSize().y) }
 {
 	glGenTextures(1, &m_tex);
@@ -37,7 +37,7 @@ Render::Texture::Texture(const Image& image, Type type)
 	glGenerateMipmap(m_type);
 }
 
-Render::Texture::~Texture() noexcept
+render::Texture::~Texture() noexcept
 {
 	deleteTexture();
 }
@@ -47,7 +47,7 @@ Render::Texture::~Texture() noexcept
 // Actors
 // =====================
 
-void Render::Texture::loadTexture(const types::path& tex_path)
+void render::Texture::loadTexture(const types::path& tex_path)
 {
 	std::int32_t nrChannels{};
 
@@ -78,12 +78,12 @@ void Render::Texture::loadTexture(const types::path& tex_path)
 	stbi_image_free(data);
 }
 
-void Render::Texture::deleteTexture() const noexcept
+void render::Texture::deleteTexture() const noexcept
 {
 	glDeleteTextures(1, &m_tex);
 }
 
-void Render::Texture::bind() const noexcept
+void render::Texture::bind() const noexcept
 {
 	glBindTexture(m_type, m_tex);
 }

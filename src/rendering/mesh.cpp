@@ -6,17 +6,17 @@
 // Construction/Destruction
 // =====================
 
-Render::Mesh::Mesh(const std::vector<Data::Vertex>& vertices, GLenum draw_mode)
+render::Mesh::Mesh(const std::vector<Data::Vertex>& vertices, GLenum draw_mode)
 {
 	createBuffers<Data::Vertex>(vertices, draw_mode, {3, 2});
 }
 
-Render::Mesh::Mesh(const std::vector<Data::Vertex2D>& vertices, GLenum draw_mode)
+render::Mesh::Mesh(const std::vector<Data::Vertex2D>& vertices, GLenum draw_mode)
 {
 	createBuffers<Data::Vertex2D>(vertices, draw_mode, {2, 2});
 }
 
-Render::Mesh::Mesh(const std::vector<Data::VertexRGB>& vertices, GLenum draw_mode)
+render::Mesh::Mesh(const std::vector<Data::VertexRGB>& vertices, GLenum draw_mode)
 {
 	glCreateVertexArrays(1, &m_vao);
 	glGenBuffers(1, &m_vbo);
@@ -36,12 +36,12 @@ Render::Mesh::Mesh(const std::vector<Data::VertexRGB>& vertices, GLenum draw_mod
 	glBindVertexArray(0);
 }
 
-Render::Mesh::Mesh(const std::vector<vec3f>& positions, const std::vector<vec2f>& uvs, GLenum draw_mode)
+render::Mesh::Mesh(const std::vector<vec3f>& positions, const std::vector<vec2f>& uvs, GLenum draw_mode)
 	: Mesh{makeVertices(positions, uvs), draw_mode}
 {
 }
 
-Render::Mesh::Mesh(Mesh&& other) noexcept
+render::Mesh::Mesh(Mesh&& other) noexcept
 	: m_vao { other.m_vao }
 	,m_vbo { other.m_vbo }
 	,m_nbVertices { other.m_nbVertices }
@@ -50,7 +50,7 @@ Render::Mesh::Mesh(Mesh&& other) noexcept
 	other.m_vbo = 0;
 }
 
-Render::Mesh& Render::Mesh::operator=(Mesh&& other) noexcept
+render::Mesh& render::Mesh::operator=(Mesh&& other) noexcept
 {
 	if (this == &other)
 		return *this;
@@ -69,7 +69,7 @@ Render::Mesh& Render::Mesh::operator=(Mesh&& other) noexcept
 	return *this;
 }
 
-Render::Mesh::~Mesh() noexcept
+render::Mesh::~Mesh() noexcept
 {
 	glDeleteBuffers(1, &m_vbo);
 	glDeleteVertexArrays(1, &m_vao);
@@ -80,19 +80,19 @@ Render::Mesh::~Mesh() noexcept
 // Actors 
 // =====================
 
-void Render::Mesh::updateBuffer(const std::vector<vec3f>& positions, const std::vector<vec2f>& uvs, GLenum draw_mode)
+void render::Mesh::updateBuffer(const std::vector<vec3f>& positions, const std::vector<vec2f>& uvs, GLenum draw_mode)
 {
 	updateBuffer(makeVertices(positions, uvs), sizeof(Data::Vertex), draw_mode);
 }
 
-void Render::Mesh::draw(GLenum mode) const noexcept
+void render::Mesh::draw(GLenum mode) const noexcept
 {
 	glBindVertexArray(m_vao);
 	glDrawArrays(mode, 0, m_nbVertices);
 	glBindVertexArray(0);
 }
 
-void Render::Mesh::draw_transparent(GLenum mode) const noexcept
+void render::Mesh::draw_transparent(GLenum mode) const noexcept
 {
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -104,7 +104,7 @@ void Render::Mesh::draw_transparent(GLenum mode) const noexcept
 	glDisable(GL_BLEND);
 }
 
-/*private*/ std::vector<Data::Vertex> Render::Mesh::makeVertices(const std::vector<vec3f>& positions, const std::vector<vec2f>& uvs) const
+/*private*/ std::vector<Data::Vertex> render::Mesh::makeVertices(const std::vector<vec3f>& positions, const std::vector<vec2f>& uvs) const
 {
 	if (positions.size() != uvs.size()) throw std::runtime_error{ "ERROR::SINGLE_MESH::There must be the same number of positions and uvs" };
 

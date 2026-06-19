@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "world/types/itemTypeManager.hpp"
-#include "rendering/GUI/elements/rectangle.hpp"
+#include "rendering/gui/elements/rectangle.hpp"
 #include "utilities/window.hpp"
 
 #include "hotbar.hpp"
@@ -20,7 +20,7 @@
 #include "itemStackGUI.hpp"
 
 
-namespace Render::GUI
+namespace render::gui
 {
 
 	class Inventory
@@ -47,7 +47,7 @@ namespace Render::GUI
 		void disable(Window& window, Hotbar& hotbar) noexcept;
 		void process(Window& window, Hotbar& hotbar) noexcept;
 
-		void draw(const Shader& shader, const Shader& text_shader, const Texture& texture_inventory, const Texture& texture_slot, const Render::Texture& texture_block_gui_atlas, const ItemTypeManager& itm) noexcept;
+		void draw(const Shader& shader, const Shader& text_shader, const Texture& texture_inventory, const Texture& texture_slot, const render::Texture& texture_block_gui_atlas, const ItemTypeManager& itm) noexcept;
 
 
 	private: // = Actors
@@ -67,9 +67,9 @@ namespace Render::GUI
 
 		const Font* font;
 
-		Elems::Rectangle m_inventory;
+		elems::Rectangle m_inventory;
 		ItemStackGUI m_moving_item;
-		std::vector<Elems::Rectangle> m_slots;
+		std::vector<elems::Rectangle> m_slots;
 		std::vector<ItemStackGUI> m_items_slots;
 
 		

@@ -10,7 +10,7 @@
 
 #include <vector>
 
-namespace Voxels
+namespace chunks
 {
 
 	class Chunk

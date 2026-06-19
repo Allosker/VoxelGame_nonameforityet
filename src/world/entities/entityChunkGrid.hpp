@@ -7,9 +7,9 @@
 
 #include "entityChunk.hpp"
 
-#include "world/voxels/chunkGrid.hpp"
+#include "world/chunks/chunkGrid.hpp"
 
-namespace Entities
+namespace entities
 {
 
 	class EntityChunkGrid
@@ -17,13 +17,13 @@ namespace Entities
 	public:
 
 
-		void update(Player& player, const Render::GUI::ItemTypeManager& itm) noexcept;
+		void update(Player& player, const render::gui::ItemTypeManager& itm) noexcept;
 		
-		void update_items(Player& player, const Render::GUI::ItemTypeManager& itm) noexcept;
+		void update_items(Player& player, const render::gui::ItemTypeManager& itm) noexcept;
 
-		void addEntity(Render::ItemEntity&& item, const vec3f& pos) noexcept { chunk_at_emplace(pos).addEntity(std::move(item), pos); }
+		void addEntity(render::ItemEntity&& item, const vec3f& pos) noexcept { chunk_at_emplace(pos).addEntity(std::move(item), pos); }
 
-		void draw(const Render::Shader& shader, const Render::Texture& items_texture) noexcept;
+		void draw(const render::Shader& shader, const render::Texture& items_texture) noexcept;
 
 
 

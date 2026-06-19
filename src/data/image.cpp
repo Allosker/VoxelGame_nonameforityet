@@ -1,25 +1,25 @@
 #include "image.hpp"
 
 
-Render::Image::Image(const types::path& path_to_image, bool flip_on_load)
+render::Image::Image(const types::path& path_to_image, bool flip_on_load)
 {
 	load_image(path_to_image, flip_on_load);
 }
 
-Render::Image::Image(vec2iu size, uint8* ptr, int32 channel, GLenum format)
+render::Image::Image(vec2iu size, uint8* ptr, int32 channel, GLenum format)
 	: m_size{size}, m_nrChannels{channel}, m_format{format}
 {
 	m_data.insert(m_data.end(), ptr, ptr + size.x * size.y);
 }
 
-Render::Image::Image(vec2iu allocate_size, int32 channel, GLenum format)
+render::Image::Image(vec2iu allocate_size, int32 channel, GLenum format)
 	:m_size{ allocate_size }, m_nrChannels{ channel }, m_format{ format }
 {
 	m_data.resize(allocate_size.x * allocate_size.y * m_nrChannels);
 }
 
 
-GLenum Render::Image::getFormat() const noexcept
+GLenum render::Image::getFormat() const noexcept
 {
 	switch (m_nrChannels)
 	{
@@ -37,7 +37,7 @@ GLenum Render::Image::getFormat() const noexcept
 	}
 }
 
-std::vector<uint8> Render::Image::crop(vec2iu subset_ori, vec2iu subset_size) noexcept
+std::vector<uint8> render::Image::crop(vec2iu subset_ori, vec2iu subset_size) noexcept
 {
 	vec2i subset_place{ subset_ori + subset_size };
 	if ((subset_size.x > m_size.x || subset_size.y > m_size.y) || (subset_place.x > m_size.x || subset_place.y > m_size.y))
@@ -58,7 +58,7 @@ std::vector<uint8> Render::Image::crop(vec2iu subset_ori, vec2iu subset_size) no
 	return new_data;
 }
 
-void Render::Image::insert(vec2iu pos, const Image& other) noexcept
+void render::Image::insert(vec2iu pos, const Image& other) noexcept
 {
 	vec2iu subset_place{ pos + other.getSize() };
 	if ((other.getSize().x > m_size.x || other.getSize().y > m_size.y) || (subset_place.x > m_size.x || subset_place.y > m_size.y))
@@ -76,7 +76,7 @@ void Render::Image::insert(vec2iu pos, const Image& other) noexcept
 }
 
 
-/*private*/ void Render::Image::load_image(const types::path& path, bool flip_on_load)
+/*private*/ void render::Image::load_image(const types::path& path, bool flip_on_load)
 {
 	stbi_set_flip_vertically_on_load(flip_on_load);
 

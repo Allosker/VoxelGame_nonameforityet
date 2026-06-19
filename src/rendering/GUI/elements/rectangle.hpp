@@ -2,7 +2,7 @@
 // MIT
 // Allosker ------------------------------
 // =========+
-// Basic class for most GUI related meshes, basic rectangle for basically anything and everything displayed on screen for the GUI
+// Basic class for most gui related meshes, basic rectangle for basically anything and everything displayed on screen for the gui
 // ---------------------------------------
 
 #include "utilities/openGL.hpp"
@@ -15,11 +15,11 @@
 
 #include "physics/transforms/transform2D.hpp"
 
-namespace Render::GUI::Elems
+namespace render::gui::elems
 {
 	
 	class Rectangle
-		: protected Mesh, public Transform2D
+		: protected Mesh, public physics::Transform2D
 	{
 	public:
 
@@ -54,4 +54,4 @@ namespace Render::GUI::Elems
 
 	};
 
-} // Render::GUI
+} // render::gui

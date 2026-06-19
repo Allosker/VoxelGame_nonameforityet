@@ -1,20 +1,20 @@
 #include "itemEntity.hpp"
 
-Render::ItemEntity::ItemEntity(const Image& constructor, const types::Rect<types::pixels>& uv_rect_pixels, types::type_id newID)
-	: Entities::BasicEntity{ types::Rect<vec3f>{{}, g_size_item}, g_hitbox_item }, m_id{newID}
+render::ItemEntity::ItemEntity(const Image& constructor, const types::Rect<types::pixels>& uv_rect_pixels, types::type_id newID)
+	: entities::BasicEntity{ types::Rect<vec3f>{{}, g_size_item}, g_hitbox_item }, m_id{newID}
 {
 	createBuffers(create_data(constructor, uv_rect_pixels), GL_STREAM_DRAW, { 3, 2 });
 }
 
-void Render::ItemEntity::draw(const Shader& shader, const Texture& item_texture) noexcept
+void render::ItemEntity::draw(const Shader& shader, const Texture& item_texture) noexcept
 {
 	shader.use();
 	item_texture.bind();
 
-	Entities::BasicEntity::draw(shader);
+	entities::BasicEntity::draw(shader);
 }
 
-/*private*/ std::vector<Data::Vertex> Render::ItemEntity::create_data(const Image& image, const types::Rect<types::pixels>& uv_rect_pixels)
+/*private*/ std::vector<Data::Vertex> render::ItemEntity::create_data(const Image& image, const types::Rect<types::pixels>& uv_rect_pixels)
 {
 	if (image.getSize().x != image.getSize().y)
 		throw std::runtime_error("ERROR::Size of Item Image must be square");

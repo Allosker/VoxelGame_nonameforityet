@@ -6,13 +6,13 @@
 // ---------------------------------------
 
 #include "world/entities/player/camera.hpp"
-#include "world/voxels/chunk.hpp"
+#include "world/chunks/chunk.hpp"
 #include <map>
 #include <unordered_map>
 
 #include "rendering/debug/debugRenderer.hpp"
 
-namespace Render::Utils
+namespace render::utils
 {
 
 	struct Plan
@@ -66,7 +66,7 @@ namespace Render::Utils
 
 	inline std::vector<types::loc> createViewFrustum(
 		const Camera& cam,
-		const std::unordered_map<types::loc, Voxels::Chunk>& chunks) noexcept
+		const std::unordered_map<types::loc, chunks::Chunk>& chunks) noexcept
 	{
 		Frustum     frustum;
 
@@ -115,4 +115,4 @@ namespace Render::Utils
 
 		return visible_chunks;
 	}
-} // Render::Utils
+} // render::utils

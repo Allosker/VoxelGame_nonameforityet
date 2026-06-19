@@ -10,7 +10,7 @@ Player::Player(
 	const types::path& t_hotbarSlot,
 	const types::path& t_inv, 
 	const types::path& t_slotInv,
-	const Render::GUI::ItemTypeManager& itm,
+	const render::gui::ItemTypeManager& itm,
 	const types::path& p_font)
 	: m_texHotbarSlot{ t_hotbarSlot }, m_texInv{ t_inv }, m_texInvSlot{ t_slotInv }, m_font{ p_font },
 	m_hotbar{ m_texHotbarSlot, itm, &m_font }, m_inventory{ m_texInv, m_texInvSlot, &m_font },
@@ -23,7 +23,7 @@ Player::Player(
 // Actors
 // =====================
 
-void Player::update(const Window& window, const World& world, const Render::GUI::ItemTypeManager& itm, float deltaTime) noexcept
+void Player::update(const Window& window, const World& world, const render::gui::ItemTypeManager& itm, float deltaTime) noexcept
 {
 	updatePosition(world, deltaTime);
 	resolve_collisions(world);
@@ -78,7 +78,7 @@ void Player::resolve_collisions(const World& world) noexcept
 	for (const auto& pos : camPoss)
 		if (const auto* cubeptr{ world.block_at(pos) }; cubeptr && cubeptr->id)
 		{
-			Physics::Collisions::BasicHitbox cube{ static_cast<vec3f>(pos), static_cast<vec3f>(pos + types::loc{1}) };
+			physics::collisions::BasicHitbox cube{ static_cast<vec3f>(pos), static_cast<vec3f>(pos + types::loc{1}) };
 
 			if (m_hitbox.intersects(cube))
 			{
@@ -103,7 +103,7 @@ void Player::resolve_collisions(const World& world) noexcept
 		}
 }
 
-bool Player::addItem(const Data::Item& item, int64 count, const Render::GUI::ItemTypeManager& itm) noexcept
+bool Player::addItem(const Data::Item& item, int64 count, const render::gui::ItemTypeManager& itm) noexcept
 {
 	if (!m_hotbar.addItem({ item.id }, count, itm))
 	{
@@ -114,7 +114,7 @@ bool Player::addItem(const Data::Item& item, int64 count, const Render::GUI::Ite
 		return true;
 }
 
-bool Player::removeItem(const Data::Item& item, int64 count, const Render::GUI::ItemTypeManager& itm) noexcept
+bool Player::removeItem(const Data::Item& item, int64 count, const render::gui::ItemTypeManager& itm) noexcept
 {
 	return false;
 }
@@ -127,7 +127,7 @@ const Data::Item& Player::place_voxel() noexcept
 	return item;
 }
 
-void Player::draw_attributes(const Render::Shader& shader, const Render::Shader& text_shader, const Render::Texture& gui_block_atlas, const Render::GUI::ItemTypeManager& itm) noexcept
+void Player::draw_attributes(const render::Shader& shader, const render::Shader& text_shader, const render::Texture& gui_block_atlas, const render::gui::ItemTypeManager& itm) noexcept
 {
 	m_hotbar.draw(shader, text_shader, m_texHotbarSlot, gui_block_atlas, itm);
 	m_inventory.draw(shader, text_shader, m_texInv, m_texInvSlot, gui_block_atlas, itm);

@@ -54,7 +54,7 @@ static inline double pickSpline(const std::vector<std::pair<vec2d, std::vector<v
 void World::update(const Player& player, bool force_reload)
 {
 	static types::loc lastCamLoc{};
-	types::loc camLoc{ Voxels::ChunkGrid::to_loc(player.getPos()) };
+	types::loc camLoc{ chunks::ChunkGrid::to_loc(player.getPos()) };
 
 	if (force_reload)
 		grid.discard_all_chunks();
@@ -86,7 +86,7 @@ void World::update(const Player& player, bool force_reload)
 
 	if (debug_flags.draw_chunk_borders)
 		for (const auto& c : grid.getChunks())
-			Render::Debug::aabb(c.second.getPos() + 16.f, { 16.f }, (c.second.isEmpty() ? vec3f{0, 1, 1} : vec3f{ 1, 1, 0 }), 0, false);
+			render::debug::aabb(c.second.getPos() + 16.f, { 16.f }, (c.second.isEmpty() ? vec3f{0, 1, 1} : vec3f{ 1, 1, 0 }), 0, false);
 }
 
 void World::update_blocklight() noexcept
@@ -464,13 +464,13 @@ void World::gen_nodes_sunlight(const std::vector<types::loc>& chunk_locs) noexce
 		{
 			if (auto* c = grid.chunk_at_loc_ptr(loc + types::loc{ 0, 1 , 0 }))
 			{
-				for (int32 x{}; x < Voxels::Chunk::g_size; x++)
-					for (int32 z{}; z < Voxels::Chunk::g_size; z++)
+				for (int32 x{}; x < chunks::Chunk::g_size; x++)
+					for (int32 z{}; z < chunks::Chunk::g_size; z++)
 					{
-						if (type_manager.isTypeTransparent(c->block_at_ptr({ x, Voxels::Chunk::g_size - 1, z })))
+						if (type_manager.isTypeTransparent(c->block_at_ptr({ x, chunks::Chunk::g_size - 1, z })))
 						{
-							c->block_at_ptr({ x, Voxels::Chunk::g_size - 1, z })->setSunlight(g_maxsunlight);
-							sunlightBfsQueue.emplace(static_cast<types::pos>(types::loc{ x, Voxels::Chunk::g_size - 1, z }) + c->getPos());
+							c->block_at_ptr({ x, chunks::Chunk::g_size - 1, z })->setSunlight(g_maxsunlight);
+							sunlightBfsQueue.emplace(static_cast<types::pos>(types::loc{ x, chunks::Chunk::g_size - 1, z }) + c->getPos());
 						}
 					}
 
@@ -495,7 +495,7 @@ void World::generateWorld(const std::vector<types::loc>& new_chunks_loc)
 {
 	using SeedType = siv::PerlinNoise::seed_type;
 
-	static const auto z_stride{ Voxels::Chunk::g_size * Voxels::Chunk::g_size };
+	static const auto z_stride{ chunks::Chunk::g_size * chunks::Chunk::g_size };
 
 	const SeedType seed{ 1232356u };
 	siv::PerlinNoise perlin{ seed };
@@ -511,9 +511,9 @@ void World::generateWorld(const std::vector<types::loc>& new_chunks_loc)
 	{
 		auto& chunk{ grid.chunk_at_loc(loc) };
 
-		// Every Block of the Chunk
-		for (int64 x{}; x < Voxels::Chunk::g_size; x++)
-			for (int64 z{}; z < Voxels::Chunk::g_size; z++)
+		// Every Block of the chunks::Chunk
+		for (int64 x{}; x < chunks::Chunk::g_size; x++)
+			for (int64 z{}; z < chunks::Chunk::g_size; z++)
 			{
 				// Generate Depth for the world
 
@@ -525,9 +525,9 @@ void World::generateWorld(const std::vector<types::loc>& new_chunks_loc)
 				y_max = continentalness * 100.;
 
 				// Choose Which block type goes where
-				for (int64 y{}; y < Voxels::Chunk::g_size; y++)
+				for (int64 y{}; y < chunks::Chunk::g_size; y++)
 				{
-					auto& current_block{ chunk.block_at(z * z_stride + y * Voxels::Chunk::g_size + x) };
+					auto& current_block{ chunk.block_at(z * z_stride + y * chunks::Chunk::g_size + x) };
 
 					double bp = y + chunk.getPos().y; // block pos in world coords
 
@@ -650,7 +650,7 @@ void World::draw_chunkGrid(const Player& player) const noexcept
 
 bool World::set_voxel_at(const types::pos& block_pos, types::type_id id) noexcept
 {
-	const auto chunk_loc = Voxels::ChunkGrid::to_loc(block_pos);
+	const auto chunk_loc = chunks::ChunkGrid::to_loc(block_pos);
 	auto* chunk{ grid.chunk_at_loc_ptr(chunk_loc) };
 
 	if (chunk == nullptr)
@@ -662,7 +662,7 @@ bool World::set_voxel_at(const types::pos& block_pos, types::type_id id) noexcep
 		gen_nodes_sunlight({ chunk_loc });
 	}
 
-	grid.create_chunkMesh_for_chunk_at(Voxels::ChunkGrid::to_loc(chunk->getPos()));
+	grid.create_chunkMesh_for_chunk_at(chunks::ChunkGrid::to_loc(chunk->getPos()));
 
 	auto voxel_index = chunk->getVoxelIndex(block_pos);
 	auto& current_block = chunk->block_at(voxel_index);
@@ -692,9 +692,9 @@ bool World::set_voxel_at(const types::pos& block_pos, types::type_id id) noexcep
 		current_block.setB(0);
 	}
 
-	for (int32 x{}; x < Voxels::Chunk::g_size; x++)
-		for (int32 y{}; y < Voxels::Chunk::g_size; y++)
-			for (int32 z{}; z < Voxels::Chunk::g_size; z++)
+	for (int32 x{}; x < chunks::Chunk::g_size; x++)
+		for (int32 y{}; y < chunks::Chunk::g_size; y++)
+			for (int32 z{}; z < chunks::Chunk::g_size; z++)
 			{
 				auto& block = chunk->block_at({ x,y,z });
 
@@ -767,9 +767,9 @@ bool World::set_voxel_at(const types::pos& block_pos, types::type_id id) noexcep
 
 	// Dirten up all needed chunks
 	auto b{ static_cast<types::pos>(grid.to_loc(block_pos)) };
-	vec3f block_chunk_pos{ mpml::floor(block_pos - b * (float)Voxels::Chunk::g_size) };
+	vec3f block_chunk_pos{ mpml::floor(block_pos - b * (float)chunks::Chunk::g_size) };
 
-	if (block_chunk_pos.x == Voxels::Chunk::g_size - 1)
+	if (block_chunk_pos.x == chunks::Chunk::g_size - 1)
 		if (auto* c = grid.chunkmesh_at(block_pos + vec3f{ 1, 0, 0 }))	
 			c->flags.dirty = true;
 
@@ -777,7 +777,7 @@ bool World::set_voxel_at(const types::pos& block_pos, types::type_id id) noexcep
 		if (auto* c = grid.chunkmesh_at(block_pos - vec3f{ 1, 0, 0 }))
 			c->flags.dirty = true;
 
-	if (block_chunk_pos.y == Voxels::Chunk::g_size - 1)
+	if (block_chunk_pos.y == chunks::Chunk::g_size - 1)
 		if (auto* c = grid.chunkmesh_at(block_pos + vec3f{ 0, 1, 0 }))
 			c->flags.dirty = true;
 
@@ -785,7 +785,7 @@ bool World::set_voxel_at(const types::pos& block_pos, types::type_id id) noexcep
 		if (auto* c = grid.chunkmesh_at(block_pos - vec3f{ 0, 1, 0 }))
 			c->flags.dirty = true;
 
-	if (block_chunk_pos.z == Voxels::Chunk::g_size - 1)
+	if (block_chunk_pos.z == chunks::Chunk::g_size - 1)
 		if (auto* c = grid.chunkmesh_at(block_pos + vec3f{ 0, 0, 1 }))
 			c->flags.dirty = true;
 
@@ -865,7 +865,7 @@ Data::Voxel World::blockout_at(const types::pos& block_pos) const noexcept
 	return block;
 }
 
-const Voxels::Chunk* World::chunk_at(const types::pos& chunk_pos) const noexcept
+const chunks::Chunk* World::chunk_at(const types::pos& chunk_pos) const noexcept
 {
 	return grid.chunk_at(chunk_pos);
 }

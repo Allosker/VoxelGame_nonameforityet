@@ -1,18 +1,18 @@
 #include "font.hpp"
 
 
-Render::Font::Font(const types::path& path, uint8 btmp_size) noexcept
+render::Font::Font(const types::path& path, uint8 btmp_size) noexcept
 	: m_btmp_size{ btmp_size }
 {
 	load_font(path);
 }
 
-Render::Font::~Font() noexcept
+render::Font::~Font() noexcept
 {
 	glDeleteTextures(1, &m_texture_id);
 }
 
-void Render::Font::load_font(const types::path& path) noexcept
+void render::Font::load_font(const types::path& path) noexcept
 {
 	// Disable Defulat Texture Alignment
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
@@ -40,7 +40,7 @@ void Render::Font::load_font(const types::path& path) noexcept
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 }
 
-/*private*/ Render::Image Render::Font::create_bitmap(const types::path& path) noexcept
+/*private*/ render::Image render::Font::create_bitmap(const types::path& path) noexcept
 {
 	FT_Library ft;
 	if (FT_Init_FreeType(&ft))
@@ -52,7 +52,7 @@ void Render::Font::load_font(const types::path& path) noexcept
 
 	FT_Set_Pixel_Sizes(face, 0, m_btmp_size);
 
-	Render::Image bitmap{ size_bitmap, 1, GL_RED };
+	render::Image bitmap{ size_bitmap, 1, GL_RED };
 
 
 	vec2iu pos_btmp{};
@@ -63,7 +63,7 @@ void Render::Font::load_font(const types::path& path) noexcept
 		if (FT_Load_Char(face, c, FT_LOAD_RENDER))
 			continue;
 
-		Render::Image glyph{
+		render::Image glyph{
 			{ face->glyph->bitmap.width, face->glyph->bitmap.rows },
 			face->glyph->bitmap.buffer,
 			1,

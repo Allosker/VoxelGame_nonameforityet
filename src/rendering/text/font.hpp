@@ -15,7 +15,7 @@
 
 #include <map>
 
-namespace Render
+namespace render
 {
 
 	struct Character

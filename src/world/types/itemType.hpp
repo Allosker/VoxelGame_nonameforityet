@@ -11,7 +11,7 @@
 
 #include "rendering/utilities/atlas.hpp"
 
-namespace Render::GUI
+namespace render::gui
 {
 
 	namespace ItemTextureUvsAtlas
@@ -49,4 +49,4 @@ namespace Render::GUI
 	};
 
 
-} // Render::Types
+} // render::Types

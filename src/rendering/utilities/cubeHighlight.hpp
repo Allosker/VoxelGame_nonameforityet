@@ -6,7 +6,7 @@
 
 #include <vector>
 
-namespace Render::Utils
+namespace render::utils
 { 
 	struct CubeHighlight
 	{
@@ -68,7 +68,7 @@ namespace Render::Utils
 		
 	private:
 
-		Render::Shader CHshader;
+		render::Shader CHshader;
 
 		float scale{ 1.008f };
 

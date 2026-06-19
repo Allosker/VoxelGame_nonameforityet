@@ -9,12 +9,12 @@
 #include "utilities/opengl.hpp"
 #include "utilities/types.hpp"
 
-namespace Render
+namespace render
 {
 	inline std::array<std::array<vec2f, 4>, 6> mapTextureUVs_4(const std::array<vec2f, 6>& texturePos, const vec2f& atlas_size = { 96, 96 });
 }
 
-namespace Render::Types
+namespace render::Types
 {
 
 	namespace TextureUVperFace
@@ -66,10 +66,10 @@ namespace Render::Types
 	};
 
 
-} // Render::Types
+} // render::Types
 
 
-namespace Render
+namespace render
 {
 	inline std::array<std::array<vec2f, 4>, 6> mapTextureUVs_4(const std::array<vec2f, 6>& texturePos, const vec2f& atlas_size)
 	{

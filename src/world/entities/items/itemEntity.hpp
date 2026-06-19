@@ -13,11 +13,11 @@
 #include "world/types/itemTypeManager.hpp"
 #include "data/item.hpp"
 
-namespace Render
+namespace render
 {
 
 	class ItemEntity
-		: public Entities::BasicEntity
+		: public entities::BasicEntity
 	{
 	public:
 

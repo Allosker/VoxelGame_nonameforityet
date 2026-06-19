@@ -17,12 +17,12 @@
 
 #include "font.hpp"
 
-namespace Render
+namespace render
 {
 
 
 class Text
-	: public Transform3D
+	: public physics::Transform3D
 {
 public:
 
@@ -56,7 +56,7 @@ public:
 
 	// = Actors
 
-	void draw(const Render::Shader& shader);
+	void draw(const render::Shader& shader);
 
 	void reload()
 	{
@@ -92,4 +92,4 @@ private:
 };
 
 
-} // namespace Render::GUI
+} // namespace render::gui

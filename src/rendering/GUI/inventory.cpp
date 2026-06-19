@@ -6,7 +6,7 @@
 // Construction/Destruction
 // =====================
 
-Render::GUI::Inventory::Inventory(const Texture& texture_inventory, const Texture& texture_slot, const Font* font_)
+render::gui::Inventory::Inventory(const Texture& texture_inventory, const Texture& texture_slot, const Font* font_)
 	: m_inventory{ g_size_inventory, {g_size_inventory.x / 2, g_size_inventory.y / 2}, types::Rect<types::uvs>{{}, texture_inventory.getSize()} },
 	m_moving_item{ ItemTypeManager::g_size_gui_block, { ItemTypeManager::g_size_gui_block.x / 2, ItemTypeManager::g_size_gui_block.y / 2 }, types::Rect<types::uvs>{}, {}, *font },
 	font{ font_ }
@@ -24,7 +24,7 @@ Render::GUI::Inventory::Inventory(const Texture& texture_inventory, const Textur
 // Actors
 // =====================
 
-void Render::GUI::Inventory::update(const Window& window, const ItemTypeManager& itm, Hotbar& hotbar) noexcept
+void render::gui::Inventory::update(const Window& window, const ItemTypeManager& itm, Hotbar& hotbar) noexcept
 {
 	if (!m_activated)
 		return;
@@ -170,13 +170,13 @@ void Render::GUI::Inventory::update(const Window& window, const ItemTypeManager&
 			m_moving_item.setPosition(point);
 }
 
-void Render::GUI::Inventory::newPairOfSlots(const Texture& texture_slot) noexcept
+void render::gui::Inventory::newPairOfSlots(const Texture& texture_slot) noexcept
 {
 	if (m_slots.size() < g_max_nb_slots)
 		create_slots(texture_slot);
 }
 
-bool Render::GUI::Inventory::addItem(const Data::Item& item, uint16 count, const ItemTypeManager& itm) noexcept
+bool render::gui::Inventory::addItem(const Data::Item& item, uint16 count, const ItemTypeManager& itm) noexcept
 {
 	for (auto& i : m_items_slots)
 	{
@@ -209,7 +209,7 @@ bool Render::GUI::Inventory::addItem(const Data::Item& item, uint16 count, const
 	return false;
 }
 
-uint16 Render::GUI::Inventory::addItems(const ItemStackGUI& item_stack, uint16 count) noexcept
+uint16 render::gui::Inventory::addItems(const ItemStackGUI& item_stack, uint16 count) noexcept
 {
 	if (item_stack.count + count <= item_stack.max_count)
 		return 0;
@@ -217,7 +217,7 @@ uint16 Render::GUI::Inventory::addItems(const ItemStackGUI& item_stack, uint16 c
 	return count - (item_stack.max_count - item_stack.count);
 }
 
-bool Render::GUI::Inventory::removeItem(const Data::Item& item, uint16 count) noexcept
+bool render::gui::Inventory::removeItem(const Data::Item& item, uint16 count) noexcept
 {
 	for (auto& i : m_items_slots)
 	{
@@ -231,21 +231,21 @@ bool Render::GUI::Inventory::removeItem(const Data::Item& item, uint16 count) no
 	return false;
 }
 
-void Render::GUI::Inventory::enable(Window& window, Hotbar& hotbar) noexcept
+void render::gui::Inventory::enable(Window& window, Hotbar& hotbar) noexcept
 {
 	m_activated = true;
 	window.alternateCursorVisibility();
 	hotbar.disable();
 }
 
-void Render::GUI::Inventory::disable(Window& window, Hotbar& hotbar) noexcept
+void render::gui::Inventory::disable(Window& window, Hotbar& hotbar) noexcept
 {
 	m_activated = false;
 	window.alternateCursorVisibility();
 	hotbar.enable();
 }
 
-void Render::GUI::Inventory::process(Window& window, Hotbar& hotbar) noexcept
+void render::gui::Inventory::process(Window& window, Hotbar& hotbar) noexcept
 {
 	if (m_activated)
 		disable(window, hotbar);
@@ -253,7 +253,7 @@ void Render::GUI::Inventory::process(Window& window, Hotbar& hotbar) noexcept
 		enable(window, hotbar);
 }
 
-void Render::GUI::Inventory::draw(const Shader& shader, const Shader& text_shader, const Texture& texture_inventory, const Texture& texture_slot, const Render::Texture& texture_block_gui_atlas, const ItemTypeManager& itm) noexcept
+void render::gui::Inventory::draw(const Shader& shader, const Shader& text_shader, const Texture& texture_inventory, const Texture& texture_slot, const render::Texture& texture_block_gui_atlas, const ItemTypeManager& itm) noexcept
 {
 	if (!m_activated)
 		return;
@@ -284,12 +284,12 @@ void Render::GUI::Inventory::draw(const Shader& shader, const Shader& text_shade
 // Private Actors
 // =====================
 
-/*private*/ void Render::GUI::Inventory::create_slots(const Texture& texture_slot) noexcept
+/*private*/ void render::gui::Inventory::create_slots(const Texture& texture_slot) noexcept
 {
 	int64 size_mult = static_cast<int64>(m_items_slots.size() / 2);
 
 	// Create first slot left
-	m_slots.emplace_back(Elems::Rectangle{ g_slot_size, { g_slot_size.x / 2, g_slot_size.y / 2 }, types::Rect<types::uvs>{ {}, texture_slot.getSize() } });
+	m_slots.emplace_back(elems::Rectangle{ g_slot_size, { g_slot_size.x / 2, g_slot_size.y / 2 }, types::Rect<types::uvs>{ {}, texture_slot.getSize() } });
 	m_slots.back().setPosition({
 		173,
 		336 - g_slot_size.y * size_mult });
@@ -303,7 +303,7 @@ void Render::GUI::Inventory::draw(const Shader& shader, const Shader& text_shade
 	m_items_slots.back().setPosition(m_slots.back().getPosition());
 
 	// Create second slot right
-	m_slots.emplace_back(Elems::Rectangle{ g_slot_size, { g_slot_size.x / 2, g_slot_size.y / 2 }, types::Rect<types::uvs>{ {}, texture_slot.getSize() } });
+	m_slots.emplace_back(elems::Rectangle{ g_slot_size, { g_slot_size.x / 2, g_slot_size.y / 2 }, types::Rect<types::uvs>{ {}, texture_slot.getSize() } });
 	m_slots.back().setPosition({
 		173 + g_slot_size.x,
 		336 - g_slot_size.y * size_mult });

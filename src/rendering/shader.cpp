@@ -4,7 +4,7 @@
 // Construction/Destruction
 // =====================
 
-Render::Shader::Shader(const std::filesystem::path& vertShader, const std::filesystem::path& fragShader, const std::filesystem::path& geomShader)
+render::Shader::Shader(const std::filesystem::path& vertShader, const std::filesystem::path& fragShader, const std::filesystem::path& geomShader)
 try
 {
 	std::string vertCode{}, fragCode{}, geomCode{};
@@ -89,7 +89,7 @@ catch (...)
 	throw;
 }
 
-Render::Shader::~Shader() noexcept
+render::Shader::~Shader() noexcept
 {
 	glDeleteProgram(m_id);
 }
@@ -99,7 +99,7 @@ Render::Shader::~Shader() noexcept
 // Actors
 // =====================
 
-void Render::Shader::use() const noexcept
+void render::Shader::use() const noexcept
 {
 	glUseProgram(m_id);
 }
@@ -109,12 +109,12 @@ void Render::Shader::use() const noexcept
 // Getters
 // =====================
 
-std::uint32_t Render::Shader::ID() const noexcept
+std::uint32_t render::Shader::ID() const noexcept
 {
 	return m_id;
 }
 
-std::int32_t Render::Shader::getUniformLocation(const std::string& name) const noexcept
+std::int32_t render::Shader::getUniformLocation(const std::string& name) const noexcept
 {
 	return glGetUniformLocation(m_id, name.c_str());
 }
@@ -124,37 +124,37 @@ std::int32_t Render::Shader::getUniformLocation(const std::string& name) const n
 // Setters
 // =====================
 
-void Render::Shader::setValue(const std::string& name, float value) const noexcept
+void render::Shader::setValue(const std::string& name, float value) const noexcept
 {
 	glUniform1f(glGetUniformLocation(m_id, name.c_str()), value);
 }
 
-void Render::Shader::setValue(const std::string& name, const vec2f& value) const noexcept
+void render::Shader::setValue(const std::string& name, const vec2f& value) const noexcept
 {
 	glUniform2fv(glGetUniformLocation(m_id, name.c_str()), 1, value.data_ptr());
 }
 
-void Render::Shader::setValue(const std::string& name, const vec3f& value) const noexcept
+void render::Shader::setValue(const std::string& name, const vec3f& value) const noexcept
 {
 	glUniform3fv(glGetUniformLocation(m_id, name.c_str()), 1, value.data_ptr());
 }
 
-void Render::Shader::setValue(const std::string& name, const vec4f& value) const noexcept
+void render::Shader::setValue(const std::string& name, const vec4f& value) const noexcept
 {
 	glUniform4fv(glGetUniformLocation(m_id, name.c_str()), 1, value.data_ptr());
 }
 
-void Render::Shader::setValue(const std::string& name, const mat3f& value) const noexcept
+void render::Shader::setValue(const std::string& name, const mat3f& value) const noexcept
 {
 	glUniformMatrix3fv(glGetUniformLocation(m_id, name.c_str()), 1, true, value.data_ptr());
 }
 
-void Render::Shader::setValue(const std::string& name, const mat4f& value) const noexcept
+void render::Shader::setValue(const std::string& name, const mat4f& value) const noexcept
 {
 	glUniformMatrix4fv(glGetUniformLocation(m_id, name.c_str()), 1, false, value.data_ptr());
 }
 
-void Render::Shader::setValueLocation(GLint location, const mat4f& value) const noexcept
+void render::Shader::setValueLocation(GLint location, const mat4f& value) const noexcept
 {
 	glUniformMatrix4fv(location, 1, false, value.data_ptr());
 }
@@ -164,7 +164,7 @@ void Render::Shader::setValueLocation(GLint location, const mat4f& value) const 
 // Private
 // =====================
 
-void Render::Shader::compile(std::uint32_t s_id, const std::string& name)
+void render::Shader::compile(std::uint32_t s_id, const std::string& name)
 {
 	glCompileShader(s_id);
 
@@ -181,7 +181,7 @@ void Render::Shader::compile(std::uint32_t s_id, const std::string& name)
 	}
 }
 
-void Render::Shader::link(std::uint32_t s_id)
+void render::Shader::link(std::uint32_t s_id)
 {
 	glLinkProgram(s_id);
 

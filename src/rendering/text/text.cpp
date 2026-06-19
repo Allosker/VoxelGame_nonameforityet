@@ -6,8 +6,8 @@
 // Construction/Destruction
 // =====================
 
-Render::Text::Text(const Font& font, std::string_view str, const vec3f& pos, const vec3f& ori)
-	: Transform3D(pos, ori), p_font{ &font }, m_text{ str }
+render::Text::Text(const Font& font, std::string_view str, const vec3f& pos, const vec3f& ori)
+	: physics::Transform3D(pos, ori), p_font{ &font }, m_text{ str }
 {
 	// create GPU data
 
@@ -30,8 +30,8 @@ Render::Text::Text(const Font& font, std::string_view str, const vec3f& pos, con
 	update_buffer();
 }
 
-Render::Text::Text(Text&& other) noexcept
-	: Transform3D{ other },
+render::Text::Text(Text&& other) noexcept
+	: physics::Transform3D{ other },
 	m_text{ other.m_text }, p_font{ other.p_font }, m_color{ other.m_color },
 	m_scale_text{ other.m_scale_text }, m_size_data{ other.m_size_data }, m_vao{ other.m_vao }, m_vbo{ other.m_vbo }
 {
@@ -44,7 +44,7 @@ Render::Text::Text(Text&& other) noexcept
 	other.m_vbo			= 0;
 }
 
-Render::Text& Render::Text::operator=(Text&& other) noexcept
+render::Text& render::Text::operator=(Text&& other) noexcept
 {
 	if (this == &other)
 		return *this;
@@ -66,7 +66,7 @@ Render::Text& Render::Text::operator=(Text&& other) noexcept
 	other.m_vbo = 0;
 }
 
-Render::Text::~Text() noexcept
+render::Text::~Text() noexcept
 {
 	glDeleteVertexArrays(1, &m_vao);
 	glDeleteBuffers(1, &m_vbo);
@@ -77,7 +77,7 @@ Render::Text::~Text() noexcept
 // Actors
 // =====================
 
-void Render::Text::draw(const Render::Shader& shader)
+void render::Text::draw(const render::Shader& shader)
 {
 	if (!p_font)
 		throw std::runtime_error("ERROR::TEXT::DRAWING: Cannot draw text that isn't bound to any font");
@@ -95,7 +95,7 @@ void Render::Text::draw(const Render::Shader& shader)
 	glDrawArrays(GL_TRIANGLES, 0, m_size_data);
 }
 
-/*private*/ void Render::Text::update_buffer()
+/*private*/ void render::Text::update_buffer()
 {
 	if (!p_font)
 		throw std::runtime_error("ERROR::TEXT::BUFFER_UPDATE: Cannot update buffer because no font is bound to the current text");

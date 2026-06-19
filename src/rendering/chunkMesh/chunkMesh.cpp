@@ -5,7 +5,7 @@
 // Construction/Destruction
 // =====================
 
-Render::ChunkMesh::ChunkMesh() noexcept
+render::ChunkMesh::ChunkMesh() noexcept
 {
 	glGenVertexArrays(1, &m_vao);
 	glCreateBuffers(1, &m_vbo);
@@ -45,7 +45,7 @@ Render::ChunkMesh::ChunkMesh() noexcept
 	glBindVertexArray(0);
 }
 
-Render::ChunkMesh::ChunkMesh(ChunkMesh&& other) noexcept
+render::ChunkMesh::ChunkMesh(ChunkMesh&& other) noexcept
 	: 
 	m_nbVertices				{ other.m_nbVertices },
 	m_nbVertices_Transparent	{ other.m_nbVertices_Transparent },
@@ -65,7 +65,7 @@ Render::ChunkMesh::ChunkMesh(ChunkMesh&& other) noexcept
 	other.flags.dirty				= 0;
 }
 
-Render::ChunkMesh& Render::ChunkMesh::operator=(ChunkMesh&& other) noexcept
+render::ChunkMesh& render::ChunkMesh::operator=(ChunkMesh&& other) noexcept
 {
 	if (this == &other)
 		return *this;
@@ -91,7 +91,7 @@ Render::ChunkMesh& Render::ChunkMesh::operator=(ChunkMesh&& other) noexcept
 	return *this;
 }	
 
-Render::ChunkMesh::~ChunkMesh() noexcept
+render::ChunkMesh::~ChunkMesh() noexcept
 {
 	free();
 }
@@ -101,7 +101,7 @@ Render::ChunkMesh::~ChunkMesh() noexcept
 // Actors
 // =====================
 
-void Render::ChunkMesh::draw() const noexcept
+void render::ChunkMesh::draw() const noexcept
 {
 	glBindVertexArray(m_vao);
 	glDrawArrays(GL_TRIANGLES, 0, m_nbVertices);
@@ -116,21 +116,21 @@ void Render::ChunkMesh::draw() const noexcept
 	glBindVertexArray(0);
 }
 
-Render::ChunkMesh::MeshPair Render::ChunkMesh::buildMesh(
-	const Voxels::Chunk& chunk,
-	const Render::Types::VoxelTypeManager& type_manager,
+render::ChunkMesh::MeshPair render::ChunkMesh::buildMesh(
+	const chunks::Chunk& chunk,
+	const render::Types::VoxelTypeManager& type_manager,
 	const World& world
 ) noexcept
 {
-	static constexpr auto z_stride{ Voxels::Chunk::g_size * Voxels::Chunk::g_size };
+	static constexpr auto z_stride{ chunks::Chunk::g_size * chunks::Chunk::g_size };
 
 	MeshPair mp{};
 
-	for (int32 x{}; x < Voxels::Chunk::g_size; x++)
-	for (int32 y{}; y < Voxels::Chunk::g_size; y++)
-	for (int32 z{}; z < Voxels::Chunk::g_size; z++)
+	for (int32 x{}; x < chunks::Chunk::g_size; x++)
+	for (int32 y{}; y < chunks::Chunk::g_size; y++)
+	for (int32 z{}; z < chunks::Chunk::g_size; z++)
 	{
-		const int32 block_index{ static_cast<int32>((z * z_stride) + (y * Voxels::Chunk::g_size) + x) };
+		const int32 block_index{ static_cast<int32>((z * z_stride) + (y * chunks::Chunk::g_size) + x) };
 
 		auto& current_block{ chunk.block_at(block_index) };
 
@@ -155,7 +155,7 @@ Render::ChunkMesh::MeshPair Render::ChunkMesh::buildMesh(
 		
 
 		// Data::Voxel Face Visibility
-		if (z + 1 < Voxels::Chunk::g_size)
+		if (z + 1 < chunks::Chunk::g_size)
 			CF_block_dirs[0] = chunk.block_at(block_index + z_stride).id;
 		else
 			if (const auto* c{ world.chunk_at(static_cast<types::pos>(bdirs[0]) + chunk.getPos())})
@@ -165,23 +165,23 @@ Render::ChunkMesh::MeshPair Render::ChunkMesh::buildMesh(
 			CF_block_dirs[1] = chunk.block_at(block_index - z_stride).id;
 		else
 			if (const auto* c{ world.chunk_at(static_cast<types::pos>(bdirs[1]) + chunk.getPos()) })
-				CF_block_dirs[1] = c->block_id_at(types::loc{ x, y, Voxels::Chunk::g_size - 1 });
+				CF_block_dirs[1] = c->block_id_at(types::loc{ x, y, chunks::Chunk::g_size - 1 });
 
 
-		if (y + 1 < Voxels::Chunk::g_size)
-			CF_block_dirs[2] = chunk.block_at(block_index + Voxels::Chunk::g_size).id;
+		if (y + 1 < chunks::Chunk::g_size)
+			CF_block_dirs[2] = chunk.block_at(block_index + chunks::Chunk::g_size).id;
 		else
 			if (const auto* c{ world.chunk_at(static_cast<types::pos>(bdirs[2]) + chunk.getPos()) })
 				CF_block_dirs[2] = c->block_id_at(types::loc{ x, 0, z });
 
 		if (y - 1 >= 0)
-			CF_block_dirs[3] = chunk.block_at(block_index - Voxels::Chunk::g_size).id;
+			CF_block_dirs[3] = chunk.block_at(block_index - chunks::Chunk::g_size).id;
 		else
 			if (const auto* c{ world.chunk_at(static_cast<types::pos>(bdirs[3]) + chunk.getPos()) })
-				CF_block_dirs[3] = c->block_id_at(types::loc{ x, Voxels::Chunk::g_size - 1, z });
+				CF_block_dirs[3] = c->block_id_at(types::loc{ x, chunks::Chunk::g_size - 1, z });
 
 
-		if (x + 1 < Voxels::Chunk::g_size)
+		if (x + 1 < chunks::Chunk::g_size)
 			CF_block_dirs[4] = chunk.block_at(block_index + 1).id;
 		else
 			if (const auto* c{ world.chunk_at(static_cast<types::pos>(bdirs[4]) + chunk.getPos()) })
@@ -191,7 +191,7 @@ Render::ChunkMesh::MeshPair Render::ChunkMesh::buildMesh(
 			CF_block_dirs[5] = chunk.block_at(block_index - 1).id;
 		else
 			if (const auto* c{ world.chunk_at(static_cast<types::pos>(bdirs[5]) + chunk.getPos()) })
-				CF_block_dirs[5] = c->block_id_at(types::loc{ Voxels::Chunk::g_size - 1, y, z });
+				CF_block_dirs[5] = c->block_id_at(types::loc{ chunks::Chunk::g_size - 1, y, z });
 
 
 
@@ -406,7 +406,7 @@ Render::ChunkMesh::MeshPair Render::ChunkMesh::buildMesh(
 	return mp;
 }
 
-void Render::ChunkMesh::updateMeshBuffer(Mesh&& mesh) noexcept
+void render::ChunkMesh::updateMeshBuffer(Mesh&& mesh) noexcept
 {
 	glBindVertexArray(m_vao);
 	glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
@@ -418,7 +418,7 @@ void Render::ChunkMesh::updateMeshBuffer(Mesh&& mesh) noexcept
 	glBindVertexArray(0);
 }
 
-void Render::ChunkMesh::updateTransparentMeshBuffer(TMesh&& tmesh, const types::pos& camPos) noexcept
+void render::ChunkMesh::updateTransparentMeshBuffer(TMesh&& tmesh, const types::pos& camPos) noexcept
 {
 	flags.has_transparency = !tmesh.empty();
 
@@ -454,13 +454,13 @@ void Render::ChunkMesh::updateTransparentMeshBuffer(TMesh&& tmesh, const types::
 	glBindVertexArray(0);
 }
 
-void Render::ChunkMesh::updateBuffers(MeshPair&& mp, const types::pos& camPos) noexcept
+void render::ChunkMesh::updateBuffers(MeshPair&& mp, const types::pos& camPos) noexcept
 {
 	updateMeshBuffer(std::move(mp.first));
 	updateTransparentMeshBuffer(std::move(mp.second), camPos);
 }
 
-void Render::ChunkMesh::free() noexcept
+void render::ChunkMesh::free() noexcept
 {
 	glDeleteBuffers(1, &m_vbo);
 	glDeleteVertexArrays(1, &m_vao);

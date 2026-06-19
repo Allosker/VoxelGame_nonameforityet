@@ -8,7 +8,7 @@
 #include "utilities/opengl.hpp"
 #include "data/vertex.hpp"
 
-namespace Render::Debug
+namespace render::debug
 {
 
 	class DebugRenderer
@@ -267,7 +267,7 @@ namespace Render::Debug
 
 	inline void line(vec3f start, vec3f end, vec4f color, float duration = 0.f, bool foreground = true)
 	{
-		Render::Debug::DebugRenderer::get().addLine(start, end, color, duration, foreground);
+		render::debug::DebugRenderer::get().addLine(start, end, color, duration, foreground);
 	}
 
 	inline void aabb(vec3f center, vec3f extent, vec4f color, float duration = 0.f, bool foreground = true)
@@ -287,7 +287,7 @@ namespace Render::Debug
 			{max.x, min.y, max.z}, // left front
 		};
 
-		auto& renderer = Render::Debug::DebugRenderer::get();
+		auto& renderer = render::debug::DebugRenderer::get();
 
 		renderer.addLine(corners[0], corners[1], color, duration, foreground);
 		renderer.addLine(corners[1], corners[2], color, duration, foreground);
@@ -322,7 +322,7 @@ namespace Render::Debug
 			{max.x, min.y, max.z}, // left front
 		};
 
-		auto& renderer = Render::Debug::DebugRenderer::get();
+		auto& renderer = render::debug::DebugRenderer::get();
 
 		for (size_t i{}; i < 8; i++)
 		{
@@ -353,7 +353,7 @@ namespace Render::Debug
 
 	inline void triangle_fill(vec3f p1, vec3f p2, vec3f p3, vec4f color, float duration = 0.f, bool foreground = true)
 	{
-		Render::Debug::DebugRenderer::get().addTriangle(p1, p2, p3, color, duration, foreground);
+		render::debug::DebugRenderer::get().addTriangle(p1, p2, p3, color, duration, foreground);
 	}
 
 

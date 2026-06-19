@@ -4,8 +4,8 @@
 // Construction/Destruction
 // =====================
 
-Render::GUI::Elems::Rectangle::Rectangle(vec2f size, vec2f ori, const types::Rect<types::uvs>& attributes)
-	: Transform2D(size, ori),
+render::gui::elems::Rectangle::Rectangle(vec2f size, vec2f ori, const types::Rect<types::uvs>& attributes)
+	: physics::Transform2D(size, ori),
 	Mesh(std::array<Data::Vertex2D, 6>
 {
 	Data::Vertex2D
@@ -37,18 +37,18 @@ Render::GUI::Elems::Rectangle::Rectangle(vec2f size, vec2f ori, const types::Rec
 {
 }
 
-Render::GUI::Elems::Rectangle::Rectangle(Rectangle&& other) noexcept
-	: Mesh(std::move(other)), Transform2D(other)
+render::gui::elems::Rectangle::Rectangle(Rectangle&& other) noexcept
+	: Mesh(std::move(other)), physics::Transform2D(other)
 {
 }
 
-Render::GUI::Elems::Rectangle& Render::GUI::Elems::Rectangle::operator=(Rectangle&& other) noexcept
+render::gui::elems::Rectangle& render::gui::elems::Rectangle::operator=(Rectangle&& other) noexcept
 {
 	if (this == &other)
 		return *this;
 
 	Mesh::operator=(std::move(other));
-	Transform2D::operator=(other);
+	physics::Transform2D::operator=(other);
 
 	return *this;
 }
@@ -58,7 +58,7 @@ Render::GUI::Elems::Rectangle& Render::GUI::Elems::Rectangle::operator=(Rectangl
 // Setters
 // =====================
 
-void Render::GUI::Elems::Rectangle::updateSprite(const types::Rect<types::uvs>& attributes) noexcept
+void render::gui::elems::Rectangle::updateSprite(const types::Rect<types::uvs>& attributes) noexcept
 {
 	Mesh::updateBuffer<Data::Vertex2D>
 		(
@@ -97,7 +97,7 @@ void Render::GUI::Elems::Rectangle::updateSprite(const types::Rect<types::uvs>& 
 // Predicates
 // =====================
 
-bool Render::GUI::Elems::Rectangle::contains(vec2f point) const noexcept
+bool render::gui::elems::Rectangle::contains(vec2f point) const noexcept
 {
 	auto size{ getSize() };
 
@@ -111,7 +111,7 @@ bool Render::GUI::Elems::Rectangle::contains(vec2f point) const noexcept
 // Actors
 // =====================
 
-void Render::GUI::Elems::Rectangle::draw(const Shader& shader, GLenum mode) noexcept
+void render::gui::elems::Rectangle::draw(const Shader& shader, GLenum mode) noexcept
 {
 	shader.use();
 
@@ -120,7 +120,7 @@ void Render::GUI::Elems::Rectangle::draw(const Shader& shader, GLenum mode) noex
 	Mesh::draw(mode);
 }
 
-void Render::GUI::Elems::Rectangle::draw_transparent(const Shader& shader, GLenum mode) noexcept
+void render::gui::elems::Rectangle::draw_transparent(const Shader& shader, GLenum mode) noexcept
 {
 	shader.use();
 

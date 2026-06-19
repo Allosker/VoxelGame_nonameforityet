@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "world/types/itemTypeManager.hpp"
-#include "rendering/GUI/elements/rectangle.hpp"
+#include "rendering/gui/elements/rectangle.hpp"
 #include "utilities/window.hpp"
 
 #include "data/item.hpp"
@@ -18,7 +18,7 @@
 
 #include "itemStackGUI.hpp"
 
-namespace Render::GUI
+namespace render::gui
 {
 	class Hotbar
 	{
@@ -26,12 +26,12 @@ namespace Render::GUI
 
 		// = Construction/Destruction
 
-		Hotbar(const Render::Texture& texture_slot, const ItemTypeManager& itemTypeManager, const Font* font);
+		Hotbar(const render::Texture& texture_slot, const ItemTypeManager& itemTypeManager, const Font* font);
 
 
 		// = Getters
 
-		Elems::Rectangle* getSlotRender_at(std::size_t index) noexcept;
+		elems::Rectangle* getSlotRender_at(std::size_t index) noexcept;
 
 		std::optional<Data::Item> getSlot_at(std::size_t index) const noexcept;
 
@@ -39,8 +39,8 @@ namespace Render::GUI
 		Data::Item getSelectedItem() const noexcept { return m_items_slots[m_cursor_position].stack_item; }
 
 
-		std::vector<Elems::Rectangle>& getSlots() noexcept { return m_slots; }
-		const std::vector<Elems::Rectangle>& getSlots() const noexcept { return m_slots; }
+		std::vector<elems::Rectangle>& getSlots() noexcept { return m_slots; }
+		const std::vector<elems::Rectangle>& getSlots() const noexcept { return m_slots; }
 
 		std::vector<ItemStackGUI>& getItems() noexcept { return m_items_slots; }
 		const std::vector<ItemStackGUI>& getItems() const noexcept { return m_items_slots; }
@@ -56,7 +56,7 @@ namespace Render::GUI
 		// Returns the next slot based on the index which must be either 1 or -1
 		Data::Item nextSlot(int8 index) noexcept;
 
-		void newPairOfSlots(const Render::Texture& texture_slot) noexcept;
+		void newPairOfSlots(const render::Texture& texture_slot) noexcept;
 
 		bool addItem(const Data::Item& item, int64 count, const ItemTypeManager& itm) noexcept;
 		bool removeItem(const Data::Item& item, int64 count) noexcept;
@@ -65,12 +65,12 @@ namespace Render::GUI
 		void disable() noexcept;
 		void enable() noexcept;
 
-		void draw(const Shader& shader, const Shader& text_shader, const Render::Texture& texture_slot, const Render::Texture& texture_block_gui_atlas, const ItemTypeManager& itm) noexcept;
+		void draw(const Shader& shader, const Shader& text_shader, const render::Texture& texture_slot, const render::Texture& texture_block_gui_atlas, const ItemTypeManager& itm) noexcept;
 
 
 	private:
 
-		void create_new_slots(const Render::Texture& texture_slot) noexcept;
+		void create_new_slots(const render::Texture& texture_slot) noexcept;
 
 
 	public:
@@ -88,7 +88,7 @@ namespace Render::GUI
 
 	private:
 
-		std::vector<Elems::Rectangle> m_slots;
+		std::vector<elems::Rectangle> m_slots;
 		std::vector<ItemStackGUI> m_items_slots{};
 
 		const Font* font;
@@ -102,4 +102,4 @@ namespace Render::GUI
 
 	};
 
-} // Render::GUI
+} // render::gui

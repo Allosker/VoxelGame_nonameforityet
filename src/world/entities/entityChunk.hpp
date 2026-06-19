@@ -13,7 +13,7 @@
 #include "world/entities/player/player.hpp"
 #include "world/types/itemTypeManager.hpp"
 
-namespace Entities
+namespace entities
 {
 
 	class EntityChunk
@@ -28,21 +28,21 @@ namespace Entities
 		// = Actors
 
 		// Updates the items the player has as well
-		void update_items(Player& player, const Render::GUI::ItemTypeManager& itm) noexcept;
+		void update_items(Player& player, const render::gui::ItemTypeManager& itm) noexcept;
 
 
 		// = Mass Overloads
 
-			void addEntity(Render::ItemEntity&& item, const vec3f& pos) noexcept;
+			void addEntity(render::ItemEntity&& item, const vec3f& pos) noexcept;
 
 
-		void draw(const Render::Shader& shader, const Render::Texture& items_texture) noexcept;
+		void draw(const render::Shader& shader, const render::Texture& items_texture) noexcept;
 
 
 	private:
 
 
-		std::vector<Render::ItemEntity> m_items{};
+		std::vector<render::ItemEntity> m_items{};
 
 	public:
 

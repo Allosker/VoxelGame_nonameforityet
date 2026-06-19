@@ -10,7 +10,7 @@
 #include "rendering/shader.hpp"
 
 
-namespace Render
+namespace render
 {
 
 	class Skybox

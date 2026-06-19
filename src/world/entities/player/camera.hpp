@@ -7,7 +7,7 @@
 
 #include "utilities/opengl.hpp"
 
-namespace Render::Utils
+namespace render::utils
 {
 	struct Camera
 	{

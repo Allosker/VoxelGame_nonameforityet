@@ -18,11 +18,11 @@
 #include "physics/transforms/transform3D.hpp"
 
 
-namespace Entities
+namespace entities
 {
 	
 	class BasicEntity
-		: public Render::Mesh, public Transform3D
+		: public render::Mesh, public physics::Transform3D
 	{
 	public:
 
@@ -45,32 +45,32 @@ namespace Entities
 
 		void setPosition(const vec3f& pos) noexcept override
 		{
-			Transform3D::setPosition(pos); 
+			physics::Transform3D::setPosition(pos); 
 			m_hitbox.setHitbox(pos);
 		}
 
 
 		// = Getters
 
-		const Physics::Collisions::BasicHitbox& getHitbox() const noexcept { return m_hitbox; }
+		const physics::collisions::BasicHitbox& getHitbox() const noexcept { return m_hitbox; }
 
 
 		// = Predicates
 		
-		bool isWithin(const Physics::Collisions::BasicHitbox& container) const noexcept;
+		bool isWithin(const physics::collisions::BasicHitbox& container) const noexcept;
 
 		
 		// = Actors
 
-		void draw(const Render::Shader& shader, GLenum mode = GL_TRIANGLES) noexcept;
+		void draw(const render::Shader& shader, GLenum mode = GL_TRIANGLES) noexcept;
 
-		void draw_transparent(const Render::Shader& shader, GLenum mode = GL_TRIANGLES) noexcept;
+		void draw_transparent(const render::Shader& shader, GLenum mode = GL_TRIANGLES) noexcept;
 
 
 	private:
 
-		Physics::Collisions::BasicHitbox	m_hitbox				{};
+		physics::collisions::BasicHitbox	m_hitbox				{};
 
 	};
 
-} // Render::GUI
+} // render::gui

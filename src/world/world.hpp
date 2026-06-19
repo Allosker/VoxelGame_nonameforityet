@@ -5,7 +5,7 @@
 // This class is responsible for everything that the game has to offer in term of chunks/entities/players
 // ---------------------------------------
 
-#include "world/voxels/chunkGrid.hpp"
+#include "world/chunks/chunkGrid.hpp"
 #include "world/types/voxelTypeManager.hpp"
 #include "rendering/chunkMesh/chunkMesh.hpp"
 
@@ -66,16 +66,16 @@ public:
 	// If the block hasn't been loaded yet, we assume it is an air block with a light value of 0
 	Data::Voxel blockout_at(const types::pos& block_pos) const noexcept;
 
-	const Voxels::Chunk* chunk_at(const types::pos& chunk_pos) const noexcept;
+	const chunks::Chunk* chunk_at(const types::pos& chunk_pos) const noexcept;
 
-	const Render::Types::VoxelTypeManager& getTypeManager() const noexcept { return type_manager; }
+	const render::Types::VoxelTypeManager& getTypeManager() const noexcept { return type_manager; }
 
-	const Voxels::ChunkGrid& getGrid() const noexcept { return grid; }
+	const chunks::ChunkGrid& getGrid() const noexcept { return grid; }
 
 
 		
-	Voxels::ChunkGrid grid{};
-	Render::Types::VoxelTypeManager type_manager{};
+	chunks::ChunkGrid grid{};
+	render::Types::VoxelTypeManager type_manager{};
 	std::vector<types::loc> newly_generated_chunks{};
 	std::vector<std::pair<types::pos, types::type_id>> structure_blocks{};
 
