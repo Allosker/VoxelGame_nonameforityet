@@ -6,7 +6,6 @@
 // ---------------------------------------
 
 #include "utilities/opengl.hpp"
-#include "world/world.hpp"
 
 namespace physics::collisions
 {

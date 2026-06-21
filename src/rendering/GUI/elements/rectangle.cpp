@@ -5,7 +5,7 @@
 // =====================
 
 render::gui::elems::Rectangle::Rectangle(vec2f size, vec2f ori, const types::Rect<types::uvs>& attributes)
-	: physics::Transform2D(size, ori),
+	: physics::Transformable2D(size, ori),
 	Mesh(std::array<Data::Vertex2D, 6>
 {
 	Data::Vertex2D
@@ -38,7 +38,7 @@ render::gui::elems::Rectangle::Rectangle(vec2f size, vec2f ori, const types::Rec
 }
 
 render::gui::elems::Rectangle::Rectangle(Rectangle&& other) noexcept
-	: Mesh(std::move(other)), physics::Transform2D(other)
+	: Mesh(std::move(other)), physics::Transformable2D(other)
 {
 }
 
@@ -48,7 +48,7 @@ render::gui::elems::Rectangle& render::gui::elems::Rectangle::operator=(Rectangl
 		return *this;
 
 	Mesh::operator=(std::move(other));
-	physics::Transform2D::operator=(other);
+	physics::Transformable2D::operator=(other);
 
 	return *this;
 }

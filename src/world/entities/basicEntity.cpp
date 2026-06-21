@@ -7,7 +7,7 @@
 entities::BasicEntity::BasicEntity(
 	const types::Rect<vec3f>& entity_rect,
 	const vec3f& hitbox_size) noexcept
-	: physics::Transform3D(entity_rect.pos, entity_rect.size)
+	: physics::Transformable3D(entity_rect.pos, entity_rect.size)
 	, m_hitbox{ entity_rect.pos, hitbox_size / 2.f, hitbox_size / 2.f }
 {
 	if (m_origin.x != 0 || m_origin.y != 0)
@@ -15,14 +15,14 @@ entities::BasicEntity::BasicEntity(
 }
 
 entities::BasicEntity::BasicEntity(const types::Rect<vec3f>& entity_rect, const physics::collisions::BasicHitbox& hitbox) noexcept
-	: physics::Transform3D(entity_rect.pos, entity_rect.size)
+	: physics::Transformable3D(entity_rect.pos, entity_rect.size)
 	, m_hitbox{ hitbox }
 {
 }
 
 entities::BasicEntity::BasicEntity(BasicEntity&& other) noexcept
 	: Mesh(std::move(other))
-	, physics::Transform3D(other)
+	, physics::Transformable3D(other)
 	, m_hitbox{ other.m_hitbox }
 {
 }
@@ -33,7 +33,7 @@ entities::BasicEntity& entities::BasicEntity::operator=(BasicEntity&& other) noe
 		return *this;
 
 	Mesh::operator=(std::move(other));
-	physics::Transform3D::operator=(other);
+	physics::Transformable3D::operator=(other);
 	m_hitbox = other.m_hitbox;
 
 	return *this;

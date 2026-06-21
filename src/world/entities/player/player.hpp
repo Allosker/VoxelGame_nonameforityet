@@ -6,7 +6,6 @@
 // ---------------------------------------
 
 
-
 #include "camera.hpp"
 
 #include "rendering/shader.hpp"
@@ -45,13 +44,8 @@ namespace entities
 
 		// = Construction/Destruction
 
-		Player(
-			const types::path& p_hotbarSlot,
-			const types::path& p_inv,
-			const types::path& p_slotInv,
-			const ItemTypeManager& itm,
-			const types::path& p_font
-		);
+		Player(const ItemTypeManager& itm);
+
 
 		// = Actors
 

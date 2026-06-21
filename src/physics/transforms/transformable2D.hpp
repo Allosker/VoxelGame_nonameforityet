@@ -10,26 +10,26 @@
 namespace physics
 {
 
-	class Transform2D
+	class Transformable2D
 	{
 	public:
 
-		Transform2D() = delete;
+		Transformable2D() = delete;
 
-		Transform2D(vec2f size, vec2f ori)
+		Transformable2D(vec2f size, vec2f ori)
 			: m_origin{ ori }, m_baseSize{ size }, m_scale{ 1.f, 1.f }
 		{
 			if (m_origin.x != 0 || m_origin.y != 0)
 				m_transformNeedUpdate = true;
 		}
 
-		Transform2D(Transform2D&&) = delete;
-		Transform2D(Transform2D&) = default;
+		Transformable2D(Transformable2D&&) = delete;
+		Transformable2D(Transformable2D&) = default;
 
-		Transform2D& operator=(Transform2D&&) = delete;
-		Transform2D& operator=(Transform2D&) = default;
+		Transformable2D& operator=(Transformable2D&&) = delete;
+		Transformable2D& operator=(Transformable2D&) = default;
 
-		virtual ~Transform2D() = default;
+		virtual ~Transformable2D() = default;
 
 
 		// = Getters

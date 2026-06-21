@@ -51,18 +51,58 @@ static inline double pickSpline(const std::vector<std::pair<vec2d, std::vector<v
 };
 
 
-void World::update(const entities::Player& player, bool force_reload)
-{
-	static types::loc lastCamLoc{};
-	types::loc camLoc{ chunks::ChunkGrid::to_loc(player.getPos()) };
+// =====================
+// Construction/Initialization
+// =====================
 
-	if (force_reload)
+World::World(const Window& window)
+	: player{ m_itm }
+{
+	player.getCamera().updateProjMatrix(window.getSize()); // First Cam update
+
+	crossair.setPosition({ -crossair.getSize().x / 2, -crossair.getSize().y / 2 });
+}
+
+
+// =====================
+// Major World Updates
+// =====================
+
+void World::update(const Window& window, float dt)
+{
+	player.getCamera().view = mpml::lookAt(player.getPos(), player.getCamera().front_dir + player.getPos(), player.getCamera().up_dir);
+
+	types::loc current_player_loc{ chunks::ChunkGrid::to_loc(player.getPos()) };
+
+	// Player
+	update_player(window, dt);
+
+	// Cunkgrid
+	update_chunkGrid(current_player_loc);
+
+	// Entities
+	update_entities(current_player_loc);
+
+
+	reset_flags();
+}
+
+void World::reset_flags() noexcept
+{
+	// Debug
+	debug_flags.force_reload = false;
+}
+
+void World::update_chunkGrid(const types::loc& current_player_loc)
+{
+	static types::loc last_player_loc{};
+
+	if (debug_flags.force_reload)
 		grid.discard_all_chunks();
 
-
-	if ((force_reload || lastCamLoc != camLoc) && debug_flags.update_world)
+	if ((debug_flags.force_reload || last_player_loc != current_player_loc) && debug_flags.update_world)
 	{
-		auto m = grid.generate_new_chunks(camLoc);
+		auto m = grid.generate_new_chunks(current_player_loc);
 		generateWorld(m);
 
 		for (auto& i : grid.getChunks())
@@ -70,9 +110,9 @@ void World::update(const entities::Player& player, bool force_reload)
 
 		//gen_nodes_sunlight(m);
 
-		grid.discard_outside_chunks(camLoc);
+		grid.discard_outside_chunks(current_player_loc);
 
-		lastCamLoc = camLoc;
+		last_player_loc = current_player_loc;
 	}
 
 	if (debug_flags.update_world)
@@ -80,382 +120,449 @@ void World::update(const entities::Player& player, bool force_reload)
 		update_sunlight();
 
 		if (sunlightBfsQueue.empty())
-			grid.update(*this, type_manager, player);
+			grid.update(*this, m_vtm, player);
 	}
-	
+
 
 	if (debug_flags.draw_chunk_borders)
 		for (const auto& c : grid.getChunks())
-			render::debug::aabb(c.second.getPos() + 16.f, { 16.f }, (c.second.isEmpty() ? vec3f{0, 1, 1} : vec3f{ 1, 1, 0 }), 0, false);
+			render::debug::aabb(c.second.getPos() + 16.f, { 16.f }, (c.second.isEmpty() ? vec3f{ 0, 1, 1 } : vec3f{ 1, 1, 0 }), 0, false);
 }
 
-void World::update_blocklight() noexcept
+void World::update_entities(const types::loc& current_player_loc)
 {
-	/*update_rLighting();
-	update_gLighting();
-	update_bLighting();*/
+	entity_chunkGrid.update(player, m_itm);
 }
 
-void World::update_rLighting() noexcept
+void World::update_player(const Window& window, float dt)
 {
-	while (!rRemovalBfsQueue.empty())
-	{
-		LightRemovalNode& node = rRemovalBfsQueue.front();
+	const auto& ray_result{ utils::raycast(player.getPos(), player.getCamera().front_dir, grid, debug.rayDist, m_vtm) };
 
-		types::pos pos = node.pos;
-		auto lightlevel = node.val;
-
-		rRemovalBfsQueue.pop();
-
-		const std::array<types::pos, 6> dirs
+	flags.draw_cubehighlight = false;
+	if (!window.isCursorHidden())
+		if (ray_result)
 		{
-			types::pos
-			{pos.x + 1, pos.y, pos.z},
-			{pos.x - 1, pos.y, pos.z},
-			{pos.x, pos.y + 1, pos.z},
-			{pos.x, pos.y - 1, pos.z},
-			{pos.x, pos.y, pos.z + 1},
-			{pos.x, pos.y, pos.z - 1}
-		};
 
-		for (const auto& d : dirs)
-			if (auto* v = blockempty_at(d))
+			ch.update(player.getCamera().model, player.getCamera().view, player.getCamera().proj, ray_result->pos);
+
+
+			if (window.isMouseButtonPressedOnce(Buttons::Mouse::Middle))
 			{
-				if (auto neighborLevel = v->getR();
-					neighborLevel != 0 && neighborLevel < lightlevel)
-				{
-					v->setR(0);
+				auto id{ block_at(ray_result->pos)->id };
 
-					rRemovalBfsQueue.emplace(d, neighborLevel);
-
-					if (auto* cmesh = grid.chunkmesh_at(d))
-						cmesh->flags.dirty = true;
-				}
-				else if (neighborLevel >= lightlevel)
-				{
-					rBfsQueue.emplace(d);
-				}
+				player.getHotbar().setCurrentSlot({ id }, m_itm);
 			}
 
-	}
-
-	while (!rBfsQueue.empty())
-	{
-		LightNode& node = rBfsQueue.front();
-
-		types::pos pos = node.pos;
-
-		rBfsQueue.pop();
-
-		auto ptr = blockempty_at(pos);
-		uint8 lightlevel{};
-		if (ptr)
-			lightlevel = ptr->getR();
-		else
-			lightlevel = 0;
-
-		const std::array<types::pos, 6> dirs
-		{
-			types::pos
-			{pos.x + 1, pos.y, pos.z},
-			{pos.x - 1, pos.y, pos.z},
-			{pos.x, pos.y + 1, pos.z},
-			{pos.x, pos.y - 1, pos.z},
-			{pos.x, pos.y, pos.z + 1},
-			{pos.x, pos.y, pos.z - 1}
-		};
-
-		for (const auto& d : dirs)
-			if (auto* v = blockempty_at(d))
+			if (!debug.instant_voxel_breaking)
 			{
-				if (type_manager.isTypeTransparent(v) &&
-					v->getR() < lightlevel - 1)
+				if (window.isMouseButtonPressedOnce(Buttons::Mouse::Left))
 				{
-					v->setR(lightlevel - 1);
+					auto id{ block_at(ray_result->pos)->id };
 
-					rBfsQueue.emplace(d);
+					entity_chunkGrid.addEntity(
+						{ at_im_guiblocks, toPixelUnits(id, m_itm), id },
+						ray_result->pos);
 
-					if (auto* cmesh = grid.chunkmesh_at(d))
-						cmesh->flags.dirty = true;
+					set_voxel_at(ray_result->pos, 0);
 				}
 			}
-	}
+			else
+			{
+				if (window.isMouseButtonPressed(Buttons::Mouse::Left))
+					set_voxel_at(ray_result->pos, 0);
+			}
+
+			if (!debug.instant_voxel_placing)
+			{
+				if (player.getHotbar().getSelectedItem().id != 0 && window.isMouseButtonPressedOnce(Buttons::Mouse::Right))
+					set_voxel_at(ray_result->pos + ray_result->normal, player.place_voxel().id);
+			}
+			else
+			{
+				if (window.isMouseButtonPressed(Buttons::Mouse::Right))
+					set_voxel_at(ray_result->pos + ray_result->normal, player.getHotbar().getSelectedItem().id);
+			}
+
+			flags.draw_cubehighlight = true;
+		}
+
+	player.update(window, *this, m_itm, dt);
+
+	player.resetMovement();
 }
 
-void World::update_gLighting() noexcept
-{
-	while (!gRemovalBfsQueue.empty())
+// =====================
+// Minor World Updates
+// =====================
+
+	void World::update_blocklight() noexcept
 	{
-		LightRemovalNode& node = gRemovalBfsQueue.front();
-
-		types::pos pos = node.pos;
-		auto lightlevel = node.val;
-
-		gRemovalBfsQueue.pop();
-
-		const std::array<types::pos, 6> dirs
-		{
-			types::pos
-			{pos.x + 1, pos.y, pos.z},
-			{pos.x - 1, pos.y, pos.z},
-			{pos.x, pos.y + 1, pos.z},
-			{pos.x, pos.y - 1, pos.z},
-			{pos.x, pos.y, pos.z + 1},
-			{pos.x, pos.y, pos.z - 1}
-		};
-
-		for (const auto& d : dirs)
-			if (auto* v = blockempty_at(d))
-			{
-				if (auto neighborLevel = v->getG();
-					neighborLevel != 0 && neighborLevel < lightlevel)
-				{
-					v->setG(0);
-
-					gRemovalBfsQueue.emplace(d, neighborLevel);
-
-					if (auto* cmesh = grid.chunkmesh_at(d))
-						cmesh->flags.dirty = true;
-				}
-				else if (neighborLevel >= lightlevel)
-				{
-					gBfsQueue.emplace(d);
-				}
-			}
-
+		/*update_rLighting();
+		update_gLighting();
+		update_bLighting();*/
 	}
 
-	while (!gBfsQueue.empty())
+	void World::update_rLighting() noexcept
 	{
-		LightNode& node = gBfsQueue.front();
-
-		types::pos pos = node.pos;
-
-		gBfsQueue.pop();
-
-		auto ptr = blockempty_at(pos);
-		uint8 lightlevel{};
-		if (ptr)
-			lightlevel = ptr->getG();
-		else
-			lightlevel = 0;
-
-		const std::array<types::pos, 6> dirs
+		while (!rRemovalBfsQueue.empty())
 		{
-			types::pos
-			{pos.x + 1, pos.y, pos.z},
-			{pos.x - 1, pos.y, pos.z},
-			{pos.x, pos.y + 1, pos.z},
-			{pos.x, pos.y - 1, pos.z},
-			{pos.x, pos.y, pos.z + 1},
-			{pos.x, pos.y, pos.z - 1}
-		};
+			LightRemovalNode& node = rRemovalBfsQueue.front();
 
-		for (const auto& d : dirs)
-			if (auto* v = blockempty_at(d))
+			types::pos pos = node.pos;
+			auto lightlevel = node.val;
+
+			rRemovalBfsQueue.pop();
+
+			const std::array<types::pos, 6> dirs
 			{
-				if (type_manager.isTypeTransparent(v) &&
-					v->getG() < lightlevel - 1)
+				types::pos
+				{pos.x + 1, pos.y, pos.z},
+				{pos.x - 1, pos.y, pos.z},
+				{pos.x, pos.y + 1, pos.z},
+				{pos.x, pos.y - 1, pos.z},
+				{pos.x, pos.y, pos.z + 1},
+				{pos.x, pos.y, pos.z - 1}
+			};
+
+			for (const auto& d : dirs)
+				if (auto* v = blockempty_at(d))
 				{
-					v->setG(lightlevel - 1);
+					if (auto neighborLevel = v->getR();
+						neighborLevel != 0 && neighborLevel < lightlevel)
+					{
+						v->setR(0);
 
-					gBfsQueue.emplace(d);
+						rRemovalBfsQueue.emplace(d, neighborLevel);
 
-					if (auto* cmesh = grid.chunkmesh_at(d))
-						cmesh->flags.dirty = true;
+						if (auto* cmesh = grid.chunkmesh_at(d))
+							cmesh->flags.dirty = true;
+					}
+					else if (neighborLevel >= lightlevel)
+					{
+						rBfsQueue.emplace(d);
+					}
 				}
-			}
-	}
-}
 
-void World::update_bLighting() noexcept
-{
-	while (!bRemovalBfsQueue.empty())
-	{
-		LightRemovalNode& node = bRemovalBfsQueue.front();
+		}
 
-		types::pos pos = node.pos;
-		auto lightlevel = node.val;
-
-		bRemovalBfsQueue.pop();
-
-		const std::array<types::pos, 6> dirs
+		while (!rBfsQueue.empty())
 		{
-			types::pos
-			{pos.x + 1, pos.y, pos.z},
-			{pos.x - 1, pos.y, pos.z},
-			{pos.x, pos.y + 1, pos.z},
-			{pos.x, pos.y - 1, pos.z},
-			{pos.x, pos.y, pos.z + 1},
-			{pos.x, pos.y, pos.z - 1}
-		};
+			LightNode& node = rBfsQueue.front();
 
-		for (const auto& d : dirs)
-			if (auto* v = blockempty_at(d))
+			types::pos pos = node.pos;
+
+			rBfsQueue.pop();
+
+			auto ptr = blockempty_at(pos);
+			uint8 lightlevel{};
+			if (ptr)
+				lightlevel = ptr->getR();
+			else
+				lightlevel = 0;
+
+			const std::array<types::pos, 6> dirs
 			{
-				if (auto neighborLevel = v->getB();
-					neighborLevel != 0 && neighborLevel < lightlevel)
+				types::pos
+				{pos.x + 1, pos.y, pos.z},
+				{pos.x - 1, pos.y, pos.z},
+				{pos.x, pos.y + 1, pos.z},
+				{pos.x, pos.y - 1, pos.z},
+				{pos.x, pos.y, pos.z + 1},
+				{pos.x, pos.y, pos.z - 1}
+			};
+
+			for (const auto& d : dirs)
+				if (auto* v = blockempty_at(d))
 				{
-					v->setB(0);
+					if (m_vtm.isTypeTransparent(v) &&
+						v->getR() < lightlevel - 1)
+					{
+						v->setR(lightlevel - 1);
 
-					bRemovalBfsQueue.emplace(d, neighborLevel);
+						rBfsQueue.emplace(d);
 
-					if (auto* cmesh = grid.chunkmesh_at(d))
-						cmesh->flags.dirty = true;
+						if (auto* cmesh = grid.chunkmesh_at(d))
+							cmesh->flags.dirty = true;
+					}
 				}
-				else if (neighborLevel >= lightlevel)
-				{
-					bBfsQueue.emplace(d);
-				}
-			}
-
-	}
-
-	while (!bBfsQueue.empty())
-	{
-		LightNode& node = bBfsQueue.front();
-
-		types::pos pos = node.pos;
-
-		bBfsQueue.pop();
-
-		auto ptr = blockempty_at(pos);
-		uint8 lightlevel{};
-		if (ptr)
-			lightlevel = ptr->getB();
-		else
-			lightlevel = 0;
-
-		const std::array<types::pos, 6> dirs
-		{
-			types::pos
-			{pos.x + 1, pos.y, pos.z},
-			{pos.x - 1, pos.y, pos.z},
-			{pos.x, pos.y + 1, pos.z},
-			{pos.x, pos.y - 1, pos.z},
-			{pos.x, pos.y, pos.z + 1},
-			{pos.x, pos.y, pos.z - 1}
-		};
-
-		for (const auto& d : dirs)
-			if (auto* v = blockempty_at(d))
-			{
-				if (type_manager.isTypeTransparent(v) &&
-					v->getB() < lightlevel - 1)
-				{
-					v->setB(lightlevel - 1);
-
-					bBfsQueue.emplace(d);
-
-					if (auto* cmesh = grid.chunkmesh_at(d))
-						cmesh->flags.dirty = true;
-				}
-			}
-	}
-}
-
-
-
-
-void World::update_sunlight() noexcept
-{
-	while (!sunlightRemovalBfsQueue.empty())
-	{
-		LightRemovalNode& node = sunlightRemovalBfsQueue.front();
-
-		types::pos pos = node.pos;
-		auto lightlevel = node.val;
-
-		sunlightRemovalBfsQueue.pop();
-
-		const std::array<types::pos, 6> dirs
-		{
-			types::pos
-			{pos.x + 1, pos.y, pos.z},
-			{pos.x - 1, pos.y, pos.z},
-			{pos.x, pos.y + 1, pos.z},
-			{pos.x, pos.y - 1, pos.z},
-			{pos.x, pos.y, pos.z + 1},
-			{pos.x, pos.y, pos.z - 1}
-		};
-
-		for (size_t j{}; j < dirs.size(); j++)
-			if (auto* v = blockempty_at(dirs[j]))
-			{
-				if (auto neighborLevel = v->getSunlight();
-					(neighborLevel != 0 && neighborLevel < lightlevel) || (j == 3 && lightlevel == g_maxsunlight))
-				{
-					v->setSunlight(0);
-
-					sunlightRemovalBfsQueue.emplace(dirs[j], neighborLevel);
-
-					if (auto* cmesh = grid.chunkmesh_at(dirs[j]))
-						cmesh->flags.dirty = true;
-				}
-				else if (neighborLevel >= lightlevel)
-				{
-					sunlightBfsQueue.emplace(dirs[j]);
-				}
-			}
-
+		}
 	}
 
-	size_t i{};
-	while (!sunlightBfsQueue.empty())
+	void World::update_gLighting() noexcept
 	{
-		LightNode& node = sunlightBfsQueue.front();
-
-		types::pos pos = node.pos;
-
-		sunlightBfsQueue.pop();
-
-		auto ptr = blockempty_at(pos);
-		uint8 lightlevel{};
-		if (ptr)
-			lightlevel = ptr->getSunlight();
-		else
-			lightlevel = 0;
-
-		const std::array<types::pos, 6> dirs
+		while (!gRemovalBfsQueue.empty())
 		{
-			types::pos
-			{pos.x + 1, pos.y, pos.z},
-			{pos.x - 1, pos.y, pos.z},
-			{pos.x, pos.y + 1, pos.z},
-			{pos.x, pos.y - 1, pos.z},
-			{pos.x, pos.y, pos.z + 1},
-			{pos.x, pos.y, pos.z - 1}
-		};
+			LightRemovalNode& node = gRemovalBfsQueue.front();
 
-		for (size_t j{}; j < dirs.size(); j++)
-			if (auto* v = blockempty_at(dirs[j]))
+			types::pos pos = node.pos;
+			auto lightlevel = node.val;
+
+			gRemovalBfsQueue.pop();
+
+			const std::array<types::pos, 6> dirs
 			{
-				if (j == 3 && type_manager.isTypeTransparent(v) && blockempty_at(pos)->getSunlight() == g_maxsunlight)
+				types::pos
+				{pos.x + 1, pos.y, pos.z},
+				{pos.x - 1, pos.y, pos.z},
+				{pos.x, pos.y + 1, pos.z},
+				{pos.x, pos.y - 1, pos.z},
+				{pos.x, pos.y, pos.z + 1},
+				{pos.x, pos.y, pos.z - 1}
+			};
+
+			for (const auto& d : dirs)
+				if (auto* v = blockempty_at(d))
 				{
-					v->setSunlight(g_maxsunlight);
-					sunlightBfsQueue.emplace(dirs[j]);
+					if (auto neighborLevel = v->getG();
+						neighborLevel != 0 && neighborLevel < lightlevel)
+					{
+						v->setG(0);
+
+						gRemovalBfsQueue.emplace(d, neighborLevel);
+
+						if (auto* cmesh = grid.chunkmesh_at(d))
+							cmesh->flags.dirty = true;
+					}
+					else if (neighborLevel >= lightlevel)
+					{
+						gBfsQueue.emplace(d);
+					}
 				}
 
-				if (type_manager.isTypeTransparent(v) &&
-					v->getSunlight() < lightlevel - 1)
+		}
+
+		while (!gBfsQueue.empty())
+		{
+			LightNode& node = gBfsQueue.front();
+
+			types::pos pos = node.pos;
+
+			gBfsQueue.pop();
+
+			auto ptr = blockempty_at(pos);
+			uint8 lightlevel{};
+			if (ptr)
+				lightlevel = ptr->getG();
+			else
+				lightlevel = 0;
+
+			const std::array<types::pos, 6> dirs
+			{
+				types::pos
+				{pos.x + 1, pos.y, pos.z},
+				{pos.x - 1, pos.y, pos.z},
+				{pos.x, pos.y + 1, pos.z},
+				{pos.x, pos.y - 1, pos.z},
+				{pos.x, pos.y, pos.z + 1},
+				{pos.x, pos.y, pos.z - 1}
+			};
+
+			for (const auto& d : dirs)
+				if (auto* v = blockempty_at(d))
 				{
-					v->setSunlight(lightlevel - 1);
+					if (m_vtm.isTypeTransparent(v) &&
+						v->getG() < lightlevel - 1)
+					{
+						v->setG(lightlevel - 1);
 
-					sunlightBfsQueue.emplace(dirs[j]);
+						gBfsQueue.emplace(d);
 
-					if (auto* cmesh = grid.chunkmesh_at(dirs[j]))
-						cmesh->flags.dirty = true;
+						if (auto* cmesh = grid.chunkmesh_at(d))
+							cmesh->flags.dirty = true;
+					}
 				}
-			}
-
-
-		if (i > 5000)
-			break;
-		i++;
+		}
 	}
-}
 
-void World::gen_nodes_sunlight(const std::vector<types::loc>& chunk_locs) noexcept
+	void World::update_bLighting() noexcept
+	{
+		while (!bRemovalBfsQueue.empty())
+		{
+			LightRemovalNode& node = bRemovalBfsQueue.front();
+
+			types::pos pos = node.pos;
+			auto lightlevel = node.val;
+
+			bRemovalBfsQueue.pop();
+
+			const std::array<types::pos, 6> dirs
+			{
+				types::pos
+				{pos.x + 1, pos.y, pos.z},
+				{pos.x - 1, pos.y, pos.z},
+				{pos.x, pos.y + 1, pos.z},
+				{pos.x, pos.y - 1, pos.z},
+				{pos.x, pos.y, pos.z + 1},
+				{pos.x, pos.y, pos.z - 1}
+			};
+
+			for (const auto& d : dirs)
+				if (auto* v = blockempty_at(d))
+				{
+					if (auto neighborLevel = v->getB();
+						neighborLevel != 0 && neighborLevel < lightlevel)
+					{
+						v->setB(0);
+
+						bRemovalBfsQueue.emplace(d, neighborLevel);
+
+						if (auto* cmesh = grid.chunkmesh_at(d))
+							cmesh->flags.dirty = true;
+					}
+					else if (neighborLevel >= lightlevel)
+					{
+						bBfsQueue.emplace(d);
+					}
+				}
+
+		}
+
+		while (!bBfsQueue.empty())
+		{
+			LightNode& node = bBfsQueue.front();
+
+			types::pos pos = node.pos;
+
+			bBfsQueue.pop();
+
+			auto ptr = blockempty_at(pos);
+			uint8 lightlevel{};
+			if (ptr)
+				lightlevel = ptr->getB();
+			else
+				lightlevel = 0;
+
+			const std::array<types::pos, 6> dirs
+			{
+				types::pos
+				{pos.x + 1, pos.y, pos.z},
+				{pos.x - 1, pos.y, pos.z},
+				{pos.x, pos.y + 1, pos.z},
+				{pos.x, pos.y - 1, pos.z},
+				{pos.x, pos.y, pos.z + 1},
+				{pos.x, pos.y, pos.z - 1}
+			};
+
+			for (const auto& d : dirs)
+				if (auto* v = blockempty_at(d))
+				{
+					if (m_vtm.isTypeTransparent(v) &&
+						v->getB() < lightlevel - 1)
+					{
+						v->setB(lightlevel - 1);
+
+						bBfsQueue.emplace(d);
+
+						if (auto* cmesh = grid.chunkmesh_at(d))
+							cmesh->flags.dirty = true;
+					}
+				}
+		}
+	}
+
+
+
+
+	void World::update_sunlight() noexcept
+	{
+		while (!sunlightRemovalBfsQueue.empty())
+		{
+			LightRemovalNode& node = sunlightRemovalBfsQueue.front();
+
+			types::pos pos = node.pos;
+			auto lightlevel = node.val;
+
+			sunlightRemovalBfsQueue.pop();
+
+			const std::array<types::pos, 6> dirs
+			{
+				types::pos
+				{pos.x + 1, pos.y, pos.z},
+				{pos.x - 1, pos.y, pos.z},
+				{pos.x, pos.y + 1, pos.z},
+				{pos.x, pos.y - 1, pos.z},
+				{pos.x, pos.y, pos.z + 1},
+				{pos.x, pos.y, pos.z - 1}
+			};
+
+			for (size_t j{}; j < dirs.size(); j++)
+				if (auto* v = blockempty_at(dirs[j]))
+				{
+					if (auto neighborLevel = v->getSunlight();
+						(neighborLevel != 0 && neighborLevel < lightlevel) || (j == 3 && lightlevel == g_maxsunlight))
+					{
+						v->setSunlight(0);
+
+						sunlightRemovalBfsQueue.emplace(dirs[j], neighborLevel);
+
+						if (auto* cmesh = grid.chunkmesh_at(dirs[j]))
+							cmesh->flags.dirty = true;
+					}
+					else if (neighborLevel >= lightlevel)
+					{
+						sunlightBfsQueue.emplace(dirs[j]);
+					}
+				}
+
+		}
+
+		size_t i{};
+		while (!sunlightBfsQueue.empty())
+		{
+			LightNode& node = sunlightBfsQueue.front();
+
+			types::pos pos = node.pos;
+
+			sunlightBfsQueue.pop();
+
+			auto ptr = blockempty_at(pos);
+			uint8 lightlevel{};
+			if (ptr)
+				lightlevel = ptr->getSunlight();
+			else
+				lightlevel = 0;
+
+			const std::array<types::pos, 6> dirs
+			{
+				types::pos
+				{pos.x + 1, pos.y, pos.z},
+				{pos.x - 1, pos.y, pos.z},
+				{pos.x, pos.y + 1, pos.z},
+				{pos.x, pos.y - 1, pos.z},
+				{pos.x, pos.y, pos.z + 1},
+				{pos.x, pos.y, pos.z - 1}
+			};
+
+			for (size_t j{}; j < dirs.size(); j++)
+				if (auto* v = blockempty_at(dirs[j]))
+				{
+					if (j == 3 && m_vtm.isTypeTransparent(v) && blockempty_at(pos)->getSunlight() == g_maxsunlight)
+					{
+						v->setSunlight(g_maxsunlight);
+						sunlightBfsQueue.emplace(dirs[j]);
+					}
+
+					if (m_vtm.isTypeTransparent(v) &&
+						v->getSunlight() < lightlevel - 1)
+					{
+						v->setSunlight(lightlevel - 1);
+
+						sunlightBfsQueue.emplace(dirs[j]);
+
+						if (auto* cmesh = grid.chunkmesh_at(dirs[j]))
+							cmesh->flags.dirty = true;
+					}
+				}
+
+
+			if (i > 5000)
+				break;
+			i++;
+		}
+	}
+
+
+/*private*/ void World::gen_nodes_sunlight(const std::vector<types::loc>&chunk_locs) noexcept
 {
 	for(auto& loc : chunk_locs)
 	{
@@ -467,7 +574,7 @@ void World::gen_nodes_sunlight(const std::vector<types::loc>& chunk_locs) noexce
 				for (int32 x{}; x < chunks::Chunk::g_size; x++)
 					for (int32 z{}; z < chunks::Chunk::g_size; z++)
 					{
-						if (type_manager.isTypeTransparent(c->block_at_ptr({ x, chunks::Chunk::g_size - 1, z })))
+						if (m_vtm.isTypeTransparent(c->block_at_ptr({ x, chunks::Chunk::g_size - 1, z })))
 						{
 							c->block_at_ptr({ x, chunks::Chunk::g_size - 1, z })->setSunlight(g_maxsunlight);
 							sunlightBfsQueue.emplace(static_cast<types::pos>(types::loc{ x, chunks::Chunk::g_size - 1, z }) + c->getPos());
@@ -491,7 +598,7 @@ void World::gen_nodes_sunlight(const std::vector<types::loc>& chunk_locs) noexce
 	}
 }
 
-void World::generateWorld(const std::vector<types::loc>& new_chunks_loc)
+/*private*/ void World::generateWorld(const std::vector<types::loc>& new_chunks_loc)
 {
 	using SeedType = siv::PerlinNoise::seed_type;
 
@@ -643,10 +750,59 @@ void World::generateWorld(const std::vector<types::loc>& new_chunks_loc)
 	}
 }
 
-void World::draw_chunkGrid(const entities::Player& player) const noexcept
+
+// =====================
+// Drawing
+// =====================
+
+void World::draw() noexcept
 {
+	s_world.use();
+	s_world.setValue("model", player.getCamera().model);
+	s_world.setValue("view", player.getCamera().view);
+	s_world.setValue("proj", player.getCamera().proj);
+
+	at_voxels.bind();
+
 	grid.draw_all(player);
+	
+
+	s_items_world.use();
+	s_items_world.setValue("model", player.getCamera().model);
+	s_items_world.setValue("view", player.getCamera().view);
+	s_items_world.setValue("proj", player.getCamera().proj);
+
+	entity_chunkGrid.draw(s_items_world, at_guiblocks);
+
+	if (flags.draw_cubehighlight)
+	{
+		ch.useShader();
+		ch.draw();
+	}
+
+	glDisable(GL_CULL_FACE);
+	glDisable(GL_DEPTH_TEST);
+
+
+	s_gui_text.use();
+	s_gui_text.setValue("proj", ma_gui_ortho);
+	s_gui_text.setValue("view", mpml::Identity4<float>);
+
+	s_gui.use();
+	s_gui.setValue("proj", ma_gui_ortho);
+	s_gui.setValue("view", mpml::Identity4<float>);
+
+	t_crossair.bind();
+	crossair.draw_transparent(s_gui);
+
+
+	player.draw_attributes(s_gui, s_gui_text, at_guiblocks, m_itm);
 }
+
+
+// =====================
+// Setters
+// =====================
 
 bool World::set_voxel_at(const types::pos& block_pos, types::type_id id) noexcept
 {
@@ -669,9 +825,9 @@ bool World::set_voxel_at(const types::pos& block_pos, types::type_id id) noexcep
 	
 
 	// Update source lights
-	if (id != 0 && type_manager.getType(id).is_lightSource)
+	if (id != 0 && m_vtm.getType(id).is_lightSource)
 	{
-		const auto& type = type_manager.getType(id);
+		const auto& type = m_vtm.getType(id);
 
 		rBfsQueue.emplace(block_pos);
 		gBfsQueue.emplace(block_pos);
@@ -681,7 +837,7 @@ bool World::set_voxel_at(const types::pos& block_pos, types::type_id id) noexcep
 		current_block.setG(type.light.y);
 		current_block.setB(type.light.z);
 	}
-	else if (current_block.id != 0 && type_manager.getType(current_block.id).is_lightSource)
+	else if (current_block.id != 0 && m_vtm.getType(current_block.id).is_lightSource)
 	{
 		rRemovalBfsQueue.emplace(block_pos, current_block.getR());
 		gRemovalBfsQueue.emplace(block_pos, current_block.getG());
@@ -698,7 +854,7 @@ bool World::set_voxel_at(const types::pos& block_pos, types::type_id id) noexcep
 			{
 				auto& block = chunk->block_at({ x,y,z });
 
-				if (block.id != 0 && type_manager.getType(block.id).is_lightSource)
+				if (block.id != 0 && m_vtm.getType(block.id).is_lightSource)
 				{
 					auto pos = static_cast<types::pos>(types::loc{ x,y,z }) + chunk->getPos();
 
@@ -796,6 +952,11 @@ bool World::set_voxel_at(const types::pos& block_pos, types::type_id id) noexcep
 
 	return true;
 }
+
+
+// =====================
+// Getters
+// =====================
 
 Data::Voxel* World::blockempty_at(const types::pos& block_pos) noexcept
 {

@@ -24,6 +24,8 @@ void entities::EntityChunkGrid::update(entities::Player& player, const ItemTypeM
 		else
 			++it;
 	}
+
+	update_items(player, itm);
 }
 
 void entities::EntityChunkGrid::update_items(entities::Player& player, const ItemTypeManager& itm) noexcept

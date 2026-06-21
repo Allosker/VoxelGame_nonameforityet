@@ -48,13 +48,13 @@ namespace render::gui
 
 		void setPosition(vec2f pos) noexcept override
 		{
-			physics::Transform2D::setPosition(pos);
+			physics::Transformable2D::setPosition(pos);
 			text.setPosition(vec3f{ m_position - getSize() / 2.f, 0 });
 		}
 
 		void setScale(vec2f scale) noexcept override
 		{
-			physics::Transform2D::setScale(scale);
+			physics::Transformable2D::setScale(scale);
 			text.setPosition(vec3f{ m_position - getSize() / 2.f, 0 });
 		}
 

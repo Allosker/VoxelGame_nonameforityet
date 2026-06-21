@@ -11,26 +11,26 @@
 namespace physics
 {
 
-	class Transform3D
+	class Transformable3D
 	{
 	public:
 
-		Transform3D() = delete;
+		Transformable3D() = delete;
 
-		Transform3D(const vec3f& size, const vec3f& ori)
+		Transformable3D(const vec3f& size, const vec3f& ori)
 			: m_origin{ ori }, m_baseSize{ size }, m_scale{ 1.f, 1.f, 1.f }
 		{
 			if (m_origin.x != 0 || m_origin.y != 0)
 				m_transformNeedUpdate = true;
 		}
 
-		Transform3D(Transform3D&&) = delete;
-		Transform3D(Transform3D&) = default;
+		Transformable3D(Transformable3D&&) = delete;
+		Transformable3D(Transformable3D&) = default;
 
-		Transform3D& operator=(Transform3D&&) = delete;
-		Transform3D& operator=(Transform3D&) = default;
+		Transformable3D& operator=(Transformable3D&&) = delete;
+		Transformable3D& operator=(Transformable3D&) = default;
 
-		virtual ~Transform3D() = default;
+		virtual ~Transformable3D() = default;
 
 
 		// = Getters

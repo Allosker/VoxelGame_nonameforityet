@@ -13,13 +13,13 @@
 
 #include "rendering/utilities/atlas.hpp"
 
-#include "physics/transforms/transform2D.hpp"
+#include "physics/transforms/transformable2D.hpp"
 
 namespace render::gui::elems
 {
 	
 	class Rectangle
-		: protected Mesh, public physics::Transform2D
+		: protected Mesh, public physics::Transformable2D
 	{
 	public:
 

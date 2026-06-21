@@ -13,7 +13,7 @@
 
 #include "data/vertex.hpp"
 
-#include "physics/transforms/transform3D.hpp"
+#include "physics/transforms/transformable3D.hpp"
 
 #include "font.hpp"
 
@@ -22,7 +22,7 @@ namespace render
 
 
 class Text
-	: public physics::Transform3D
+	: public physics::Transformable3D
 {
 public:
 

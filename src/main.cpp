@@ -11,14 +11,14 @@
 #include "rendering/shader.hpp"
 
 // Block Hitting
-#include "world/chunks/utilities/ray.hpp"
+
 #include <utility>
 
 #include "world/world.hpp"
 
 #include "rendering/texture.hpp"
 
-#include "rendering/utilities/cubeHighlight.hpp"
+
 
 #include "rendering/mesh.hpp"
 
@@ -39,7 +39,7 @@
 #include "rendering/text/text.hpp"
 
 
-#include "world/entities/entityChunks/entityChunkGrid.hpp"
+
 
 /* TOFIXLIST -- TODOLIST on Trello
 * 
@@ -48,6 +48,8 @@
 *	== Problem: chunks that were empty and are now full and get their blocks removed won't be empty again
 *	== When a block is place in another chunk than in the chunk containing light, it doesn't get updated properly
 * 
+* 
+*	== Get the camera out of the player and into the world instead
 */
 
 static void framebuffersize_callback(GLFWwindow* window, int width, int height) noexcept;
@@ -57,18 +59,6 @@ static void mouse_callback(GLFWwindow* window, double xpos, double ypos) noexcep
 static void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) noexcept;
 
 float deltaTime{};
-
-
-struct WorldOptions
-{
-	uint64 rayDist{ 5 };
-	int64 rayDist_min{ 1 };
-	int64 rayDist_max{ 2000 };
-
-	bool instant_voxel_breaking{ false }, instant_voxel_placing{ false };
-
-	uint64 rm{ 0 }, rma{ 8 };
-};
 
 int main()
 try
@@ -116,42 +106,19 @@ try
 	ImGui_ImplOpenGL3_Init();
 
 	// Shaders 
-	render::Shader shader3Dworld{ SHADER_PATH"shader.vert", SHADER_PATH"shader.frag" };
-	render::Shader shader3Ditem{ SHADER_PATH"shader3Ditem.vert", SHADER_PATH"shader3Ditem.frag" };
 	render::Shader shaderCubeDisplay{ SHADER_PATH"shader.vert", SHADER_PATH"shader.frag" };
-	render::Shader shader2Drectangle{ SHADER_PATH"meshTexture2D.vert", SHADER_PATH"meshTexture2D.frag" };
-	render::Shader shader2Dtext{ SHADER_PATH"text_render/text2D.vert", SHADER_PATH"text_render/text2D.frag" };
 	render::Shader S_skybox{ SHADER_PATH"simple/skybox.vert", SHADER_PATH"simple/skybox.frag" };
 
 	// Textures/Images
-	render::Texture textureAtlas{ ASSET_PATH"blocks/world/atlas.png"};
-	render::Texture crossAirAtlas{ ASSET_PATH"hud/crossair_atlas.png" };
+	
 
-	render::Image atlas_image_guiBlocks{ ASSET_PATH"blocks/gui/block_inventory_atlas.png" };
-	render::Texture atlas_guiBlocks{ atlas_image_guiBlocks };
-
+	
 	// World
-	World world{};
-	WorldOptions WO{};
-
-	/// utils
-	render::utils::CubeHighlight ch;
-	ItemTypeManager itemTypeManager{};
-
-	// gui
-	render::gui::elems::Rectangle crossair{ {50, 50}, {0, 0}, types::Rect<types::uvs>{{0, 17}, {17, 17}} };
-	crossair.setPosition({ -crossair.getSize().x / 2, -crossair.getSize().y / 2 });
-
-
-	// entities::Player
-	entities::Player player{ ASSET_PATH"hud/slot.png", ASSET_PATH"hud/inventory.png", ASSET_PATH"hud/slot_inventory.png", itemTypeManager, FONT_PATH"pixelated.ttf" };
-	player.getCamera().updateProjMatrix(window.getSize()); // First Cam update
+	World world{ window };
 
 	// Test					 		
 
 	render::Font font{ FONT_PATH"pixelated.ttf" };
-
-	entities::EntityChunkGrid entity_chunk_grid{};
 
 
 	render::Skybox skybox{};
@@ -161,13 +128,15 @@ try
 	//constexpr float fps_cap{ 120 };
 	while (window.isOpen())
 	{
+		// Frames
 		float frameStart = glfwGetTime();
 
 		deltaTime = frameStart - lastFrame;
 		lastFrame = frameStart;
 
-		deltaTime = std::min(deltaTime, 1.F / 30.f);
+		deltaTime = std::min(deltaTime, 1.F / 30.f); // limit delta time to avoid explosions
 		fps = 1.f / deltaTime;
+
 
 		//-== Debug
 			ImGui_ImplOpenGL3_NewFrame();
@@ -175,55 +144,57 @@ try
 			ImGui::NewFrame();
 		//~== Debug
 
-		window.clearEvents();
+		/*=============================*/
+		// Event processing
+		/*=============================*/
 
-		player.resetMovement();
-		window.processInputs(
-			[&]()
+
+			window.clearEvents();
 			{
+
 				using b = Buttons;
 
 				if (window.isKeyPressed(b::Escape))
 					window.close();
 
 				if (vec2f delta = window.getMouseWheelDelta(); delta.y != 0)
-					player.getHotbar().nextSlot(delta.y).id;
+					world.player.getHotbar().nextSlot(delta.y).id;
 
 
 				if (window.isKeyPressed(b::W))
-					player.move(entities::Player::Forward, deltaTime);
+					world.player.move(entities::Player::Forward, deltaTime);
 
 				if (window.isKeyPressed(b::S))
-					player.move(entities::Player::Backward, deltaTime);
+					world.player.move(entities::Player::Backward, deltaTime);
 
 				if (window.isKeyPressed(b::D))
-					player.move(entities::Player::Right, deltaTime);
+					world.player.move(entities::Player::Right, deltaTime);
 
 				if (window.isKeyPressed(b::A))
-					player.move(entities::Player::Left, deltaTime);
+					world.player.move(entities::Player::Left, deltaTime);
 
 
 				if (window.isKeyPressed(b::Left_shift))
-					player.move(entities::Player::Downward, deltaTime);
+					world.player.move(entities::Player::Downward, deltaTime);
 
-				if(!player.attributes.flags.flying)
+				if (!world.player.attributes.flags.flying)
 				{
-					if (window.isKeyPressedOnce(b::Space) && player.getVelocity().y == 0)
-						player.move(entities::Player::Upward, deltaTime);
+					if (window.isKeyPressedOnce(b::Space) && world.player.getVelocity().y == 0)
+						world.player.move(entities::Player::Upward, deltaTime);
 				}
 				else
 					if (window.isKeyPressed(b::Space))
-						player.move(entities::Player::Upward, deltaTime);
+						world.player.move(entities::Player::Upward, deltaTime);
 
 				if (window.isKeyPressedOnce(b::Tab))
-					player.getInventory().process(window, player.getHotbar());
+					world.player.getInventory().process(window, world.player.getHotbar());
 
 				if (window.isKeyPressedOnce(b::E))
-					world.update(player, true);
+					world.debug_flags.force_reload = true;
 
 				if (window.isKeyPressedOnce(b::R))
 				{
-					world.set_voxel_at(player.getPos(), player.getHotbar().getSelectedItem().id);
+					world.set_voxel_at(world.player.getPos(), world.player.getHotbar().getSelectedItem().id);
 				}
 				/*{
 					player.getCamera().free = !player.getCamera().free;
@@ -233,6 +204,10 @@ try
 				if (window.isKeyPressedOnce(b::T))
 					world.debug_flags.draw_chunk_borders = !world.debug_flags.draw_chunk_borders;
 
+				if (window.isKeyPressedOnce(Buttons::F))
+					window.alternateCursorVisibility();
+
+				// File filling
 				/*if (window.isKeyPressedOnce(b::R))
 				{
 					std::ofstream file{ASSET_PATH"continentalness.txt"};
@@ -255,308 +230,195 @@ try
 					file.close();
 				}*/
 
-				if (window.isKeyPressedOnce(Buttons::F))
-					window.alternateCursorVisibility();
+				
+
+
+				if (window.wasFrameBufferResized())
+					world.player.getCamera().updateProjMatrix(window.getSize());
+
+				if (window.hasDirChanged())
+					world.player.getCamera().front_dir = window.getNewFrontDir();
 			}
-		);
 
-		static uint16 DEBUG_light_value{};
-		{
-			ImGui::Begin("Debug"); // Window beginning
-
-			ImGui::Text("FPS: %f", fps);
-			
-			ImGui::Text("Camera Pos	: %f %f %f", player.getPos().x, player.getPos().y, player.getPos().z);
-			ImGui::Text("Velocity	: %f %f %f", player.getVelocity().x, player.getVelocity().y, player.getVelocity().z);
-
-			ImGui::Text("Sunlight: (%i) Blocklight: (%i, %i, %i)", (DEBUG_light_value >> 12) & 0xF, (DEBUG_light_value >> 8) & 0xF, (DEBUG_light_value >> 4) & 0xF, DEBUG_light_value & 0xF);
-
-			ImGui::Checkbox("Flying", &player.attributes.flags.flying);
-			ImGui::Checkbox("Ghost ", &player.attributes.flags.ghost);
-
-			if(const auto* cl{ world.chunk_at(player.getPos()) })
+		/*=============================*/
+		// ImGUI Debug
+		/*=============================*/
 			{
-				const types::loc c{ chunks::ChunkGrid::to_loc(cl->getPos()) };
+				ImGui::Begin("Debug"); // Window beginning
 
-				ImGui::Text("chunks::Chunk Loc : %ld %ld %ld", c.x, c.y, c.z);
-			}
+				ImGui::Text("FPS: %f", fps);
+			
+				ImGui::Text("Camera Pos	: %f %f %f", world.player.getPos().x, world.player.getPos().y, world.player.getPos().z);
+				ImGui::Text("Velocity	: %f %f %f", world.player.getVelocity().x, world.player.getVelocity().y, world.player.getVelocity().z);
 
-			size_t selectedIndex = 0;
-			if (ImGui::BeginCombo("spawn item", itemTypeManager.getTypeList()[selectedIndex].name.c_str())) {
-				for (size_t i{}; i < itemTypeManager.getTypeList().size(); ++i) {
-					const bool isSelected = (selectedIndex == i);
+				//ImGui::Text("Sunlight: (%i) Blocklight: (%i, %i, %i)", (DEBUG_light_value >> 12) & 0xF, (DEBUG_light_value >> 8) & 0xF, (DEBUG_light_value >> 4) & 0xF, DEBUG_light_value & 0xF);
 
-					if (ImGui::Selectable(itemTypeManager.getTypeList()[i].name.c_str(), isSelected)) 
-					{
-						selectedIndex = i;
-						player.getHotbar().setCurrentSlot({ (uint16)(i + 1) }, itemTypeManager);
-					}
+				ImGui::Checkbox("Flying", &world.player.attributes.flags.flying);
+				ImGui::Checkbox("Ghost ", &world.player.attributes.flags.ghost);
 
-					// Set the initial focus when opening the combo
-					// (scrolling + keyboard navigation focus)
-					if (isSelected) {
-						ImGui::SetItemDefaultFocus();
-					}
+				if(const auto* cl{ world.chunk_at(world.player.getPos()) })
+				{
+					const types::loc c{ chunks::ChunkGrid::to_loc(cl->getPos()) };
+
+					ImGui::Text("chunks::Chunk Loc : %ld %ld %ld", c.x, c.y, c.z);
 				}
-				ImGui::EndCombo();
-			}
+
+				size_t selectedIndex = 0;
+				if (ImGui::BeginCombo("spawn item", world.m_itm.getTypeList()[selectedIndex].name.c_str())) {
+					for (size_t i{}; i < world.m_itm.getTypeList().size(); ++i) {
+						const bool isSelected = (selectedIndex == i);
+
+						if (ImGui::Selectable(world.m_itm.getTypeList()[i].name.c_str(), isSelected))
+						{
+							selectedIndex = i;
+							world.player.getHotbar().setCurrentSlot({ (uint16)(i + 1) }, world.m_itm);
+						}
+
+						// Set the initial focus when opening the combo
+						// (scrolling + keyboard navigation focus)
+						if (isSelected) {
+							ImGui::SetItemDefaultFocus();
+						}
+					}
+					ImGui::EndCombo();
+				}
 
 			
-			 {
-				const double c_mi{ 0.00001 }, c_ma{ 1 };
+				 {
+					const double c_mi{ 0.00001 }, c_ma{ 1 };
 
-				const double s_mi{ 0 }, s_ma{ 1000 };
-				ImGui::SliderScalar("Sea level: ", ImGuiDataType_Double, &world.debug.sea_level, &s_mi, &s_ma);
+					const double s_mi{ 0 }, s_ma{ 1000 };
+					ImGui::SliderScalar("Sea level: ", ImGuiDataType_Double, &world.debug.sea_level, &s_mi, &s_ma);
 
-				if (ImGui::SliderScalar("Continentalness: ", ImGuiDataType_Double, &world.debug.continentalness_frequency, &c_mi, &c_ma))
-					world.update(player, true);
+					if (ImGui::SliderScalar("Continentalness: ", ImGuiDataType_Double, &world.debug.continentalness_frequency, &c_mi, &c_ma))
+						world.debug_flags.force_reload = true;
 
-				/*if (ImGui::Button("Add element to vector: ", { 20, 20 }))
-				{
-					world.debug.c_thresholds.push_back({});
-					world.debug.c_points.push_back({});
-				}
+					/*if (ImGui::Button("Add element to vector: ", { 20, 20 }))
+					{
+						world.debug.c_thresholds.push_back({});
+						world.debug.c_points.push_back({});
+					}
 
-				if (ImGui::Button("Remove element to vector: ", { 20, 20 }))
-				{
-					world.debug.c_thresholds.pop_back();
-					world.debug.c_points.pop_back();
-				}
+					if (ImGui::Button("Remove element to vector: ", { 20, 20 }))
+					{
+						world.debug.c_thresholds.pop_back();
+						world.debug.c_points.pop_back();
+					}
 
-				if (ImPlot::BeginPlot(" ", {1500, 700}))
-				{
-					ImPlot::SetupAxisLimits(ImAxis_X1, -1, 1, ImGuiCond_Always);
+					if (ImPlot::BeginPlot(" ", {1500, 700}))
+					{
+						ImPlot::SetupAxisLimits(ImAxis_X1, -1, 1, ImGuiCond_Always);
 
-					ImPlot::PlotLine("##line", world.debug.c_thresholds.data(), world.debug.c_points.data(), world.debug.c_thresholds.size());
+						ImPlot::PlotLine("##line", world.debug.c_thresholds.data(), world.debug.c_points.data(), world.debug.c_thresholds.size());
 
 					
 
-					for (int i{}; i < world.debug.c_thresholds.size(); i++)
-					{
-						ImPlot::DragPoint(
-							i,
-							&world.debug.c_thresholds[i],
-							&world.debug.c_points[i],
-							{ 1, 0, 0, 1 },
-							5.f
-						);
-					}
+						for (int i{}; i < world.debug.c_thresholds.size(); i++)
+						{
+							ImPlot::DragPoint(
+								i,
+								&world.debug.c_thresholds[i],
+								&world.debug.c_points[i],
+								{ 1, 0, 0, 1 },
+								5.f
+							);
+						}
 
-					ImPlot::EndPlot();
-				}*/
+						ImPlot::EndPlot();
+					}*/
+				}
+
+
+				ImGui::SliderFloat("entities::Player Speed   ", &world.player.attributes.physics.speed, 0.0f, 500.0f);
+				ImGui::SliderFloat("entities::Player MaxSpeed", &world.player.attributes.physics.maxSpeed, 0.0f, 1000.f);
+				ImGui::SliderFloat("entities::Player JUmpHeight", &world.player.attributes.physics.jumpHeight, 0.0f, 1000.f);
+
+
+				ImGui::SliderScalar("Ray Distance", ImGuiDataType_U64, &world.debug.rayDist, &world.debug.rayDist_min, &world.debug.rayDist_max);
+
+				ImGui::Checkbox("Instant Vox. Break", &world.debug.instant_voxel_breaking);
+				ImGui::Checkbox("Instant Vox. Place", &world.debug.instant_voxel_placing);
+
+				ImGui::VSliderScalar("render Distance", { 15, 100 }, ImGuiDataType_S64, &ChunkSettings::world_render_distance, &world.debug.rm, &world.debug.rma);
+
+				ImGui::End(); // Window end
 			}
 
-
-			ImGui::SliderFloat("entities::Player Speed   ", &player.attributes.physics.speed, 0.0f, 500.0f);
-			ImGui::SliderFloat("entities::Player MaxSpeed", &player.attributes.physics.maxSpeed, 0.0f, 1000.f);
-			ImGui::SliderFloat("entities::Player JUmpHeight", &player.attributes.physics.jumpHeight, 0.0f, 1000.f);
-
-
-			ImGui::SliderScalar("Ray Distance", ImGuiDataType_U64, &WO.rayDist, &WO.rayDist_min, &WO.rayDist_max);
-
-			ImGui::Checkbox("Instant Vox. Break", &WO.instant_voxel_breaking);
-			ImGui::Checkbox("Instant Vox. Place", &WO.instant_voxel_placing);
-
-			ImGui::VSliderScalar("render Distance", { 15, 100 }, ImGuiDataType_S64, &ChunkSettings::world_render_distance, &WO.rm, &WO.rma);
-
-			ImGui::End(); // Window end
-		}
-
-		
-		//std::println("{}", Window::toGUICoordinates(window, window.getMousePos()));
-
-		// Window Events check
-
-		if (window.wasFrameBufferResized())
-			player.getCamera().updateProjMatrix(window.getSize());
-
-		if (window.hasDirChanged())
-			player.getCamera().front_dir = window.getNewFrontDir();
+		/*=============================*/
+		// Misc.
+		/*=============================*/
 
 
-		player.getCamera().view = mpml::lookAt(player.getPos(), player.getCamera().front_dir + player.getPos(), player.getCamera().up_dir);
-		
-
-		{
-			// ChunksS
-			shader3Dworld.use();
-
-			shader3Dworld.setValue("model", player.getCamera().model);
-			shader3Dworld.setValue("view", player.getCamera().view);
-			shader3Dworld.setValue("proj", player.getCamera().proj);
-
-			//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
-			world.update(player);
-
-			// 3 Item Renders
-
-			shader3Ditem.use();
-
-			shader3Ditem.setValue("model", player.getCamera().model);
-			shader3Ditem.setValue("view", player.getCamera().view);
-			shader3Ditem.setValue("proj", player.getCamera().proj);
-		}
-		
-
-		const auto& ray_result{ utils::raycast(player.getPos(), player.getCamera().front_dir, world.grid, WO.rayDist, world.getTypeManager())};
-
-		bool drawHighlight{ false };
-		if(!window.isCursorHidden())
-			if (ray_result)
-			{
-
-				ch.update(player.getCamera().model, player.getCamera().view, player.getCamera().proj, ray_result->pos);
-
-				DEBUG_light_value = world.blockout_at(ray_result->pos + types::pos{0, 1, 0}).light;
-
-
-				if (window.isMouseButtonPressedOnce(Buttons::Mouse::Middle))
-				{
-					auto id{ world.block_at(ray_result->pos)->id };
-
-					player.getHotbar().setCurrentSlot({id}, itemTypeManager);
-				}
-
-				if (!WO.instant_voxel_breaking)
-				{
-					if (window.isMouseButtonPressedOnce(Buttons::Mouse::Left))
-					{
-						auto id{ world.block_at(ray_result->pos)->id };
-
-						entity_chunk_grid.addEntity(
-							{ atlas_image_guiBlocks, toPixelUnits(id, itemTypeManager), id },
-							ray_result->pos);
-
-						world.set_voxel_at(ray_result->pos, 0);
-					}
-				}
-				else
-				{
-					if (window.isMouseButtonPressed(Buttons::Mouse::Left))
-						world.set_voxel_at(ray_result->pos, 0);
-				}
-
-				if (!WO.instant_voxel_placing)
-				{
-					if (player.getHotbar().getSelectedItem().id != 0 && window.isMouseButtonPressedOnce(Buttons::Mouse::Right))
-						world.set_voxel_at(ray_result->pos + ray_result->normal, player.place_voxel().id);
-				}
-				else
-				{
-					if (window.isMouseButtonPressed(Buttons::Mouse::Right))
-						world.set_voxel_at(ray_result->pos + ray_result->normal, player.getHotbar().getSelectedItem().id);
-				}
-
-				drawHighlight = true;
-			}
 			
-		
+			
+		/*=============================*/
+		// World updating
+		/*=============================*/
+
+			
+			world.update(window, deltaTime);
+
+			/*put it into world class*/ 
 
 
-		player.update(window, world, itemTypeManager, deltaTime);
+			// Debug
+			render::debug::DebugRenderer::get().update(glfwGetTime());
 
-		entity_chunk_grid.update_items(player, itemTypeManager);
-		entity_chunk_grid.update(player, itemTypeManager);
-
-
-		// Debug
-		render::debug::DebugRenderer::get().update(glfwGetTime());
-
-
+		/*=============================*/
 		// Rendering
+		/*=============================*/
 
-		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			// Clear everything
+			glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		glEnable(GL_CULL_FACE);
+			glEnable(GL_CULL_FACE);
 
-		// Skybox
-		float daytime = glfwGetTime() / 60.f;
+			// Skybox
+			float daytime = glfwGetTime() / 60.f;
 
-		S_skybox.use();
-		mat4f m{ mpml::Identity4<float> };
-		//m = mpml::rotate(m, mpml::Angle<>::fromDegrees((daytime * 360.f) ), { 0.5, 0, 0.5 });
+			S_skybox.use();
+			//model = mpml::rotate(m, mpml::Angle<>::fromDegrees((daytime * 360.f) ), { 0.5, 0, 0.5 }); example only 
 
-		S_skybox.setValue("model", m);
-		S_skybox.setValue("view", player.getCamera().view);
-		S_skybox.setValue("proj", player.getCamera().proj);
-		skybox.draw(S_skybox);
+			S_skybox.setValue("model", mpml::Identity4<float>);
+			S_skybox.setValue("view", world.player.getCamera().view);
+			S_skybox.setValue("proj", world.player.getCamera().proj);
 
-		glEnable(GL_DEPTH_TEST);
+			skybox.draw(S_skybox);
 
-		// World
-		shader3Dworld.use();
+			glEnable(GL_DEPTH_TEST);
 
-		textureAtlas.bind();
+			// World
+			world.draw();
 
-		//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-		world.draw_chunkGrid(player);
-		//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+			// Frustum
+			/*static auto i = (player.getCamera().view* player.getCamera().proj).inverse()->transpose();
 
-		// Cube Highlight
-
-		ch.useShader();
-		if(drawHighlight)
-			ch.draw();
-		
-
-		// World Items
-		entity_chunk_grid.draw(shader3Ditem, atlas_guiBlocks);
+			if (!player.getCamera().free)
+				i = (player.getCamera().view * player.getCamera().proj).inverse()->transpose();
 
 
-		// 3D Debug
+			render::debug::obb({}, { 1 }, { 1, 1, 1 }, i, 0, false);*/
 
-		
+			// Debug
 
-		// Frustum
-		/*static auto i = (player.getCamera().view* player.getCamera().proj).inverse()->transpose();
+			auto vp = world.player.getCamera().view * world.player.getCamera().proj;
+			render::debug::DebugRenderer::get().render(vp);
 
-		if (!player.getCamera().free)
-			i = (player.getCamera().view * player.getCamera().proj).inverse()->transpose();
+			// UI
+			glDisable(GL_CULL_FACE);
+			glDisable(GL_DEPTH_TEST);
 
-
-		render::debug::obb({}, { 1 }, { 1, 1, 1 }, i, 0, false);*/
-
-		auto vp = (player.getCamera().view * player.getCamera().proj);
-		render::debug::DebugRenderer::get().render(vp);
 
 		
-		// UI
-		glDisable(GL_CULL_FACE);
-		glDisable(GL_DEPTH_TEST);
-		
-		// ortho mat
-		mat4f proj2D{ mpml::orthographic_projection(Window::g_guiViewSize.x, Window::g_guiViewSize.y, 0.f, 1.f) };
+			// Debug ImGUI
 
-		shader2Dtext.use();
-		shader2Dtext.setValue("proj", proj2D);
-		shader2Dtext.setValue("view", mpml::Identity4<float>);
-
-		shader2Drectangle.use();
-		shader2Drectangle.setValue("proj", proj2D);
-		
-		//
-		crossAirAtlas.bind();
-		crossair.draw_transparent(shader2Drectangle);
-
-
-		player.draw_attributes(shader2Drectangle, shader2Dtext, atlas_guiBlocks, itemTypeManager);
-
-		glEnable(GL_CULL_FACE);
-
+			ImGui::Render();
+			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 		
 
-
-		// Debug 
-
-		ImGui::Render();
-		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-		
-		
-
-		// render all to window
-		window.display();
+			// render all to window
+			window.display();
 
 		// Limit FrameRate
 		/*auto frameExecutionTime = glfwGetTime() - frameStart;

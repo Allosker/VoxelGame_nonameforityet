@@ -15,14 +15,14 @@
 
 #include "physics/collisions/basicHitbox.hpp"
 
-#include "physics/transforms/transform3D.hpp"
+#include "physics/transforms/transformable3D.hpp"
 
 
 namespace entities
 {
 	
 	class BasicEntity
-		: public render::Mesh, public physics::Transform3D
+		: public render::Mesh, public physics::Transformable3D
 	{
 	public:
 
@@ -46,7 +46,7 @@ namespace entities
 
 		void setPosition(const vec3f& pos) noexcept override
 		{
-			physics::Transform3D::setPosition(pos); 
+			physics::Transformable3D::setPosition(pos); 
 			m_hitbox.setHitbox(pos);
 		}
 

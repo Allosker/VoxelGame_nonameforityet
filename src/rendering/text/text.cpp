@@ -7,7 +7,7 @@
 // =====================
 
 render::Text::Text(const Font& font, std::string_view str, const vec3f& pos, const vec3f& ori)
-	: physics::Transform3D(pos, ori), p_font{ &font }, m_text{ str }
+	: physics::Transformable3D(pos, ori), p_font{ &font }, m_text{ str }
 {
 	// create GPU data
 
@@ -31,7 +31,7 @@ render::Text::Text(const Font& font, std::string_view str, const vec3f& pos, con
 }
 
 render::Text::Text(Text&& other) noexcept
-	: physics::Transform3D{ other },
+	: physics::Transformable3D{ other },
 	m_text{ other.m_text }, p_font{ other.p_font }, m_color{ other.m_color },
 	m_scale_text{ other.m_scale_text }, m_size_data{ other.m_size_data }, m_vao{ other.m_vao }, m_vbo{ other.m_vbo }
 {

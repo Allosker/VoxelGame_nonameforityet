@@ -1,18 +1,14 @@
 #include "player.hpp"
 
-
+#include "world/world.hpp"
 
 // =====================
 // Construction/Initialization
 // =====================
 
-entities::Player::Player(
-	const types::path& t_hotbarSlot,
-	const types::path& t_inv, 
-	const types::path& t_slotInv,
-	const ItemTypeManager& itm,
-	const types::path& p_font)
-	: m_texHotbarSlot{ t_hotbarSlot }, m_texInv{ t_inv }, m_texInvSlot{ t_slotInv }, m_font{ p_font },
+
+entities::Player::Player(const ItemTypeManager& itm)
+	: m_texHotbarSlot{ ASSET_PATH"hud/slot.png" }, m_texInv{ ASSET_PATH"hud/inventory.png" }, m_texInvSlot{ ASSET_PATH"hud/slot_inventory.png" }, m_font{ FONT_PATH"pixelated.ttf" },
 	m_hotbar{ m_texHotbarSlot, itm, &m_font }, m_inventory{ m_texInv, m_texInvSlot, &m_font },
 	BasicEntity{ {}, {{ 0.25, 1.75, 0.25 }, { 0.25, 0.20, 0.25 }} }
 {
@@ -54,12 +50,9 @@ void entities::Player::updatePosition(const World& world, float deltaTime) noexc
 
 	if (!attributes.flags.flying)
 		p_move(m_velocity * deltaTime);
-		//m_camera.pos += m_velocity * deltaTime;
 	else
 		p_move(vec3f{ m_velocity.x, 0, m_velocity.z } * deltaTime);
-		//m_camera.pos += vec3f{m_velocity.x, 0, m_velocity.z } * deltaTime;
 
-	//m_hitbox.setHitbox(m_camera.pos);
 }
 
 void entities::Player::resolve_collisions(const World& world) noexcept
@@ -99,8 +92,6 @@ void entities::Player::resolve_collisions(const World& world) noexcept
 					m_velocity.z = 0;
 
 				p_move(-offset);
-				/*m_camera.pos -= offset;
-				m_hitbox.setHitbox(m_camera.pos);*/
 			}
 		}
 }
@@ -165,7 +156,6 @@ void entities::Player::move(const Direction& dir, float deltaTime) noexcept
 	case Downward:
 		if (attributes.flags.flying)
 			p_move(-vec3f{ 0, attributes.physics.jumpHeight, 0 } * deltaTime);
-			//m_camera.pos -= vec3f{0, attributes.physics.jumpHeight, 0} * deltaTime;
 		break;
 
 	case Upward:
@@ -173,7 +163,6 @@ void entities::Player::move(const Direction& dir, float deltaTime) noexcept
 			m_velocity.y += attributes.physics.jumpHeight;
 		else
 			p_move(vec3f{ 0, attributes.physics.jumpHeight, 0 } * deltaTime);
-			//m_camera.pos += vec3f{ 0, attributes.physics.jumpHeight, 0 } * deltaTime;
 		break;
 	}
 	attributes.flags.moving = true;
