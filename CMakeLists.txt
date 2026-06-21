@@ -63,7 +63,7 @@ file(GLOB IMPLOT_FILES CMAKE_CONFIGURE_DEPENDS
  
 # Create Project           
 
-add_executable( MYPROJECT   
+add_executable( MYPROJECT     
 	${CPP_FILES}
 	${HPP_FILES}
 	${LIB_FILES}

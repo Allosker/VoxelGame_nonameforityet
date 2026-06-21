@@ -17,9 +17,9 @@ namespace entities
 	public:
 
 
-		void update(Player& player, const render::gui::ItemTypeManager& itm) noexcept;
+		void update(entities::Player& player, const ItemTypeManager& itm) noexcept;
 		
-		void update_items(Player& player, const render::gui::ItemTypeManager& itm) noexcept;
+		void update_items(entities::Player& player, const ItemTypeManager& itm) noexcept;
 
 		void addEntity(render::ItemEntity&& item, const vec3f& pos) noexcept { chunk_at_emplace(pos).addEntity(std::move(item), pos); }
 

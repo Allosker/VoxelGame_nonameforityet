@@ -51,7 +51,7 @@ static inline double pickSpline(const std::vector<std::pair<vec2d, std::vector<v
 };
 
 
-void World::update(const Player& player, bool force_reload)
+void World::update(const entities::Player& player, bool force_reload)
 {
 	static types::loc lastCamLoc{};
 	types::loc camLoc{ chunks::ChunkGrid::to_loc(player.getPos()) };
@@ -643,7 +643,7 @@ void World::generateWorld(const std::vector<types::loc>& new_chunks_loc)
 	}
 }
 
-void World::draw_chunkGrid(const Player& player) const noexcept
+void World::draw_chunkGrid(const entities::Player& player) const noexcept
 {
 	grid.draw_all(player);
 }

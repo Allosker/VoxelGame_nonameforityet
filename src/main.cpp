@@ -24,7 +24,7 @@
 
 #include "rendering/gui/elements/rectangle.hpp"
 
-#include "world/entities/basic_entity.hpp"
+#include "world/entities/basicEntity.hpp"
 
 #include "rendering/skybox.hpp"
 
@@ -39,7 +39,7 @@
 #include "rendering/text/text.hpp"
 
 
-#include "world/entities/entityChunkGrid.hpp"
+#include "world/entities/entityChunks/entityChunkGrid.hpp"
 
 /* TOFIXLIST -- TODOLIST on Trello
 * 
@@ -136,15 +136,15 @@ try
 
 	/// utils
 	render::utils::CubeHighlight ch;
-	render::gui::ItemTypeManager itemTypeManager{};
+	ItemTypeManager itemTypeManager{};
 
 	// gui
 	render::gui::elems::Rectangle crossair{ {50, 50}, {0, 0}, types::Rect<types::uvs>{{0, 17}, {17, 17}} };
 	crossair.setPosition({ -crossair.getSize().x / 2, -crossair.getSize().y / 2 });
 
 
-	// Player
-	Player player{ ASSET_PATH"hud/slot.png", ASSET_PATH"hud/inventory.png", ASSET_PATH"hud/slot_inventory.png", itemTypeManager, FONT_PATH"pixelated.ttf" };
+	// entities::Player
+	entities::Player player{ ASSET_PATH"hud/slot.png", ASSET_PATH"hud/inventory.png", ASSET_PATH"hud/slot_inventory.png", itemTypeManager, FONT_PATH"pixelated.ttf" };
 	player.getCamera().updateProjMatrix(window.getSize()); // First Cam update
 
 	// Test					 		
@@ -169,13 +169,13 @@ try
 		deltaTime = std::min(deltaTime, 1.F / 30.f);
 		fps = 1.f / deltaTime;
 
+		//-== Debug
+			ImGui_ImplOpenGL3_NewFrame();
+			ImGui_ImplGlfw_NewFrame();
+			ImGui::NewFrame();
+		//~== Debug
 
 		window.clearEvents();
-
-		// Start the Dear ImGui frame
-		ImGui_ImplOpenGL3_NewFrame();
-		ImGui_ImplGlfw_NewFrame();
-		ImGui::NewFrame();
 
 		player.resetMovement();
 		window.processInputs(
@@ -191,29 +191,29 @@ try
 
 
 				if (window.isKeyPressed(b::W))
-					player.move(Player::Forward, deltaTime);
+					player.move(entities::Player::Forward, deltaTime);
 
 				if (window.isKeyPressed(b::S))
-					player.move(Player::Backward, deltaTime);
+					player.move(entities::Player::Backward, deltaTime);
 
 				if (window.isKeyPressed(b::D))
-					player.move(Player::Right, deltaTime);
+					player.move(entities::Player::Right, deltaTime);
 
 				if (window.isKeyPressed(b::A))
-					player.move(Player::Left, deltaTime);
+					player.move(entities::Player::Left, deltaTime);
 
 
 				if (window.isKeyPressed(b::Left_shift))
-					player.move(Player::Downward, deltaTime);
+					player.move(entities::Player::Downward, deltaTime);
 
 				if(!player.attributes.flags.flying)
 				{
 					if (window.isKeyPressedOnce(b::Space) && player.getVelocity().y == 0)
-						player.move(Player::Upward, deltaTime);
+						player.move(entities::Player::Upward, deltaTime);
 				}
 				else
 					if (window.isKeyPressed(b::Space))
-						player.move(Player::Upward, deltaTime);
+						player.move(entities::Player::Upward, deltaTime);
 
 				if (window.isKeyPressedOnce(b::Tab))
 					player.getInventory().process(window, player.getHotbar());
@@ -347,9 +347,9 @@ try
 			}
 
 
-			ImGui::SliderFloat("Player Speed   ", &player.attributes.physics.speed, 0.0f, 500.0f);
-			ImGui::SliderFloat("Player MaxSpeed", &player.attributes.physics.maxSpeed, 0.0f, 1000.f);
-			ImGui::SliderFloat("Player JUmpHeight", &player.attributes.physics.jumpHeight, 0.0f, 1000.f);
+			ImGui::SliderFloat("entities::Player Speed   ", &player.attributes.physics.speed, 0.0f, 500.0f);
+			ImGui::SliderFloat("entities::Player MaxSpeed", &player.attributes.physics.maxSpeed, 0.0f, 1000.f);
+			ImGui::SliderFloat("entities::Player JUmpHeight", &player.attributes.physics.jumpHeight, 0.0f, 1000.f);
 
 
 			ImGui::SliderScalar("Ray Distance", ImGuiDataType_U64, &WO.rayDist, &WO.rayDist_min, &WO.rayDist_max);
@@ -425,7 +425,7 @@ try
 						auto id{ world.block_at(ray_result->pos)->id };
 
 						entity_chunk_grid.addEntity(
-							{ atlas_image_guiBlocks, render::gui::toPixelUnits(id, itemTypeManager), id },
+							{ atlas_image_guiBlocks, toPixelUnits(id, itemTypeManager), id },
 							ray_result->pos);
 
 						world.set_voxel_at(ray_result->pos, 0);

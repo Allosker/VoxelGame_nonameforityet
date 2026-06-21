@@ -1,4 +1,4 @@
-#include "basic_entity.hpp"
+#include "basicEntity.hpp"
 
 // =====================
 // Construction/Destruction
@@ -6,12 +6,18 @@
 
 entities::BasicEntity::BasicEntity(
 	const types::Rect<vec3f>& entity_rect,
-	const vec3f& hitbox_size)
+	const vec3f& hitbox_size) noexcept
 	: physics::Transform3D(entity_rect.pos, entity_rect.size)
 	, m_hitbox{ entity_rect.pos, hitbox_size / 2.f, hitbox_size / 2.f }
 {
 	if (m_origin.x != 0 || m_origin.y != 0)
 		m_transformNeedUpdate = true;
+}
+
+entities::BasicEntity::BasicEntity(const types::Rect<vec3f>& entity_rect, const physics::collisions::BasicHitbox& hitbox) noexcept
+	: physics::Transform3D(entity_rect.pos, entity_rect.size)
+	, m_hitbox{ hitbox }
+{
 }
 
 entities::BasicEntity::BasicEntity(BasicEntity&& other) noexcept

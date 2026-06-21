@@ -68,7 +68,7 @@ namespace utils
 	};
 
 	// Returns the location of the block that was hit by the ray alongside its corresponding chunk, if no block was hit, std::nullopt is returned
-	static inline std::optional<RayCastResult> raycast(const types::pos& origin, const types::pos& dir, const chunks::ChunkGrid& grid, uint64 maxLength, const render::Types::VoxelTypeManager& type_manager) noexcept
+	static inline std::optional<RayCastResult> raycast(const types::pos& origin, const types::pos& dir, const chunks::ChunkGrid& grid, uint64 maxLength, const VoxelTypeManager& type_manager) noexcept
 	{
 		Ray ray{ origin, dir };
 		vec3f normal{};
@@ -117,7 +117,7 @@ namespace utils
 		return std::nullopt;
 	}
 
-	static inline std::optional<RayCastResult> raycast_chunk(const types::pos& origin, const types::pos& dir, const chunks::ChunkGrid& grid, uint64 render_distance, const render::Types::VoxelTypeManager& type_manager) noexcept
+	static inline std::optional<RayCastResult> raycast_chunk(const types::pos& origin, const types::pos& dir, const chunks::ChunkGrid& grid, uint64 render_distance, const VoxelTypeManager& type_manager) noexcept
 	{
 		Ray ray{ origin, dir };
 		vec3f normal{};

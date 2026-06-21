@@ -3,7 +3,7 @@
 
 
 
-void entities::EntityChunk::update_items(Player& player, const render::gui::ItemTypeManager& itm) noexcept
+void entities::EntityChunk::update_items(entities::Player& player, const ItemTypeManager& itm) noexcept
 {
 	for (size_t i{}; i < m_items.size(); i++)
 		if (m_items.at(i).getHitbox().intersects(player.getHitbox()))

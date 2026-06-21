@@ -6,15 +6,15 @@
 // Construction/Initialization
 // =====================
 
-Player::Player(
+entities::Player::Player(
 	const types::path& t_hotbarSlot,
 	const types::path& t_inv, 
 	const types::path& t_slotInv,
-	const render::gui::ItemTypeManager& itm,
+	const ItemTypeManager& itm,
 	const types::path& p_font)
 	: m_texHotbarSlot{ t_hotbarSlot }, m_texInv{ t_inv }, m_texInvSlot{ t_slotInv }, m_font{ p_font },
 	m_hotbar{ m_texHotbarSlot, itm, &m_font }, m_inventory{ m_texInv, m_texInvSlot, &m_font },
-	m_hitbox{ { 0.25, 1.75, 0.25 }, { 0.25, 0.20, 0.25 } }
+	BasicEntity{ {}, {{ 0.25, 1.75, 0.25 }, { 0.25, 0.20, 0.25 }} }
 {
 }
 
@@ -23,7 +23,7 @@ Player::Player(
 // Actors
 // =====================
 
-void Player::update(const Window& window, const World& world, const render::gui::ItemTypeManager& itm, float deltaTime) noexcept
+void entities::Player::update(const Window& window, const World& world, const ItemTypeManager& itm, float deltaTime) noexcept
 {
 	updatePosition(world, deltaTime);
 	resolve_collisions(world);
@@ -31,7 +31,7 @@ void Player::update(const Window& window, const World& world, const render::gui:
 	m_inventory.update(window, itm, m_hotbar);
 }
 
-void Player::updatePosition(const World& world, float deltaTime) noexcept
+void entities::Player::updatePosition(const World& world, float deltaTime) noexcept
 {
 	if (!attributes.flags.flying)
 		m_velocity.y += world.settings.gravity * deltaTime;
@@ -53,14 +53,16 @@ void Player::updatePosition(const World& world, float deltaTime) noexcept
 	}
 
 	if (!attributes.flags.flying)
-		m_camera.pos += m_velocity * deltaTime;
+		p_move(m_velocity * deltaTime);
+		//m_camera.pos += m_velocity * deltaTime;
 	else
-		m_camera.pos += vec3f{m_velocity.x, 0, m_velocity.z } * deltaTime;
+		p_move(vec3f{ m_velocity.x, 0, m_velocity.z } * deltaTime);
+		//m_camera.pos += vec3f{m_velocity.x, 0, m_velocity.z } * deltaTime;
 
-	m_hitbox.setHitbox(m_camera.pos);
+	//m_hitbox.setHitbox(m_camera.pos);
 }
 
-void Player::resolve_collisions(const World& world) noexcept
+void entities::Player::resolve_collisions(const World& world) noexcept
 {
 	if (attributes.flags.ghost)
 		return;
@@ -96,14 +98,14 @@ void Player::resolve_collisions(const World& world) noexcept
 				if (offset.z != 0)
 					m_velocity.z = 0;
 
-				m_camera.pos -= offset;
-
-				m_hitbox.setHitbox(m_camera.pos);
+				p_move(-offset);
+				/*m_camera.pos -= offset;
+				m_hitbox.setHitbox(m_camera.pos);*/
 			}
 		}
 }
 
-bool Player::addItem(const Data::Item& item, int64 count, const render::gui::ItemTypeManager& itm) noexcept
+bool entities::Player::addItem(const Data::Item& item, int64 count, const ItemTypeManager& itm) noexcept
 {
 	if (!m_hotbar.addItem({ item.id }, count, itm))
 	{
@@ -114,20 +116,20 @@ bool Player::addItem(const Data::Item& item, int64 count, const render::gui::Ite
 		return true;
 }
 
-bool Player::removeItem(const Data::Item& item, int64 count, const render::gui::ItemTypeManager& itm) noexcept
+bool entities::Player::removeItem(const Data::Item& item, int64 count, const ItemTypeManager& itm) noexcept
 {
 	return false;
 }
 
 
-const Data::Item& Player::place_voxel() noexcept
+const Data::Item& entities::Player::place_voxel() noexcept
 {
 	const auto& item = m_hotbar.getSelectedItem();
 	m_hotbar.removeItem(item, 1);
 	return item;
 }
 
-void Player::draw_attributes(const render::Shader& shader, const render::Shader& text_shader, const render::Texture& gui_block_atlas, const render::gui::ItemTypeManager& itm) noexcept
+void entities::Player::draw_attributes(const render::Shader& shader, const render::Shader& text_shader, const render::Texture& gui_block_atlas, const ItemTypeManager& itm) noexcept
 {
 	m_hotbar.draw(shader, text_shader, m_texHotbarSlot, gui_block_atlas, itm);
 	m_inventory.draw(shader, text_shader, m_texInv, m_texInvSlot, gui_block_atlas, itm);
@@ -138,7 +140,7 @@ void Player::draw_attributes(const render::Shader& shader, const render::Shader&
 // Mutators
 // =====================
 
-void Player::move(const Direction& dir, float deltaTime) noexcept
+void entities::Player::move(const Direction& dir, float deltaTime) noexcept
 {
 	const auto speed{ attributes.physics.speed * deltaTime };
 
@@ -162,21 +164,30 @@ void Player::move(const Direction& dir, float deltaTime) noexcept
 
 	case Downward:
 		if (attributes.flags.flying)
-			m_camera.pos -= vec3f{0, attributes.physics.jumpHeight, 0} * deltaTime;
+			p_move(-vec3f{ 0, attributes.physics.jumpHeight, 0 } * deltaTime);
+			//m_camera.pos -= vec3f{0, attributes.physics.jumpHeight, 0} * deltaTime;
 		break;
 
 	case Upward:
 		if (!attributes.flags.flying)
 			m_velocity.y += attributes.physics.jumpHeight;
 		else
-			m_camera.pos += vec3f{ 0, attributes.physics.jumpHeight, 0 } * deltaTime;
+			p_move(vec3f{ 0, attributes.physics.jumpHeight, 0 } * deltaTime);
+			//m_camera.pos += vec3f{ 0, attributes.physics.jumpHeight, 0 } * deltaTime;
 		break;
 	}
 	attributes.flags.moving = true;
 }
 
-void Player::resetMovement() noexcept
+void entities::Player::resetMovement() noexcept
 {
 	attributes.flags.moving = false;
+}
+
+
+/*private*/ void entities::Player::p_move(const vec3f& offset) noexcept
+{
+	BasicEntity::move(offset);
+	m_camera.pos = getPosition();
 }
 

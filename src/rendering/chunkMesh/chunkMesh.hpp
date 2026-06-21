@@ -63,7 +63,7 @@ namespace render
 
 		MeshPair buildMesh(
 			const chunks::Chunk& chunk,
-			const render::Types::VoxelTypeManager& type_manager,
+			const VoxelTypeManager& type_manager,
 			const World& world
 		) noexcept;
 

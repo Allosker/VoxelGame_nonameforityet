@@ -31,7 +31,7 @@ public:
 
 
 
-	void update(const Player& player, bool force_reload=false);
+	void update(const entities::Player& player, bool force_reload=false);
 
 	void update_blocklight() noexcept;
 	void update_rLighting() noexcept;
@@ -45,7 +45,7 @@ public:
 
 	void generateWorld(const std::vector<types::loc>& new_chunks_loc);
 
-	void draw_chunkGrid(const Player& player) const noexcept;
+	void draw_chunkGrid(const entities::Player& player) const noexcept;
 
 		
 
@@ -68,14 +68,14 @@ public:
 
 	const chunks::Chunk* chunk_at(const types::pos& chunk_pos) const noexcept;
 
-	const render::Types::VoxelTypeManager& getTypeManager() const noexcept { return type_manager; }
+	const VoxelTypeManager& getTypeManager() const noexcept { return type_manager; }
 
 	const chunks::ChunkGrid& getGrid() const noexcept { return grid; }
 
 
 		
 	chunks::ChunkGrid grid{};
-	render::Types::VoxelTypeManager type_manager{};
+	VoxelTypeManager type_manager{};
 	std::vector<types::loc> newly_generated_chunks{};
 	std::vector<std::pair<types::pos, types::type_id>> structure_blocks{};
 

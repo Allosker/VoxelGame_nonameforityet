@@ -2,7 +2,7 @@
 
 
 
-void entities::EntityChunkGrid::update(Player& player, const render::gui::ItemTypeManager& itm) noexcept
+void entities::EntityChunkGrid::update(entities::Player& player, const ItemTypeManager& itm) noexcept
 {
 	const types::loc player_loc = to_loc(player.getPos());
 
@@ -26,7 +26,7 @@ void entities::EntityChunkGrid::update(Player& player, const render::gui::ItemTy
 	}
 }
 
-void entities::EntityChunkGrid::update_items(Player& player, const render::gui::ItemTypeManager& itm) noexcept
+void entities::EntityChunkGrid::update_items(entities::Player& player, const ItemTypeManager& itm) noexcept
 {
 	auto* current_chunk = chunk_at(player.getPos());
 

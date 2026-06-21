@@ -11,7 +11,7 @@
 
 #include "rendering/utilities/atlas.hpp"
 
-namespace render::gui
+namespace types
 {
 
 	namespace ItemTextureUvsAtlas

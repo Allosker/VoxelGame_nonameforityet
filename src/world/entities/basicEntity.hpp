@@ -30,8 +30,9 @@ namespace entities
 
 		BasicEntity(
 			const types::Rect<vec3f>& entity_rect, 
-			const vec3f& hitbox_size);
+			const vec3f& hitbox_size) noexcept;
 
+		BasicEntity(const types::Rect<vec3f>& entity_rect, const physics::collisions::BasicHitbox& hitbox) noexcept;
 
 		BasicEntity(BasicEntity&& other) noexcept;
 
@@ -52,6 +53,8 @@ namespace entities
 
 		// = Getters
 
+		physics::collisions::BasicHitbox getHitbox() noexcept { return m_hitbox; }
+
 		const physics::collisions::BasicHitbox& getHitbox() const noexcept { return m_hitbox; }
 
 
@@ -67,10 +70,10 @@ namespace entities
 		void draw_transparent(const render::Shader& shader, GLenum mode = GL_TRIANGLES) noexcept;
 
 
-	private:
+	protected:
 
-		physics::collisions::BasicHitbox	m_hitbox				{};
+		physics::collisions::BasicHitbox	m_hitbox{};
 
 	};
 
-} // render::gui
+} // entities

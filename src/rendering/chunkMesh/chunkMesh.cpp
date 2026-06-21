@@ -118,7 +118,7 @@ void render::ChunkMesh::draw() const noexcept
 
 render::ChunkMesh::MeshPair render::ChunkMesh::buildMesh(
 	const chunks::Chunk& chunk,
-	const render::Types::VoxelTypeManager& type_manager,
+	const VoxelTypeManager& type_manager,
 	const World& world
 ) noexcept
 {

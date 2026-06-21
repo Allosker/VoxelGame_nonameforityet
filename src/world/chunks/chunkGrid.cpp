@@ -17,7 +17,7 @@ chunks::ChunkGrid::ChunkGrid() noexcept
 {
 }
 
-void chunks::ChunkGrid::update(const World& world, const render::Types::VoxelTypeManager& type_manager, const Player& player) noexcept
+void chunks::ChunkGrid::update(const World& world, const VoxelTypeManager& type_manager, const entities::Player& player) noexcept
 {
 	bool shouldBreak{};
 
@@ -142,7 +142,7 @@ std::vector<types::loc> chunks::ChunkGrid::generate_new_chunks(const types::loc&
 	return locations;
 }
 
-void chunks::ChunkGrid::draw_all(const Player& player) const noexcept
+void chunks::ChunkGrid::draw_all(const entities::Player& player) const noexcept
 {
 	static std::vector<types::loc> visible_chunks{};
 
@@ -182,7 +182,7 @@ void chunks::ChunkGrid::draw_all(const Player& player) const noexcept
 // Predicates
 // =====================-
 
-bool chunks::ChunkGrid::is_empty(const types::pos& block_pos, const render::Types::VoxelTypeManager& type_manager) const noexcept
+bool chunks::ChunkGrid::is_empty(const types::pos& block_pos, const VoxelTypeManager& type_manager) const noexcept
 {
 	auto* c{ chunk_at(block_pos) };
 

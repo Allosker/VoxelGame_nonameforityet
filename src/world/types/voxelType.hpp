@@ -9,12 +9,12 @@
 #include "utilities/opengl.hpp"
 #include "utilities/types.hpp"
 
-namespace render
+namespace types
 {
 	inline std::array<std::array<vec2f, 4>, 6> mapTextureUVs_4(const std::array<vec2f, 6>& texturePos, const vec2f& atlas_size = { 96, 96 });
 }
 
-namespace render::Types
+namespace types
 {
 
 	namespace TextureUVperFace
@@ -69,7 +69,7 @@ namespace render::Types
 } // render::Types
 
 
-namespace render
+namespace types
 {
 	inline std::array<std::array<vec2f, 4>, 6> mapTextureUVs_4(const std::array<vec2f, 6>& texturePos, const vec2f& atlas_size)
 	{
@@ -134,7 +134,7 @@ namespace render
 			for (auto& uv : mappedUVs[i])
 			{
 
-				uv = (uv + texturePos[i]) * Types::VoxelType::g_texture_voxel_size;
+				uv = (uv + texturePos[i]) * VoxelType::g_texture_voxel_size;
 
 				//if (uv.x > 1) uv.x -= 1; else uv.x += 1;
 				//if (uv.y < 1) uv.y -= 1; else uv.y += 1;
@@ -229,7 +229,7 @@ namespace render
 			for (auto& uv : mappedUVs[i])
 			{
 
-				uv = uv * Types::VoxelType::g_texture_voxel_size + texturePos[i] * Types::VoxelType::g_texture_voxel_size;
+				uv = uv * VoxelType::g_texture_voxel_size + texturePos[i] * VoxelType::g_texture_voxel_size;
 
 				//if (uv.x > 1) uv.x -= 1; else uv.x += 1;
 				//if (uv.y < 1) uv.y -= 1; else uv.y += 1;

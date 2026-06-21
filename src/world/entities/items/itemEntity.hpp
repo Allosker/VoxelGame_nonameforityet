@@ -8,7 +8,7 @@
 
 #include "data/image.hpp"
 #include "rendering/texture.hpp"
-#include "world/entities/basic_entity.hpp"
+#include "world/entities/basicEntity.hpp"
 
 #include "world/types/itemTypeManager.hpp"
 #include "data/item.hpp"

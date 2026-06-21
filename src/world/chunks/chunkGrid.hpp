@@ -18,8 +18,10 @@
 #include <unordered_map>
 #include <vector>
 
-
-class Player;
+namespace entities
+{
+	class Player;
+}
 
 namespace render
 {
@@ -49,7 +51,7 @@ namespace chunks
 
 		// Actors
 
-		void update(const World& world, const render::Types::VoxelTypeManager& type_manager, const Player& player) noexcept;
+		void update(const World& world, const VoxelTypeManager& type_manager, const entities::Player& player) noexcept;
 
 		void discard_outside_chunks(const types::loc& camPos) noexcept;
 
@@ -58,7 +60,7 @@ namespace chunks
 		std::vector<types::loc> generate_new_chunks(const types::loc& camPos) noexcept;
 
 
-		void draw_all(const Player& player) const noexcept;
+		void draw_all(const entities::Player& player) const noexcept;
 
 
 		// = Getters
@@ -101,7 +103,7 @@ namespace chunks
 
 		// = Predicates
 
-		bool is_empty(const types::pos& block_pos, const render::Types::VoxelTypeManager& type_manager) const noexcept;
+		bool is_empty(const types::pos& block_pos, const VoxelTypeManager& type_manager) const noexcept;
 
 
 		// = Mutators

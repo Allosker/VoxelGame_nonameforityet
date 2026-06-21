@@ -28,7 +28,7 @@ namespace entities
 		// = Actors
 
 		// Updates the items the player has as well
-		void update_items(Player& player, const render::gui::ItemTypeManager& itm) noexcept;
+		void update_items(entities::Player& player, const ItemTypeManager& itm) noexcept;
 
 
 		// = Mass Overloads
