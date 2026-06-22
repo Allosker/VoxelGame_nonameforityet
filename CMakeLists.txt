@@ -68,7 +68,7 @@ add_executable( MYPROJECT
 	${HPP_FILES}
 	${LIB_FILES}
 	${IMGUI_FILES}
-	${IMPLOT_FILES} 
+	${IMPLOT_FILES}  
 )  
 
 target_include_directories(MYPROJECT PUBLIC ${INCLUDE_DIR})

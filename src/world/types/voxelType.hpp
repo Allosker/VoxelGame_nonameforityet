@@ -44,7 +44,7 @@ namespace types
 		//VoxelType() = delete;
 
 		VoxelType(const std::array<vec2f, 6>& tex_pos, bool transparent = false, bool destructible = true, bool lightSource = false, const mpml::Vector3<uint8>& alight = {}, const std::array<vec3f, 6>& offsets = {0})
-			: uvs{ mapTextureUVs_4(tex_pos) }, is_transparent{ transparent }, is_destructible{ destructible }, is_lightSource{ lightSource }, face_offsets{offsets}, light{alight}
+			: uvs{ mapTextureUVs_4(tex_pos) }, is_transparent{ transparent }, is_destructible{ destructible }, is_light_source{ lightSource }, face_offsets{offsets}, light{alight}
 		{
 		}
 
@@ -57,7 +57,7 @@ namespace types
 
 		bool is_transparent{};
 		bool is_destructible{};
-		bool is_lightSource{};
+		bool is_light_source{};
 
 		mpml::Vector3<uint8> light{};
 

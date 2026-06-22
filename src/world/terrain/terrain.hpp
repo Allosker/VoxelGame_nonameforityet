@@ -61,7 +61,7 @@ namespace terrain
 		//double valleys = perlin2.octave2D_01()
 
 
-		return continentalness;
+		return continentalness * terrain::height_factor;
 	}
 
 }

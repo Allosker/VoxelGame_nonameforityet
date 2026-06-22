@@ -23,10 +23,10 @@ namespace physics
 				m_transformNeedUpdate = true;
 		}
 
-		Transformable2D(Transformable2D&&) = delete;
+		Transformable2D(Transformable2D&&) = default;
 		Transformable2D(Transformable2D&) = default;
 
-		Transformable2D& operator=(Transformable2D&&) = delete;
+		Transformable2D& operator=(Transformable2D&&) = default;
 		Transformable2D& operator=(Transformable2D&) = default;
 
 		virtual ~Transformable2D() = default;
@@ -65,9 +65,13 @@ namespace physics
 
 		vec2f getSize() const noexcept { return { m_baseSize.x * m_scale.x, m_baseSize.y * m_scale.y }; }
 
+		vec2f getBaseSize() const noexcept { return { m_baseSize.x, m_baseSize.y }; }
+
 		mpml::Angle<> getRotation() const noexcept { return m_rotation; }
 
 		vec2f getPosition() const noexcept { return m_position; }
+
+		vec2f getOrigin() const noexcept { return m_origin; }
 	
 
 		// = Setters
@@ -112,7 +116,7 @@ namespace physics
 		}
 
 
-	protected:
+	private:
 
 		mat4f				m_transformations{ mpml::Identity4<float> };
 

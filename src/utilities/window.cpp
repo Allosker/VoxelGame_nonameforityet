@@ -39,7 +39,7 @@ Window::~Window() noexcept
 // Actors
 // =====================
 
-void Window::clearEvents() noexcept
+void Window::clearStates() noexcept
 {
 	updateKeys();
 	updateMouseButtons();

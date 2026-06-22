@@ -70,11 +70,11 @@ void render::gui::elems::Rectangle::updateSprite(const types::Rect<types::uvs>& 
 		attributes.pos
 	},
 	{
-		{m_baseSize.x, 0},
+		{getBaseSize().x, 0},
 		{attributes.pos + types::uvs{ attributes.size.x, 0}}
 	},
 	{
-		{m_baseSize.x, m_baseSize.y},
+		{getBaseSize().x, getBaseSize().y},
 		{attributes.pos + types::uvs{ attributes.size.x, attributes.size.y}}
 	},
 	{
@@ -82,11 +82,11 @@ void render::gui::elems::Rectangle::updateSprite(const types::Rect<types::uvs>& 
 		attributes.pos
 	},
 	{
-		{0, m_baseSize.y},
+		{0, getBaseSize().y},
 		{attributes.pos + types::uvs{ 0, attributes.size.y}}
 	},
 	{
-		{m_baseSize.x, m_baseSize.y},
+		{getBaseSize().x, getBaseSize().y},
 		{attributes.pos + types::uvs{ attributes.size.x, attributes.size.y}}
 	},
 	}, sizeof(Data::Vertex2D), GL_STREAM_DRAW);
@@ -102,8 +102,8 @@ bool render::gui::elems::Rectangle::contains(vec2f point) const noexcept
 	auto size{ getSize() };
 
 	return
-		(point.x > m_position.x - m_origin.x && point.x < (m_position.x - m_origin.x + size.x)) &&
-		(point.y > m_position.y - m_origin.y && point.y < (m_position.y - m_origin.y + size.y));
+		(point.x > getPosition().x - getOrigin().x && point.x < (getPosition().x - getOrigin().x + size.x)) &&
+		(point.y > getPosition().y - getOrigin().y && point.y < (getPosition().y - getOrigin().y + size.y));
 }
 
 

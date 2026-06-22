@@ -10,7 +10,7 @@
 entities::Player::Player(const ItemTypeManager& itm)
 	: m_texHotbarSlot{ ASSET_PATH"hud/slot.png" }, m_texInv{ ASSET_PATH"hud/inventory.png" }, m_texInvSlot{ ASSET_PATH"hud/slot_inventory.png" }, m_font{ FONT_PATH"pixelated.ttf" },
 	m_hotbar{ m_texHotbarSlot, itm, &m_font }, m_inventory{ m_texInv, m_texInvSlot, &m_font },
-	BasicEntity{ {}, {{ 0.25, 1.75, 0.25 }, { 0.25, 0.20, 0.25 }} }
+	Entity{ {}, {{ 0.25, 1.75, 0.25 }, { 0.25, 0.20, 0.25 }} }
 {
 }
 

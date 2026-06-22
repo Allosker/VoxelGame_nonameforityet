@@ -24,10 +24,10 @@ namespace physics
 				m_transformNeedUpdate = true;
 		}
 
-		Transformable3D(Transformable3D&&) = delete;
+		Transformable3D(Transformable3D&&) = default;
 		Transformable3D(Transformable3D&) = default;
 
-		Transformable3D& operator=(Transformable3D&&) = delete;
+		Transformable3D& operator=(Transformable3D&&) = default;
 		Transformable3D& operator=(Transformable3D&) = default;
 
 		virtual ~Transformable3D() = default;
@@ -102,7 +102,7 @@ namespace physics
 		}
 
 
-	protected:
+	private:
 
 		mpml::Matrix4<float>				m_transformations{ mpml::Identity4<float> };
 

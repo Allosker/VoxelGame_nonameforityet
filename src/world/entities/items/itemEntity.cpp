@@ -1,7 +1,7 @@
 #include "itemEntity.hpp"
 
 render::ItemEntity::ItemEntity(const Image& constructor, const types::Rect<types::pixels>& uv_rect_pixels, types::type_id newID)
-	: entities::BasicEntity{ types::Rect<vec3f>{{}, g_size_item}, g_hitbox_item }, m_id{newID}
+	: entities::Entity{ types::Rect<vec3f>{{}, g_size_item}, g_hitbox_item }, m_id{newID}
 {
 	createBuffers(create_data(constructor, uv_rect_pixels), GL_STREAM_DRAW, { 3, 2 });
 }
@@ -11,7 +11,7 @@ void render::ItemEntity::draw(const Shader& shader, const Texture& item_texture)
 	shader.use();
 	item_texture.bind();
 
-	entities::BasicEntity::draw(shader);
+	entities::Entity::draw(shader);
 }
 
 /*private*/ std::vector<Data::Vertex> render::ItemEntity::create_data(const Image& image, const types::Rect<types::pixels>& uv_rect_pixels)

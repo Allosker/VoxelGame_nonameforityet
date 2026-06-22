@@ -49,13 +49,13 @@ namespace render::gui
 		void setPosition(vec2f pos) noexcept override
 		{
 			physics::Transformable2D::setPosition(pos);
-			text.setPosition(vec3f{ m_position - getSize() / 2.f, 0 });
+			text.setPosition(vec3f{ getPosition() - getSize() / 2.f, 0});
 		}
 
 		void setScale(vec2f scale) noexcept override
 		{
 			physics::Transformable2D::setScale(scale);
-			text.setPosition(vec3f{ m_position - getSize() / 2.f, 0 });
+			text.setPosition(vec3f{ getPosition() - getSize() / 2.f, 0 });
 		}
 
 		void draw(const Shader& shader, const Shader& text_shader) noexcept
@@ -77,7 +77,7 @@ namespace render::gui
 		void update_text() noexcept
 		{
 			text.setStr(std::to_string(count));
-			text.setPosition(vec3f{ m_position - getSize() / 2.f, 0 });
+			text.setPosition(vec3f{ getPosition() - getSize() / 2.f, 0 });
 		}
 
 		Text text;

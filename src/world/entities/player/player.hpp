@@ -16,7 +16,7 @@
 #include "world/types/itemTypeManager.hpp"
 
 #include "physics/collisions/basicHitbox.hpp"
-#include "world/entities/basicEntity.hpp"
+#include "world/entities/entity.hpp"
 
 
 class World;
@@ -25,7 +25,7 @@ namespace entities
 {
 
 	class Player
-		: public BasicEntity
+		: public Entity
 	{
 	public:
 

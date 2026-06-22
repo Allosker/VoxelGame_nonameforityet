@@ -46,7 +46,7 @@ namespace chunks
 
 		// Initialization
 
-		explicit ChunkGrid() noexcept;
+		explicit ChunkGrid() noexcept = default;
 
 
 		// Actors

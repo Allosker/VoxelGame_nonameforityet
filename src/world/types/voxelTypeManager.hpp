@@ -59,7 +59,7 @@ public:
 		if (id == 0)
 			return false;
 
-		return getType(id).is_lightSource;
+		return getType(id).is_light_source;
 	}
 
 

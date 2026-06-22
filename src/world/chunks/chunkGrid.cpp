@@ -4,25 +4,15 @@
 #include "world/entities/player/player.hpp"
 #include "world/world.hpp"
 
-namespace render::Data
-{
-	class ChunkMesh;
-}
 
 // =====================
 // Actor
 // =====================
 
-chunks::ChunkGrid::ChunkGrid() noexcept
-{
-}
 
 void chunks::ChunkGrid::update(const World& world, const VoxelTypeManager& type_manager, const entities::Player& player) noexcept
 {
-	bool shouldBreak{};
-
-	for (auto& [k, c] : m_chunks)
-	{
+	for (const auto& [k, c] : m_chunks)
 		if (!c.isEmpty() /*&& c.generated_sunlight*/)
 		{
 			if (!m_chunk_meshes.contains(k))
@@ -32,13 +22,9 @@ void chunks::ChunkGrid::update(const World& world, const VoxelTypeManager& type_
 			{
 				m_chunk_meshes[k].updateBuffers(m_chunk_meshes[k].buildMesh(chunk_at_loc(k), type_manager, world), player.getPosition());
 				m_chunk_meshes[k].flags.dirty = false;
-				shouldBreak = true;
+				break;
 			}
 		}
-
-		if (shouldBreak)
-			break;
-	}
 }
 
 void chunks::ChunkGrid::discard_chunks(const types::loc& playerLoc) noexcept
@@ -144,7 +130,7 @@ std::vector<types::loc> chunks::ChunkGrid::allocate_chunks(const types::loc& pla
 
 void chunks::ChunkGrid::draw_all(const render::utils::Camera& cam, const entities::Player& player) const noexcept
 {
-	static std::vector<types::loc> visible_chunks{};
+	std::vector<types::loc> visible_chunks{};
 
 	if (!cam.free)
 		visible_chunks = render::utils::createViewFrustum(cam, m_chunks);
@@ -154,9 +140,9 @@ void chunks::ChunkGrid::draw_all(const render::utils::Camera& cam, const entitie
 	std::vector<types::loc> chunks{};
 
 	for (const auto& i : visible_chunks)
-		if(m_chunk_meshes.contains(i))
+		if(auto c = m_chunk_meshes.find(i); c != m_chunk_meshes.end())
 		{
-			if (m_chunk_meshes.at(i).flags.has_transparency)
+			if (c->second.flags.has_transparency)
 				chunk_transparents.emplace_back(i);
 			else
 				chunks.emplace_back(i);
@@ -191,10 +177,11 @@ bool chunks::ChunkGrid::is_empty(const types::pos& block_pos, const VoxelTypeMan
 
 	auto index = c->getVoxelIndex(block_pos);
 
-	if (!c->block_at_ptr(index))
+	auto* ptr = c->block_at_ptr(index);
+	if (!ptr)
 		return true;
 
-	return !c->block_at(index).id || !type_manager.getType(c->block_at(index).id).is_destructible;
+	return !ptr->id || !type_manager.getType(ptr->id).is_destructible;
 }
 
 

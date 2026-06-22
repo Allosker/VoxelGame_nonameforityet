@@ -29,7 +29,7 @@ namespace types
 	using loc = mpml::Vector3<int64>;
 	using chunk_loc = mpml::Vector3<uint64>;
 
-	using chunk_index = uint16;
+	using block_index = uint16;
 
 	using type_id = uint16; // around 65k unique ids
 

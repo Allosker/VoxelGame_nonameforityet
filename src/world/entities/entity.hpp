@@ -21,25 +21,24 @@
 namespace entities
 {
 	
-	class BasicEntity
+	class Entity
 		: public render::Mesh, public physics::Transformable3D
 	{
 	public:
 
 		// = Construction/Destruction
 
-		BasicEntity(
+		Entity(
 			const types::Rect<vec3f>& entity_rect, 
 			const vec3f& hitbox_size) noexcept;
 
-		BasicEntity(const types::Rect<vec3f>& entity_rect, const physics::collisions::BasicHitbox& hitbox) noexcept;
+		Entity(const types::Rect<vec3f>& entity_rect, const physics::collisions::BasicHitbox& hitbox) noexcept;
 
-		BasicEntity(BasicEntity&& other) noexcept;
+		Entity(Entity&&) noexcept = default;
+		Entity& operator=(Entity&&) noexcept = default;
 
-		BasicEntity& operator=(BasicEntity&& other) noexcept;
 
-
-		virtual ~BasicEntity() = default;
+		virtual ~Entity() = default;
 
 
 		// = Setters
@@ -53,14 +52,14 @@ namespace entities
 
 		// = Getters
 
-		physics::collisions::BasicHitbox getHitbox() noexcept { return m_hitbox; }
+		physics::collisions::BasicHitbox& getHitbox() noexcept { return m_hitbox; }
 
 		const physics::collisions::BasicHitbox& getHitbox() const noexcept { return m_hitbox; }
 
 
 		// = Predicates
 		
-		bool isWithin(const physics::collisions::BasicHitbox& container) const noexcept;
+		bool is_within(const physics::collisions::BasicHitbox& container) const noexcept;
 
 		
 		// = Actors

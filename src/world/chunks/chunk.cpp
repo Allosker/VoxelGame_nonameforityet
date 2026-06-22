@@ -14,11 +14,11 @@ chunks::Chunk::Chunk(const types::loc& pos) noexcept
 // Getters
 // =====================
 
-types::chunk_index chunks::Chunk::getVoxelIndex(const types::pos& pos) const
+types::block_index chunks::Chunk::getVoxelIndex(const types::pos& pos) const
 {
-	const auto fpos = static_cast<types::loc>(mpml::floor(pos)) - m_pos;
+	const auto floored_pos = static_cast<types::loc>(mpml::floor(pos)) - m_pos;
 	const auto z_stride{ chunks::Chunk::g_size * chunks::Chunk::g_size };
-	const auto index = static_cast<uint32>(fpos.z * z_stride + fpos.y * chunks::Chunk::g_size + fpos.x);
+	const auto index = static_cast<uint32>(floored_pos.z * z_stride + floored_pos.y * chunks::Chunk::g_size + floored_pos.x);
 
 	return index;
 }
@@ -27,7 +27,7 @@ types::chunk_index chunks::Chunk::getVoxelIndex(const types::pos& pos) const
 // Predicates
 // =====================
 
-const bool chunks::Chunk::isWithinChunk(const types::pos& point) const noexcept
+const bool chunks::Chunk::is_within_chunk(const types::pos& point) const noexcept
 {
 	const types::loc corner{ getOppositeCorner() };
 
@@ -47,7 +47,7 @@ Data::Voxel* chunks::Chunk::block_at_ptr(const types::loc& loc) noexcept
 	return block_at_ptr(loc.x + loc.y * g_size + loc.z * g_size * g_size);
 }
 
-Data::Voxel* chunks::Chunk::block_at_ptr(types::chunk_index index) noexcept
+Data::Voxel* chunks::Chunk::block_at_ptr(types::block_index index) noexcept
 {
 	if (index < 0 || index >= chunks::Chunk::g_maxSize)
 		return nullptr;
@@ -66,7 +66,7 @@ const Data::Voxel* chunks::Chunk::block_at_ptr(const types::loc& loc) const noex
 	return block_at_ptr(loc.x + loc.y * g_size + loc.z * g_size * g_size);
 }
 
-const Data::Voxel* chunks::Chunk::block_at_ptr(types::chunk_index index) const noexcept
+const Data::Voxel* chunks::Chunk::block_at_ptr(types::block_index index) const noexcept
 {
 	if (index < 0 || index >= chunks::Chunk::g_maxSize || m_empty)
 		return nullptr;
@@ -89,7 +89,11 @@ void chunks::Chunk::make_empty() noexcept
 	{
 		bool should_not_be_resized{ false };
 		for (const auto& i : m_voxels)
-			should_not_be_resized = should_not_be_resized || i.id;
+			if (i.id)
+			{
+				should_not_be_resized = true;
+				break;
+			}
 
 		if (!should_not_be_resized)
 		{

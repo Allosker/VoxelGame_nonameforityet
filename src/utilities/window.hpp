@@ -35,7 +35,7 @@ public:
 
 	void display() const noexcept { glfwSwapBuffers(m_window); }
 
-	void clearEvents() noexcept;
+	void clearStates() noexcept;
 
 	void updateKeys() const noexcept { m_lastKeyDowns = m_keyDowns; }
 

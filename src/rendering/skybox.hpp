@@ -73,8 +73,9 @@ namespace render
 
 		}
 
+        Shader& getShader() noexcept { return shader; }
 
-        void draw(const Shader& shader) const noexcept
+        void draw() const noexcept
         {
             glDepthMask(false);
 
@@ -96,6 +97,8 @@ namespace render
 
         GLuint m_vao{};
         GLuint m_vbo{};
+
+        Shader shader{ SHADER_PATH"simple/skybox.vert", SHADER_PATH"simple/skybox.frag" };
 
         static constexpr std::array<float, 108> g_skybox_vertices = {
             // positions          

@@ -38,14 +38,14 @@ namespace chunks
 
 		const std::vector<Data::Voxel>& getVoxels() const noexcept { return m_voxels; }
 
-		types::chunk_index getVoxelIndex(const types::pos& pos) const;
+		types::block_index getVoxelIndex(const types::pos& pos) const;
 
 
 		// = Predicates
 
-		const bool isWithinChunk(const types::pos& point) const noexcept;
+		const bool is_within_chunk(const types::pos& point) const noexcept;
 
-		const bool is_empty_at(const types::chunk_index& index) const noexcept { return block_at(index).id == 0; }
+		const bool is_empty_at(const types::block_index& index) const noexcept { return block_at(index).id == 0; }
 
 		bool isEmpty() const noexcept { return m_empty; }
 
@@ -56,7 +56,7 @@ namespace chunks
 		{ 
 			return block_at(loc.x + loc.y * g_size + loc.z * g_size * g_size );
 		}
-		Data::Voxel& block_at(types::chunk_index index)
+		Data::Voxel& block_at(types::block_index index)
 		{
 			if (m_empty)
 				return m_voxels.front();
@@ -65,12 +65,12 @@ namespace chunks
 		}
 
 		Data::Voxel* block_at_ptr(const types::loc& loc) noexcept;
-		Data::Voxel* block_at_ptr(types::chunk_index index) noexcept;
+		Data::Voxel* block_at_ptr(types::block_index index) noexcept;
 
 		const Data::Voxel* block_at_ptr(const types::loc& loc) const noexcept;
-		const Data::Voxel* block_at_ptr(types::chunk_index index) const noexcept;
+		const Data::Voxel* block_at_ptr(types::block_index index) const noexcept;
 
-		const Data::Voxel& block_at(types::chunk_index index) const
+		const Data::Voxel& block_at(types::block_index index) const
 		{ 
 			if (m_empty)
 				return m_voxels.front();

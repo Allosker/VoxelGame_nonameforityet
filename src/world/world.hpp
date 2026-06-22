@@ -41,7 +41,7 @@ public:
 
 	// = Construction/Initialization
 
-	World(const Window& window);
+	World(const vec2i& framebuffer_size);
 
 
 	// = Major World Updates
@@ -65,20 +65,13 @@ public:
 
 
 	void update_sunlight() noexcept;
+	
 
-
-private:
-
-	void gen_nodes_sunlight(const std::vector<types::loc>& chunk_locs) noexcept;
-
-	void generateWorld(const std::vector<types::loc>& new_chunks_loc);
-
-
-public:
+	// = Actors
 
 	void draw() noexcept;
 
-		
+
 	// = Setters
 
 	bool set_voxel_at(const types::pos& block_pos, types::type_id id) noexcept;
@@ -86,8 +79,8 @@ public:
 
 	// = Getters
 
-	Data::Voxel* blockempty_at(const types::pos& block_pos) noexcept;
-	const Data::Voxel* blockempty_at(const types::pos& block_pos) const noexcept;
+	Data::Voxel* try_get_block(const types::pos& block_pos) noexcept;
+	const Data::Voxel* try_get_block(const types::pos& block_pos) const noexcept;
 
 	Data::Voxel* block_at(const types::pos& block_pos) noexcept;
 	const Data::Voxel* block_at(const types::pos& block_pos) const noexcept;
@@ -97,11 +90,18 @@ public:
 	// If the block hasn't been loaded yet, we assume it is an air block with a light value of 15
 	Data::Voxel blockout_at(const types::pos& block_pos) const noexcept;
 
-	const chunks::Chunk* chunk_at(const types::pos& chunk_pos) const noexcept;
+	const chunks::Chunk* chunk_at(const types::pos& pos) const noexcept;
 
 	const VoxelTypeManager& getTypeManager() const noexcept { return m_vtm; }
 
 	const chunks::ChunkGrid& getGrid() const noexcept { return grid; }
+
+
+private:
+
+	void gen_nodes_sunlight(const std::vector<types::loc>& chunk_locs) noexcept;
+
+	void generate_world(const std::vector<types::loc>& new_chunks_loc);
 
 
 public:
@@ -117,7 +117,6 @@ public:
 	VoxelTypeManager	m_vtm{};
 	ItemTypeManager		m_itm{};
 
-	std::vector<types::loc> newly_generated_chunks{};
 	std::vector<std::pair<types::pos, types::type_id>> structure_blocks{};
 
 	std::queue<LightNode> rBfsQueue;
@@ -151,15 +150,13 @@ public:
 	render::Shader	s_gui				{ SHADER_PATH"meshTexture2D.vert", SHADER_PATH"meshTexture2D.frag" };
 	render::Shader	s_gui_text			{ SHADER_PATH"text_render/text2D.vert", SHADER_PATH"text_render/text2D.frag" };
 
-	render::Shader	s_skybox			{ SHADER_PATH"simple/skybox.vert", SHADER_PATH"simple/skybox.frag" };
-
 
 	// Textures
 
-	render::Texture at_voxels			{ ASSET_PATH"blocks/world/atlas.png" };
+	render::Texture atlas_voxels		{ ASSET_PATH"blocks/world/atlas.png" };
 
-	render::Image	at_im_guiblocks		{ ASSET_PATH"blocks/gui/block_inventory_atlas.png" };
-	render::Texture at_guiblocks		{ at_im_guiblocks };
+	render::Image	atlas_im_guiblocks	{ ASSET_PATH"blocks/gui/block_inventory_atlas.png" };
+	render::Texture atlas_guiblocks		{ atlas_im_guiblocks };
 
 	render::Texture t_crossair			{ ASSET_PATH"hud/crossair_atlas.png" };
 	
@@ -188,12 +185,13 @@ public:
 		int64 rayDist_min{ 1 };
 		int64 rayDist_max{ 2000 };
 
-		bool instant_voxel_breaking{ false }, instant_voxel_placing{ false };
+		bool instant_voxel_breaking{ false }; 
+		bool instant_voxel_placing{ false };
 
 		uint64 rm{ 0 }, rma{ 8 };
 
 
-		std::vector< double> c_thresholds
+		std::vector<double> c_thresholds
 		{
 			-0.982032,
 			-0.889426,
@@ -226,7 +224,7 @@ public:
 			0.986311,
 		};
 
-		std::vector< double> c_points
+		std::vector<double> c_points
 		{
 			-34.9367,
 			-30.8249,
@@ -276,8 +274,7 @@ public:
 	} flags;
 
 
-	double y_min{ -100 };
-	double y_max{ 0 };
+	double height_max{ 0 };
 
 	const double y_base{ 40 };
 
