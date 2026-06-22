@@ -6,33 +6,33 @@ render::Image::Image(const types::path& path_to_image, bool flip_on_load)
 	load_image(path_to_image, flip_on_load);
 }
 
-render::Image::Image(vec2iu size, uint8* ptr, int32 channel, GLenum format)
-	: m_size{size}, m_nrChannels{channel}, m_format{format}
+render::Image::Image(vec2iu size, uint8* ptr, GLenum format)
+	: m_size{size}, m_format{ format }
 {
 	m_data.insert(m_data.end(), ptr, ptr + size.x * size.y);
 }
 
-render::Image::Image(vec2iu allocate_size, int32 channel, GLenum format)
-	:m_size{ allocate_size }, m_nrChannels{ channel }, m_format{ format }
+render::Image::Image(vec2iu allocate_size, GLenum format)
+	:m_size{ allocate_size }, m_format{ format }
 {
-	m_data.resize(allocate_size.x * allocate_size.y * m_nrChannels);
+	m_data.resize(allocate_size.x * allocate_size.y * getChannel());
 }
 
 
-GLenum render::Image::getFormat() const noexcept
+uint32 render::Image::getChannel() const noexcept
 {
-	switch (m_nrChannels)
+	switch (m_format)
 	{
-	case 1:
-		return GL_RED;
+	case GL_RED:
+		return 1;
 		break;
 
-	case 3:
-		return GL_RGB;
+	case GL_RGB:
+		return 3;
 		break;
 
-	case 4:
-		return GL_RGBA;
+	case GL_RGBA:
+		return 4;
 		break;
 	}
 }
@@ -44,14 +44,14 @@ std::vector<uint8> render::Image::crop(vec2iu subset_ori, vec2iu subset_size) no
 		throw std::runtime_error("ERROR::Subset out of bounds");
 
 	std::vector<uint8> new_data{};
-	new_data.reserve(subset_size.x * subset_size.y * m_nrChannels);
+	new_data.reserve(subset_size.x * subset_size.y * getChannel());
 
 	for (uint32 y{ subset_ori.y }; y < subset_place.y; y++)
 	{
 		for (uint32 x{ subset_ori.x }; x < subset_place.x; x++)
 		{
-			for (uint32 p{}; p < m_nrChannels; p++)
-				new_data.emplace_back(m_data[(x + y * m_size.x) * m_nrChannels + p]);
+			for (uint32 p{}; p < getChannel(); p++)
+				new_data.emplace_back(m_data[(x + y * m_size.x) * getChannel() + p]);
 		}
 	}
 
@@ -68,8 +68,8 @@ void render::Image::insert(vec2iu pos, const Image& other) noexcept
 	{
 		for (uint32 x{ pos.x }; x < subset_place.x; x++)
 		{
-			for (uint32 p{}; p < m_nrChannels; p++)
-				m_data[(x + y * m_size.x) * m_nrChannels + p] = other.getData()[((x - pos.x) + (y - pos.y) * other.getSize().x) * m_nrChannels + p];
+			for (uint32 p{}; p < getChannel(); p++)
+				m_data[(x + y * m_size.x) * getChannel() + p] = other.getData()[((x - pos.x) + (y - pos.y) * other.getSize().x) * getChannel() + p];
 		}
 	}
 
@@ -80,12 +80,28 @@ void render::Image::insert(vec2iu pos, const Image& other) noexcept
 {
 	stbi_set_flip_vertically_on_load(flip_on_load);
 
+	int channels{};
 	vec2i size_truncated{};
-	std::uint8_t* data{ stbi_load(path.string().c_str(), &size_truncated.x, &size_truncated.y, &m_nrChannels, 0) };
+	std::uint8_t* data{ stbi_load(path.string().c_str(), &size_truncated.x, &size_truncated.y, &channels, 0) };
 	m_size = size_truncated;
-	uint32 size{ m_size.x * m_size.y * m_nrChannels };
+	uint32 size{ m_size.x * m_size.y * channels };
 
 	m_data.assign(data, data + size);
+
+	switch (channels)
+	{
+	case 1:
+		m_format = GL_RED;
+		break;
+
+	case 3:
+		m_format = GL_RGB;
+		break;
+
+	case 4:
+		m_format = GL_RGBA;
+		break;
+	}
 
 
 	stbi_image_free(data);

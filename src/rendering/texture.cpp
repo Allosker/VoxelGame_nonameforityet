@@ -8,13 +8,13 @@ render::Texture::Texture(const types::path& tex_path, Type type)
 	: m_type{type}
 {
 	glGenTextures(1, &m_tex);
-	glBindTexture(GL_TEXTURE_2D, m_tex);
+	glBindTexture(m_type, m_tex);
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(m_type, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(m_type, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(m_type, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(m_type, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
 	loadTexture(tex_path);
 }
@@ -23,13 +23,13 @@ render::Texture::Texture(const Image& image, Type type)
 	: m_type{ type }, m_width{ static_cast<int32>(image.getSize().x) }, m_height{ static_cast<int32>(image.getSize().y) }
 {
 	glGenTextures(1, &m_tex);
-	glBindTexture(GL_TEXTURE_2D, m_tex);
+	glBindTexture(m_type, m_tex);
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(m_type, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(m_type, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(m_type, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(m_type, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
 
 	glTexImage2D(m_type, 0, image.getFormat(), m_width, m_height, 0, image.getFormat(), GL_UNSIGNED_BYTE, image.getData().data());
@@ -76,6 +76,17 @@ void render::Texture::loadTexture(const types::path& tex_path)
 	glGenerateMipmap(m_type);
 
 	stbi_image_free(data);
+}
+
+void render::Texture::update(const Image& image) noexcept
+{
+	glBindTexture(m_type, m_tex);
+
+	glTexImage2D(m_type, 0, image.getFormat(), image.getSize().x, image.getSize().y, 0, image.getFormat(), GL_UNSIGNED_BYTE, image.getData().data());
+	m_width = image.getSize().x;
+	m_height = image.getSize().y;
+
+	glBindTexture(m_type, 0);
 }
 
 void render::Texture::deleteTexture() const noexcept

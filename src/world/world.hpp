@@ -14,6 +14,7 @@
 #include "world/chunks/utilities/ray.hpp"
 
 #include "rendering/utilities/cubeHighlight.hpp"
+#include "rendering/skybox.hpp"
 
 #include <queue>
 
@@ -49,7 +50,7 @@ public:
 
 	void reset_flags() noexcept;
 
-	void update_chunkGrid(const types::loc& current_player_loc);
+	void update_chunks(const types::loc& current_player_loc);
 	void update_entities(const types::loc& current_player_loc);
 
 	void update_player(const Window& window, float dt);
@@ -107,6 +108,7 @@ public:
 		
 	
 	entities::Player player;
+	render::utils::Camera	camera{};
 
 
 	chunks::ChunkGrid			grid			{};
@@ -128,11 +130,17 @@ public:
 	std::queue<LightNode> sunlightBfsQueue;
 	std::queue<LightRemovalNode> sunlightRemovalBfsQueue;
 
+	// World/Utility models
+
+	render::utils::CubeHighlight ch;
+	render::Skybox skybox{};
+
+
 	// GUI
 
 	render::gui::elems::Rectangle crossair{ {50, 50}, {0, 0}, types::Rect<types::uvs>{{0, 17}, {17, 17}} };
 
-	render::utils::CubeHighlight ch;
+	
 
 
 	// Shaders
@@ -142,6 +150,8 @@ public:
 
 	render::Shader	s_gui				{ SHADER_PATH"meshTexture2D.vert", SHADER_PATH"meshTexture2D.frag" };
 	render::Shader	s_gui_text			{ SHADER_PATH"text_render/text2D.vert", SHADER_PATH"text_render/text2D.frag" };
+
+	render::Shader	s_skybox			{ SHADER_PATH"simple/skybox.vert", SHADER_PATH"simple/skybox.frag" };
 
 
 	// Textures

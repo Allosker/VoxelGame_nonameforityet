@@ -53,14 +53,14 @@ namespace chunks
 
 		void update(const World& world, const VoxelTypeManager& type_manager, const entities::Player& player) noexcept;
 
-		void discard_outside_chunks(const types::loc& camPos) noexcept;
+		void discard_chunks(const types::loc& playerLoc) noexcept;
 
 		void discard_all_chunks() noexcept;
 
-		std::vector<types::loc> generate_new_chunks(const types::loc& camPos) noexcept;
+		std::vector<types::loc> allocate_chunks(const types::loc& playerLoc) noexcept;
 
 
-		void draw_all(const entities::Player& player) const noexcept;
+		void draw_all(const render::utils::Camera& cam, const entities::Player& player) const noexcept;
 
 
 		// = Getters

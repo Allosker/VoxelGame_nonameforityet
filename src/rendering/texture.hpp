@@ -42,6 +42,8 @@ namespace render
 
 		void loadTexture(const types::path& tex_path);
 
+		void update(const Image& image) noexcept;
+
 		void deleteTexture() const noexcept;
 
 		void bind() const noexcept;

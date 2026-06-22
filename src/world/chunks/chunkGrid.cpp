@@ -30,7 +30,7 @@ void chunks::ChunkGrid::update(const World& world, const VoxelTypeManager& type_
 
 			if (m_chunk_meshes[k].flags.dirty)
 			{
-				m_chunk_meshes[k].updateBuffers(m_chunk_meshes[k].buildMesh(chunk_at_loc(k), type_manager, world), player.getPos());
+				m_chunk_meshes[k].updateBuffers(m_chunk_meshes[k].buildMesh(chunk_at_loc(k), type_manager, world), player.getPosition());
 				m_chunk_meshes[k].flags.dirty = false;
 				shouldBreak = true;
 			}
@@ -41,10 +41,10 @@ void chunks::ChunkGrid::update(const World& world, const VoxelTypeManager& type_
 	}
 }
 
-void chunks::ChunkGrid::discard_outside_chunks(const types::loc& camLoc) noexcept
+void chunks::ChunkGrid::discard_chunks(const types::loc& playerLoc) noexcept
 {
-	types::loc min{ camLoc - ChunkSettings::world_render_distance };
-	types::loc max{ camLoc + ChunkSettings::world_render_distance };
+	types::loc min{ playerLoc - ChunkSettings::world_render_distance };
+	types::loc max{ playerLoc + ChunkSettings::world_render_distance };
 
 	for (auto it = m_chunks.begin(); it != m_chunks.end();)
 	{
@@ -80,25 +80,25 @@ void chunks::ChunkGrid::discard_all_chunks() noexcept
 	m_chunk_meshes.swap(empty_chunk_meshes);
 }
 
-std::vector<types::loc> chunks::ChunkGrid::generate_new_chunks(const types::loc& camLoc) noexcept
+std::vector<types::loc> chunks::ChunkGrid::allocate_chunks(const types::loc& playerLoc) noexcept
 {
 	std::vector<types::loc> locations{};
 
 	if (ChunkSettings::world_render_distance == 0)
 	{
 		m_chunks.emplace(
-			camLoc, chunks::Chunk{ types::loc{
-			camLoc.x * static_cast<int64>(chunks::Chunk::g_size),
-			camLoc.y * static_cast<int64>(chunks::Chunk::g_size),
-			camLoc.z * static_cast<int64>(chunks::Chunk::g_size)} 
+			playerLoc, chunks::Chunk{ types::loc{
+			playerLoc.x * static_cast<int64>(chunks::Chunk::g_size),
+			playerLoc.y * static_cast<int64>(chunks::Chunk::g_size),
+			playerLoc.z * static_cast<int64>(chunks::Chunk::g_size)}
 		});
 
-		locations.push_back(camLoc);
+		locations.push_back(playerLoc);
 	}
 	else
 	{
-		vec3i min{ camLoc - ChunkSettings::world_render_distance };
-		vec3i max{ camLoc + ChunkSettings::world_render_distance };
+		vec3i min{ playerLoc - ChunkSettings::world_render_distance };
+		vec3i max{ playerLoc + ChunkSettings::world_render_distance };
 
 		for (int64 x{ min.x }; x <= max.x; x++)
 			for (int64 y{ min.y }; y <= max.y; y++)
@@ -142,12 +142,12 @@ std::vector<types::loc> chunks::ChunkGrid::generate_new_chunks(const types::loc&
 	return locations;
 }
 
-void chunks::ChunkGrid::draw_all(const entities::Player& player) const noexcept
+void chunks::ChunkGrid::draw_all(const render::utils::Camera& cam, const entities::Player& player) const noexcept
 {
 	static std::vector<types::loc> visible_chunks{};
 
-	if (!player.getCamera().free)
-		visible_chunks = render::utils::createViewFrustum(player.getCamera(), m_chunks);
+	if (!cam.free)
+		visible_chunks = render::utils::createViewFrustum(cam, m_chunks);
 
 	// Sort transparent chunks to draw them last 
 	std::vector<types::loc> chunk_transparents{};
@@ -162,7 +162,7 @@ void chunks::ChunkGrid::draw_all(const entities::Player& player) const noexcept
 				chunks.emplace_back(i);
 		}
 
-	auto playerLoc = chunks::ChunkGrid::to_loc(player.getPos());
+	auto playerLoc = chunks::ChunkGrid::to_loc(player.getPosition());
 	std::sort(chunk_transparents.begin(), chunk_transparents.end(), [&](const auto& a, const auto& b)
 		{
 			return

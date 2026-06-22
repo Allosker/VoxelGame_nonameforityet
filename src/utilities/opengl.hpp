@@ -29,7 +29,9 @@ using vec2i = mpml::Vector2<int32>;
 using vec2iu = mpml::Vector2<uint32>;
 using vec3i = mpml::Vector3<int32>;
 using vec2l = mpml::Vector2<int64>;
+using vec2ul = mpml::Vector2<uint64>;
 using vec3l = mpml::Vector3<int64>;
+using vec3ul = mpml::Vector3<uint64>;
 
 
 using mat2f = mpml::Matrix2<float>;

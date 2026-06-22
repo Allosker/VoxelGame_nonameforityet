@@ -71,7 +71,7 @@ namespace entities
 
 		// = Mutators
 
-		void move(const Direction& dir, float deltaTime) noexcept;
+		void move(const Direction& dir, const render::utils::Camera& cam, float deltaTime) noexcept;
 
 		void resetMovement() noexcept;
 
@@ -80,23 +80,12 @@ namespace entities
 
 		const vec3f& getVelocity() const noexcept { return m_velocity; }
 
-		const vec3f& getPos() const noexcept { return m_camera.pos; }
-
-
-		render::utils::Camera& getCamera() noexcept { return m_camera; }
-		const render::utils::Camera& getCamera() const noexcept { return m_camera; }
 
 		render::gui::Inventory& getInventory() noexcept { return m_inventory; }
 		const render::gui::Inventory& getInventory() const noexcept { return m_inventory; }
 
 		render::gui::Hotbar& getHotbar() noexcept { return m_hotbar; }
 		const render::gui::Hotbar& getHotbar() const noexcept { return m_hotbar; }
-
-
-	private:
-
-
-		void p_move(const vec3f& offset) noexcept;
 
 
 	public:
@@ -127,8 +116,6 @@ namespace entities
 
 
 	public:
-
-		render::utils::Camera				m_camera{};
 
 		render::Texture			m_texHotbarSlot;
 		render::Texture			m_texInv;

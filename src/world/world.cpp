@@ -2,11 +2,8 @@
 
 #include <random>
 
-
-#include "PerlinNoiseHO/PerlinNoise.hpp"
-
 #include "entities/player/player.hpp"
-
+#include "terrain/terrain.hpp"
 
 using Spline = std::vector<vec2d>;
 
@@ -58,7 +55,7 @@ static inline double pickSpline(const std::vector<std::pair<vec2d, std::vector<v
 World::World(const Window& window)
 	: player{ m_itm }
 {
-	player.getCamera().updateProjMatrix(window.getSize()); // First Cam update
+	camera.updateProjMatrix(window.getSize()); // First Cam update
 
 	crossair.setPosition({ -crossair.getSize().x / 2, -crossair.getSize().y / 2 });
 }
@@ -70,15 +67,19 @@ World::World(const Window& window)
 
 void World::update(const Window& window, float dt)
 {
-	player.getCamera().view = mpml::lookAt(player.getPos(), player.getCamera().front_dir + player.getPos(), player.getCamera().up_dir);
-
-	types::loc current_player_loc{ chunks::ChunkGrid::to_loc(player.getPos()) };
+	
 
 	// Player
 	update_player(window, dt);
 
+	// Camera
+	camera.pos = player.getPosition();
+	camera.view = mpml::lookAt(camera.pos, camera.front_dir + camera.pos, camera.up_dir);
+
+	types::loc current_player_loc{ chunks::ChunkGrid::to_loc(player.getPosition()) };
+
 	// Cunkgrid
-	update_chunkGrid(current_player_loc);
+	update_chunks(current_player_loc);
 
 	// Entities
 	update_entities(current_player_loc);
@@ -93,24 +94,29 @@ void World::reset_flags() noexcept
 	debug_flags.force_reload = false;
 }
 
-void World::update_chunkGrid(const types::loc& current_player_loc)
+void World::update_chunks(const types::loc& current_player_loc)
 {
 	static types::loc last_player_loc{};
 
 	if (debug_flags.force_reload)
 		grid.discard_all_chunks();
 
-	if ((debug_flags.force_reload || last_player_loc != current_player_loc) && debug_flags.update_world)
+	if (debug_flags.update_world && (debug_flags.force_reload || last_player_loc != current_player_loc))
 	{
-		auto m = grid.generate_new_chunks(current_player_loc);
+		// Allocate memory for new chunks
+		auto m = grid.allocate_chunks(current_player_loc);
+		grid.discard_chunks(current_player_loc);
+
+
+		// Generate World Map with Perlin Noise
 		generateWorld(m);
+
 
 		for (auto& i : grid.getChunks())
 			i.second.make_empty();
 
+		// Generate Sunlight for corresponding chunks
 		//gen_nodes_sunlight(m);
-
-		grid.discard_outside_chunks(current_player_loc);
 
 		last_player_loc = current_player_loc;
 	}
@@ -136,14 +142,14 @@ void World::update_entities(const types::loc& current_player_loc)
 
 void World::update_player(const Window& window, float dt)
 {
-	const auto& ray_result{ utils::raycast(player.getPos(), player.getCamera().front_dir, grid, debug.rayDist, m_vtm) };
+	const auto& ray_result{ utils::raycast(camera.pos, camera.front_dir, grid, debug.rayDist, m_vtm) };
 
 	flags.draw_cubehighlight = false;
 	if (!window.isCursorHidden())
 		if (ray_result)
 		{
 
-			ch.update(player.getCamera().model, player.getCamera().view, player.getCamera().proj, ray_result->pos);
+			ch.update(camera.model, camera.view, camera.proj, ray_result->pos);
 
 
 			if (window.isMouseButtonPressedOnce(Buttons::Mouse::Middle))
@@ -190,6 +196,7 @@ void World::update_player(const Window& window, float dt)
 
 	player.resetMovement();
 }
+
 
 // =====================
 // Minor World Updates
@@ -580,8 +587,6 @@ void World::update_player(const Window& window, float dt)
 							sunlightBfsQueue.emplace(static_cast<types::pos>(types::loc{ x, chunks::Chunk::g_size - 1, z }) + c->getPos());
 						}
 					}
-
-				chunk.generated_sunlight = true;
 			}
 			else // if(current chunk is above ground)
 			{
@@ -600,137 +605,50 @@ void World::update_player(const Window& window, float dt)
 
 /*private*/ void World::generateWorld(const std::vector<types::loc>& new_chunks_loc)
 {
-	using SeedType = siv::PerlinNoise::seed_type;
-
 	static const auto z_stride{ chunks::Chunk::g_size * chunks::Chunk::g_size };
 
-	const SeedType seed{ 1232356u };
-	siv::PerlinNoise perlin{ seed };
 
-
-	/*Spline spline{};
-	spline.reserve(debug.c_points.size());
-
-	for (size_t i{}; i < debug.c_points.size(); i++)
-		spline.emplace_back(vec2d{ debug.c_thresholds[i], debug.c_points[i] });*/
 
 	for (const auto& loc : new_chunks_loc)
 	{
 		auto& chunk{ grid.chunk_at_loc(loc) };
 
 		// Every Block of the chunks::Chunk
-		for (int64 x{}; x < chunks::Chunk::g_size; x++)
-			for (int64 z{}; z < chunks::Chunk::g_size; z++)
+		for (int64 lx{}; lx < chunks::Chunk::g_size; lx++)
+			for (int64 lz{}; lz < chunks::Chunk::g_size; lz++)
 			{
 				// Generate Depth for the world
 
-				vec2d bpz{ x + chunk.getPos().x, z + chunk.getPos().z };
+				double x{ lx + chunk.getPos().x };
+				double z{ lz + chunk.getPos().z };
+
+				
+				y_max = terrain::generate_height(x, z) * terrain::height_factor;
 
 
-				double continentalness = perlin.noise2D(bpz.x * 0.0001, bpz.y * 0.0001);
-			
-				y_max = continentalness * 100.;
 
 				// Choose Which block type goes where
-				for (int64 y{}; y < chunks::Chunk::g_size; y++)
+				for (int64 ly{}; ly < chunks::Chunk::g_size; ly++)
 				{
-					auto& current_block{ chunk.block_at(z * z_stride + y * chunks::Chunk::g_size + x) };
+					auto& current_block{ chunk.block_at(lz * z_stride + ly * chunks::Chunk::g_size + lx) };
 
-					double bp = y + chunk.getPos().y; // block pos in world coords
+					double bp = ly + chunk.getPos().y; // block pos in world coords
 
-					if (current_block.id != 6)
+
+					if (bp <= y_max)
 					{
-						if (bp <= y_max && bp >= y_max - 1)
-							if (bp < debug.sea_level - 1)
-								current_block.id = 2;
-							else
-								current_block.id = 1;
-
-						if (bp <= y_max - 1 && bp >= y_max - 4)
-							current_block.id = 2;
-
-						if (bp <= y_max - 4 && bp >= y_max - 80)
-							current_block.id = 2;//3;
-
-						if (bp <= y_max - 80)
-							current_block.id = 4;
-
-						if (bp > y_max && bp < debug.sea_level)
+						if (bp < terrain::thresholds.water * terrain::height_factor)
 							current_block.id = 5;
+						else if (bp > terrain::thresholds.water * terrain::height_factor && bp < terrain::thresholds.sand * terrain::height_factor)
+							current_block.id = 6;
+						else if (bp > terrain::thresholds.sand * terrain::height_factor && bp < terrain::thresholds.grass * terrain::height_factor)
+							current_block.id = 1;
+						else if (bp > terrain::thresholds.grass * terrain::height_factor && bp < terrain::thresholds.stone * terrain::height_factor)
+							current_block.id = 3;
 
 					}
 					
-					if (
-						bp > y_max && bp < y_max + 1 && bp > debug.sea_level && 
-						perlin.octave2D_01(bpz.x * debug.tree_frequency, bpz.y * debug.tree_frequency, 4) <= debug.tree_threshold
-						)
-					{
-
-						if (auto& b = chunk.block_at({ x, y, z }); b.id != 5)
-							b.id = 6;
-						else
-							continue;
-
-
-						if (auto* b = chunk.block_at_ptr({ x, y + 1, z }))
-							b->id = 6;
-						else
-							structure_blocks.emplace_back(
-								std::pair<types::pos, types::type_id>{ static_cast<types::pos>(vec3l{ x, y + 1, z }) + chunk.getPos(),
-								static_cast<types::type_id>(6) 
-						});
-
-
-						if (auto* b = chunk.block_at_ptr({ x, y + 2, z }))
-							b->id = 6;
-						else
-							structure_blocks.emplace_back(
-								std::pair<types::pos, types::type_id>{ static_cast<types::pos>(vec3l{ x, y + 2, z }) + chunk.getPos(),
-								static_cast<types::type_id>(6)
-						});
-
-						if (auto* b = chunk.block_at_ptr({ x, y + 3, z }))
-							b->id = 7;
-						else
-							structure_blocks.emplace_back(
-								std::pair<types::pos, types::type_id>{ static_cast<types::pos>(vec3l{ x, y + 3, z }) + chunk.getPos(),
-								static_cast<types::type_id>(7)
-						});
-
-						// add index version to private
-						if (auto* b = chunk.block_at_ptr({ x, y + 2, z + 1 }))
-							b->id = 7;
-						else
-							structure_blocks.emplace_back(
-								std::pair<types::pos, types::type_id>{ static_cast<types::pos>(vec3l{ x, y + 2, z + 1 }) + chunk.getPos(),
-								static_cast<types::type_id>(7)
-						});
-
-						if (auto* b = chunk.block_at_ptr({ x, y + 2, z - 1 }))
-							b->id = 7;
-						else
-							structure_blocks.emplace_back(
-								std::pair<types::pos, types::type_id>{ static_cast<types::pos>(vec3l{ x, y + 2, z - 1 }) + chunk.getPos(),
-								static_cast<types::type_id>(7)
-						});
-
-							
-						if (auto* b = chunk.block_at_ptr({ x + 1, y + 2, z }))
-							b->id = 7;
-						else
-							structure_blocks.emplace_back(
-								std::pair<types::pos, types::type_id>{ static_cast<types::pos>(vec3l{ x + 1, y + 2, z }) + chunk.getPos(),
-								static_cast<types::type_id>(7)
-						});
-
-						if (auto* b = chunk.block_at_ptr({ x - 1, y + 2, z }))
-							b->id = 7;
-						else
-							structure_blocks.emplace_back(
-								std::pair<types::pos, types::type_id>{ static_cast<types::pos>(vec3l{ x - 1, y + 2, z }) + chunk.getPos(),
-								static_cast<types::type_id>(7)
-						});
-					}
+					
 				}
 
 			}
@@ -757,20 +675,34 @@ void World::update_player(const Window& window, float dt)
 
 void World::draw() noexcept
 {
+	glEnable(GL_CULL_FACE);
+
+	//model = mpml::rotate(m, mpml::Angle<>::fromDegrees((daytime * 360.f) ), { 0.5, 0, 0.5 }); example only
+	s_skybox.use();
+	s_skybox.setValue("model", mpml::Identity4<float>);
+	s_skybox.setValue("view", camera.view);
+	s_skybox.setValue("proj", camera.proj);
+
+	skybox.draw(s_skybox);
+
+
+	glEnable(GL_DEPTH_TEST);
+
+
 	s_world.use();
-	s_world.setValue("model", player.getCamera().model);
-	s_world.setValue("view", player.getCamera().view);
-	s_world.setValue("proj", player.getCamera().proj);
+	s_world.setValue("model", camera.model);
+	s_world.setValue("view", camera.view);
+	s_world.setValue("proj", camera.proj);
 
 	at_voxels.bind();
 
-	grid.draw_all(player);
+	grid.draw_all(camera, player);
 	
 
 	s_items_world.use();
-	s_items_world.setValue("model", player.getCamera().model);
-	s_items_world.setValue("view", player.getCamera().view);
-	s_items_world.setValue("proj", player.getCamera().proj);
+	s_items_world.setValue("model", camera.model);
+	s_items_world.setValue("view", camera.view);
+	s_items_world.setValue("proj", camera.proj);
 
 	entity_chunkGrid.draw(s_items_world, at_guiblocks);
 

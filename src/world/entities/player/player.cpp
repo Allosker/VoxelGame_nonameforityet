@@ -49,9 +49,9 @@ void entities::Player::updatePosition(const World& world, float deltaTime) noexc
 	}
 
 	if (!attributes.flags.flying)
-		p_move(m_velocity * deltaTime);
+		Transformable3D::move(m_velocity * deltaTime);
 	else
-		p_move(vec3f{ m_velocity.x, 0, m_velocity.z } * deltaTime);
+		Transformable3D::move(vec3f{ m_velocity.x, 0, m_velocity.z } * deltaTime);
 
 }
 
@@ -91,7 +91,7 @@ void entities::Player::resolve_collisions(const World& world) noexcept
 				if (offset.z != 0)
 					m_velocity.z = 0;
 
-				p_move(-offset);
+				Transformable3D::move(-offset);
 			}
 		}
 }
@@ -131,38 +131,38 @@ void entities::Player::draw_attributes(const render::Shader& shader, const rende
 // Mutators
 // =====================
 
-void entities::Player::move(const Direction& dir, float deltaTime) noexcept
+void entities::Player::move(const Direction& dir, const render::utils::Camera& cam, float deltaTime) noexcept
 {
 	const auto speed{ attributes.physics.speed * deltaTime };
 
 	switch (dir)
 	{
 	case Forward:
-		m_velocity += vec3f{ m_camera.front_dir.x, 0.f, m_camera.front_dir.z }.normal() * speed;
+		m_velocity += vec3f{ cam.front_dir.x, 0.f, cam.front_dir.z }.normal() * speed;
 		break;
 
 	case Backward:
-		m_velocity -= vec3f{ m_camera.front_dir.x, 0.f, m_camera.front_dir.z }.normal() * speed;
+		m_velocity -= vec3f{ cam.front_dir.x, 0.f, cam.front_dir.z }.normal() * speed;
 		break;
 
 	case Right:
-		m_velocity += vec3f{ m_camera.right_dir().x, 0.f, m_camera.right_dir().z}.normal() * speed;
+		m_velocity += vec3f{ cam.right_dir().x, 0.f, cam.right_dir().z}.normal() * speed;
 		break;
 
 	case Left:
-		m_velocity -= vec3f{ m_camera.right_dir().x, 0.f, m_camera.right_dir().z }.normal() * speed;
+		m_velocity -= vec3f{ cam.right_dir().x, 0.f, cam.right_dir().z }.normal() * speed;
 		break;
 
 	case Downward:
 		if (attributes.flags.flying)
-			p_move(-vec3f{ 0, attributes.physics.jumpHeight, 0 } * deltaTime);
+			Transformable3D::move(-vec3f{ 0, attributes.physics.jumpHeight, 0 } * deltaTime);
 		break;
 
 	case Upward:
 		if (!attributes.flags.flying)
 			m_velocity.y += attributes.physics.jumpHeight;
 		else
-			p_move(vec3f{ 0, attributes.physics.jumpHeight, 0 } * deltaTime);
+			Transformable3D::move(vec3f{ 0, attributes.physics.jumpHeight, 0 } * deltaTime);
 		break;
 	}
 	attributes.flags.moving = true;
@@ -172,11 +172,3 @@ void entities::Player::resetMovement() noexcept
 {
 	attributes.flags.moving = false;
 }
-
-
-/*private*/ void entities::Player::p_move(const vec3f& offset) noexcept
-{
-	BasicEntity::move(offset);
-	m_camera.pos = getPosition();
-}
-

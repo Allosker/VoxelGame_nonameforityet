@@ -19,8 +19,8 @@ public:
 	{
 		types.push_back(types::TextureUVperFace::c_dirtGrass);
 		types.push_back(types::TextureUVperFace::c_dirt);
-		types.push_back(types::VoxelType{ types::TextureUVperFace::c_stone, false, true, true, {0, 0, 15} });
-		types.push_back(types::VoxelType{ types::TextureUVperFace::c_deepStone, false, true, true, {15, 0, 0} });
+		types.push_back(types::VoxelType{ types::TextureUVperFace::c_stone});
+		types.push_back(types::VoxelType{ types::TextureUVperFace::c_deepStone});
 		types.push_back(types::VoxelType{ types::TextureUVperFace::c_water1, true, false, false, {}, { 0, 0, {0, -0.1, 0}, 0, 0, 0 } });
 		types.push_back(types::TextureUVperFace::c_tree);
 		types.push_back({ types::TextureUVperFace::c_leaf });

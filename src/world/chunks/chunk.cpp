@@ -83,7 +83,7 @@ const Data::Voxel* chunks::Chunk::block_at_ptr(types::chunk_index index) const n
 // =====================
 
 
-/*private*/ void chunks::Chunk::make_empty() noexcept
+void chunks::Chunk::make_empty() noexcept
 {
 	if (!m_empty)
 	{

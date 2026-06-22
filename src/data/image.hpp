@@ -23,9 +23,9 @@ namespace render
 
 		Image(const types::path& path_to_image, bool flip_on_load = true);
 
-		Image(vec2iu size, uint8* ptr, int32 channel, GLenum format);
+		Image(vec2iu size, uint8* ptr, GLenum format);
 
-		Image(vec2iu allocate_size, int32 channel, GLenum format);
+		Image(vec2iu allocate_size, GLenum format);
 
 
 		Image(Image&&) = default;
@@ -43,9 +43,11 @@ namespace render
 
 		vec2iu getSize() const noexcept { return m_size; }
 
-		GLenum getFormat() const noexcept;
+		uint32 getChannel() const noexcept;
 
-		int32 getBytesPerPixel() const noexcept { return m_nrChannels; }
+		GLenum getFormat() const noexcept { return m_format; }
+
+		int32 getBytesPerPixel() const noexcept { return getChannel(); }
 
 		uint8* data() noexcept { return m_data.data(); }
 		const uint8* data() const noexcept { return m_data.data(); }
@@ -78,7 +80,6 @@ namespace render
 		vec2iu m_size{};
 
 		GLenum m_format{};
-		int32 m_nrChannels{};
 
 	};
 

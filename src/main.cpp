@@ -26,7 +26,7 @@
 
 #include "world/entities/basicEntity.hpp"
 
-#include "rendering/skybox.hpp"
+
 
 #include "utilities/debug.hpp"
 
@@ -38,7 +38,7 @@
 
 #include "rendering/text/text.hpp"
 
-
+#include "world/terrain/terrain.hpp"
 
 
 /* TOFIXLIST -- TODOLIST on Trello
@@ -107,7 +107,7 @@ try
 
 	// Shaders 
 	render::Shader shaderCubeDisplay{ SHADER_PATH"shader.vert", SHADER_PATH"shader.frag" };
-	render::Shader S_skybox{ SHADER_PATH"simple/skybox.vert", SHADER_PATH"simple/skybox.frag" };
+	
 
 	// Textures/Images
 	
@@ -120,8 +120,8 @@ try
 
 	render::Font font{ FONT_PATH"pixelated.ttf" };
 
-
-	render::Skybox skybox{};
+	render::Image img{ vec2i{}, GL_RED };
+	render::Texture noise_tex{ img };
 
 	float lastFrame{};
 	float fps{};
@@ -162,29 +162,29 @@ try
 
 
 				if (window.isKeyPressed(b::W))
-					world.player.move(entities::Player::Forward, deltaTime);
+					world.player.move(entities::Player::Forward, world.camera, deltaTime);
 
 				if (window.isKeyPressed(b::S))
-					world.player.move(entities::Player::Backward, deltaTime);
+					world.player.move(entities::Player::Backward, world.camera, deltaTime);
 
 				if (window.isKeyPressed(b::D))
-					world.player.move(entities::Player::Right, deltaTime);
+					world.player.move(entities::Player::Right, world.camera, deltaTime);
 
 				if (window.isKeyPressed(b::A))
-					world.player.move(entities::Player::Left, deltaTime);
+					world.player.move(entities::Player::Left, world.camera, deltaTime);
 
 
 				if (window.isKeyPressed(b::Left_shift))
-					world.player.move(entities::Player::Downward, deltaTime);
+					world.player.move(entities::Player::Downward, world.camera, deltaTime);
 
 				if (!world.player.attributes.flags.flying)
 				{
 					if (window.isKeyPressedOnce(b::Space) && world.player.getVelocity().y == 0)
-						world.player.move(entities::Player::Upward, deltaTime);
+						world.player.move(entities::Player::Upward, world.camera, deltaTime);
 				}
 				else
 					if (window.isKeyPressed(b::Space))
-						world.player.move(entities::Player::Upward, deltaTime);
+						world.player.move(entities::Player::Upward, world.camera, deltaTime);
 
 				if (window.isKeyPressedOnce(b::Tab))
 					world.player.getInventory().process(window, world.player.getHotbar());
@@ -194,7 +194,7 @@ try
 
 				if (window.isKeyPressedOnce(b::R))
 				{
-					world.set_voxel_at(world.player.getPos(), world.player.getHotbar().getSelectedItem().id);
+					world.set_voxel_at(world.player.getPosition(), world.player.getHotbar().getSelectedItem().id);
 				}
 				/*{
 					player.getCamera().free = !player.getCamera().free;
@@ -234,114 +234,201 @@ try
 
 
 				if (window.wasFrameBufferResized())
-					world.player.getCamera().updateProjMatrix(window.getSize());
+					world.camera.updateProjMatrix(window.getSize());
 
 				if (window.hasDirChanged())
-					world.player.getCamera().front_dir = window.getNewFrontDir();
+					world.camera.front_dir = window.getNewFrontDir();
 			}
 
 		/*=============================*/
 		// ImGUI Debug
 		/*=============================*/
 			{
-				ImGui::Begin("Debug"); // Window beginning
+				if (ImGui::Begin("Noise", nullptr, ImGuiWindowFlags_MenuBar))
+				{  // Window beginning
 
-				ImGui::Text("FPS: %f", fps);
-			
-				ImGui::Text("Camera Pos	: %f %f %f", world.player.getPos().x, world.player.getPos().y, world.player.getPos().z);
-				ImGui::Text("Velocity	: %f %f %f", world.player.getVelocity().x, world.player.getVelocity().y, world.player.getVelocity().z);
+					if (ImGui::BeginMenuBar())
+					{
 
-				//ImGui::Text("Sunlight: (%i) Blocklight: (%i, %i, %i)", (DEBUG_light_value >> 12) & 0xF, (DEBUG_light_value >> 8) & 0xF, (DEBUG_light_value >> 4) & 0xF, DEBUG_light_value & 0xF);
-
-				ImGui::Checkbox("Flying", &world.player.attributes.flags.flying);
-				ImGui::Checkbox("Ghost ", &world.player.attributes.flags.ghost);
-
-				if(const auto* cl{ world.chunk_at(world.player.getPos()) })
-				{
-					const types::loc c{ chunks::ChunkGrid::to_loc(cl->getPos()) };
-
-					ImGui::Text("chunks::Chunk Loc : %ld %ld %ld", c.x, c.y, c.z);
-				}
-
-				size_t selectedIndex = 0;
-				if (ImGui::BeginCombo("spawn item", world.m_itm.getTypeList()[selectedIndex].name.c_str())) {
-					for (size_t i{}; i < world.m_itm.getTypeList().size(); ++i) {
-						const bool isSelected = (selectedIndex == i);
-
-						if (ImGui::Selectable(world.m_itm.getTypeList()[i].name.c_str(), isSelected))
+						if (ImGui::BeginMenu("Parameters"))
 						{
-							selectedIndex = i;
-							world.player.getHotbar().setCurrentSlot({ (uint16)(i + 1) }, world.m_itm);
+							if (ImGui::BeginMenu("Continentalness"))
+							{
+								static const double l1{ 0.0000001 }, l2{ 0.01 };
+								ImGui::SliderScalar("freq", ImGuiDataType_Double, &terrain::continentalness_.freq, &l1, &l2);
+								ImGui::SliderFloat("amp", &terrain::continentalness_.amp , 1.f, 100.f);
+
+							ImGui::EndMenu();
+							}
+
+							if (ImGui::BeginMenu("Thresholds"))
+							{
+								ImGui::SliderFloat("water", &terrain::thresholds.water, 0.f, 1.f);
+								ImGui::SliderFloat("sand", &terrain::thresholds.sand, 0.f, 1.f);
+								ImGui::SliderFloat("grass", &terrain::thresholds.grass, 0.f, 1.f);
+								ImGui::SliderFloat("stone", &terrain::thresholds.stone, 0.f, 1.f);
+
+								ImGui::EndMenu();
+							}
+
+							
+
+						ImGui::EndMenu();
 						}
 
-						// Set the initial focus when opening the combo
-						// (scrolling + keyboard navigation focus)
-						if (isSelected) {
-							ImGui::SetItemDefaultFocus();
-						}
-					}
-					ImGui::EndCombo();
-				}
-
-			
-				 {
-					const double c_mi{ 0.00001 }, c_ma{ 1 };
-
-					const double s_mi{ 0 }, s_ma{ 1000 };
-					ImGui::SliderScalar("Sea level: ", ImGuiDataType_Double, &world.debug.sea_level, &s_mi, &s_ma);
-
-					if (ImGui::SliderScalar("Continentalness: ", ImGuiDataType_Double, &world.debug.continentalness_frequency, &c_mi, &c_ma))
-						world.debug_flags.force_reload = true;
-
-					/*if (ImGui::Button("Add element to vector: ", { 20, 20 }))
-					{
-						world.debug.c_thresholds.push_back({});
-						world.debug.c_points.push_back({});
+					ImGui::EndMenuBar();
 					}
 
-					if (ImGui::Button("Remove element to vector: ", { 20, 20 }))
-					{
-						world.debug.c_thresholds.pop_back();
-						world.debug.c_points.pop_back();
-					}
+					static uint64 renderdistance{};
+					static uint64 l1{ 0 }, l2{ 100 };
+					ImGui::SliderScalar("Render Distance", ImGuiDataType_S64, &renderdistance, &l1, &l2);
 
-					if (ImPlot::BeginPlot(" ", {1500, 700}))
-					{
-						ImPlot::SetupAxisLimits(ImAxis_X1, -1, 1, ImGuiCond_Always);
 
-						ImPlot::PlotLine("##line", world.debug.c_thresholds.data(), world.debug.c_points.data(), world.debug.c_thresholds.size());
-
+					auto player_loc = chunks::ChunkGrid::to_loc(world.player.getPosition());
+					vec3i min{ player_loc * (int64)chunks::Chunk::g_size - (int64)renderdistance * chunks::Chunk::g_size };
+					vec3i max{ player_loc * (int64)chunks::Chunk::g_size + (int64)renderdistance * chunks::Chunk::g_size };
 					
+					if (window.isKeyPressedOnce(Buttons::E))
+					{
+						vec3i gap{ max - min };
 
-						for (int i{}; i < world.debug.c_thresholds.size(); i++)
-						{
-							ImPlot::DragPoint(
-								i,
-								&world.debug.c_thresholds[i],
-								&world.debug.c_points[i],
-								{ 1, 0, 0, 1 },
-								5.f
-							);
-						}
+						img = render::Image{ vec2i{gap.x, gap.z}, GL_RGB };
 
-						ImPlot::EndPlot();
-					}*/
+
+						for (int32 x{ min.x }; x < max.x; x++)
+							for (int32 z{ min.z }; z < max.z; z++)
+							{
+								vec3i rgb{};
+
+								auto t = terrain::generate_height(x, z);
+									
+								if (t < terrain::thresholds.water)
+									rgb = (vec3i)vec3d{ 0, 0, t * 255 };
+								else if(t > terrain::thresholds.water && t < terrain::thresholds.sand)
+									rgb = (vec3i)vec3d{ t * 255, t * 255, 6 };
+								else if (t > terrain::thresholds.sand && t < terrain::thresholds.grass)
+									rgb = (vec3i)vec3d{ 10, t * 255, 6 };
+								else if (t > terrain::thresholds.grass && t < terrain::thresholds.stone)
+									rgb = (vec3i)vec3d{ t * 50, t * 50, t * 50 };
+
+								img.getData().at(((x - min.x) + (z - min.z) * gap.x) * img.getChannel()    ) = rgb.x;
+								img.getData().at(((x - min.x) + (z - min.z) * gap.x) * img.getChannel() + 1) = rgb.y;
+								img.getData().at(((x - min.x) + (z - min.z) * gap.x) * img.getChannel() + 2) = rgb.z;
+							}
+
+						noise_tex.update(img);
+					}
+
+					static float scale{ 10.f };
+					ImGui::SliderFloat("Noise scale: ", &scale, 0.0001f, 10.0f);
+					ImGui::Image(noise_tex.ID(), ImVec2(noise_tex.getSize().x * scale, noise_tex.getSize().y * scale));
+
+				ImGui::End(); 
 				}
 
+				{
+					ImGui::Begin("Values"); // Window beginning
 
-				ImGui::SliderFloat("entities::Player Speed   ", &world.player.attributes.physics.speed, 0.0f, 500.0f);
-				ImGui::SliderFloat("entities::Player MaxSpeed", &world.player.attributes.physics.maxSpeed, 0.0f, 1000.f);
-				ImGui::SliderFloat("entities::Player JUmpHeight", &world.player.attributes.physics.jumpHeight, 0.0f, 1000.f);
+					ImGui::Text("FPS: %f", fps);
+					//ImGui::Text("Sunlight: (%i) Blocklight: (%i, %i, %i)", (DEBUG_light_value >> 12) & 0xF, (DEBUG_light_value >> 8) & 0xF, (DEBUG_light_value >> 4) & 0xF, DEBUG_light_value & 0xF);
+
+					ImGui::Checkbox("Flying", &world.player.attributes.flags.flying);
+					ImGui::Checkbox("Ghost ", &world.player.attributes.flags.ghost);
+
+					if (const auto* cl{ world.chunk_at(world.player.getPosition()) })
+					{
+						const types::loc c{ chunks::ChunkGrid::to_loc(cl->getPos()) };
+
+						ImGui::Text("chunks::Chunk Loc : %ld %ld %ld", c.x, c.y, c.z);
+					}
+
+					size_t selectedIndex = 0;
+					if (ImGui::BeginCombo("spawn item", world.m_itm.getTypeList()[selectedIndex].name.c_str())) {
+						for (size_t i{}; i < world.m_itm.getTypeList().size(); ++i) {
+							const bool isSelected = (selectedIndex == i);
+
+							if (ImGui::Selectable(world.m_itm.getTypeList()[i].name.c_str(), isSelected))
+							{
+								selectedIndex = i;
+								world.player.getHotbar().setCurrentSlot({ (uint16)(i + 1) }, world.m_itm);
+							}
+
+							// Set the initial focus when opening the combo
+							// (scrolling + keyboard navigation focus)
+							if (isSelected) {
+								ImGui::SetItemDefaultFocus();
+							}
+						}
+						ImGui::EndCombo();
+					}
 
 
-				ImGui::SliderScalar("Ray Distance", ImGuiDataType_U64, &world.debug.rayDist, &world.debug.rayDist_min, &world.debug.rayDist_max);
+					/* {
+						const double c_mi{ 0.00001 }, c_ma{ 1 };
 
-				ImGui::Checkbox("Instant Vox. Break", &world.debug.instant_voxel_breaking);
-				ImGui::Checkbox("Instant Vox. Place", &world.debug.instant_voxel_placing);
+						const double s_mi{ 0 }, s_ma{ 1000 };
+						ImGui::SliderScalar("Sea level: ", ImGuiDataType_Double, &world.debug.sea_level, &s_mi, &s_ma);
 
-				ImGui::VSliderScalar("render Distance", { 15, 100 }, ImGuiDataType_S64, &ChunkSettings::world_render_distance, &world.debug.rm, &world.debug.rma);
+						if (ImGui::SliderScalar("Continentalness: ", ImGuiDataType_Double, &world.debug.continentalness_frequency, &c_mi, &c_ma))
+							world.debug_flags.force_reload = true;
 
-				ImGui::End(); // Window end
+						/*if (ImGui::Button("Add element to vector: ", { 20, 20 }))
+						{
+							world.debug.c_thresholds.push_back({});
+							world.debug.c_points.push_back({});
+						}
+
+						if (ImGui::Button("Remove element to vector: ", { 20, 20 }))
+						{
+							world.debug.c_thresholds.pop_back();
+							world.debug.c_points.pop_back();
+						}
+
+						if (ImPlot::BeginPlot(" ", {1500, 700}))
+						{
+							ImPlot::SetupAxisLimits(ImAxis_X1, -1, 1, ImGuiCond_Always);
+
+							ImPlot::PlotLine("##line", world.debug.c_thresholds.data(), world.debug.c_points.data(), world.debug.c_thresholds.size());
+
+
+
+							for (int i{}; i < world.debug.c_thresholds.size(); i++)
+							{
+								ImPlot::DragPoint(
+									i,
+									&world.debug.c_thresholds[i],
+									&world.debug.c_points[i],
+									{ 1, 0, 0, 1 },
+									5.f
+								);
+							}
+
+							ImPlot::EndPlot();
+						}
+					}*/
+
+					ImGui::End(); // Window end
+				}
+
+				{
+					ImGui::Begin("Player"); // Window beginning
+
+					ImGui::Text("Player Pos	: %f %f %f", world.player.getPosition().x, world.player.getPosition().y, world.player.getPosition().z);
+					ImGui::Text("Velocity	: %f %f %f", world.player.getVelocity().x, world.player.getVelocity().y, world.player.getVelocity().z);
+
+					ImGui::SliderFloat("Speed   ", &world.player.attributes.physics.speed, 0.0f, 500.0f);
+					ImGui::SliderFloat("MaxSpeed", &world.player.attributes.physics.maxSpeed, 0.0f, 1000.f);
+					ImGui::SliderFloat("JUmpHeight", &world.player.attributes.physics.jumpHeight, 0.0f, 1000.f);
+
+					ImGui::SliderScalar("Ray Distance", ImGuiDataType_U64, &world.debug.rayDist, &world.debug.rayDist_min, &world.debug.rayDist_max);
+
+					ImGui::Checkbox("Instant Vox. Break", &world.debug.instant_voxel_breaking);
+					ImGui::Checkbox("Instant Vox. Place", &world.debug.instant_voxel_placing);
+
+					ImGui::SliderScalar("render Distance", ImGuiDataType_S64, &ChunkSettings::world_render_distance, &world.debug.rm, &world.debug.rma);
+
+					ImGui::End(); // Window end
+				}
 			}
 
 		/*=============================*/
@@ -358,8 +445,6 @@ try
 			
 			world.update(window, deltaTime);
 
-			/*put it into world class*/ 
-
 
 			// Debug
 			render::debug::DebugRenderer::get().update(glfwGetTime());
@@ -372,21 +457,10 @@ try
 			glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-			glEnable(GL_CULL_FACE);
+			
 
 			// Skybox
 			float daytime = glfwGetTime() / 60.f;
-
-			S_skybox.use();
-			//model = mpml::rotate(m, mpml::Angle<>::fromDegrees((daytime * 360.f) ), { 0.5, 0, 0.5 }); example only 
-
-			S_skybox.setValue("model", mpml::Identity4<float>);
-			S_skybox.setValue("view", world.player.getCamera().view);
-			S_skybox.setValue("proj", world.player.getCamera().proj);
-
-			skybox.draw(S_skybox);
-
-			glEnable(GL_DEPTH_TEST);
 
 			// World
 			world.draw();
@@ -402,7 +476,7 @@ try
 
 			// Debug
 
-			auto vp = world.player.getCamera().view * world.player.getCamera().proj;
+			auto vp = world.camera.view * world.camera.proj;
 			render::debug::DebugRenderer::get().render(vp);
 
 			// UI

@@ -4,7 +4,7 @@
 
 void entities::EntityChunkGrid::update(entities::Player& player, const ItemTypeManager& itm) noexcept
 {
-	const types::loc player_loc = to_loc(player.getPos());
+	const types::loc player_loc = to_loc(player.getPosition());
 
 	types::loc min{ player_loc - ChunkSettings::world_render_distance };
 	types::loc max{ player_loc + ChunkSettings::world_render_distance };
@@ -30,7 +30,7 @@ void entities::EntityChunkGrid::update(entities::Player& player, const ItemTypeM
 
 void entities::EntityChunkGrid::update_items(entities::Player& player, const ItemTypeManager& itm) noexcept
 {
-	auto* current_chunk = chunk_at(player.getPos());
+	auto* current_chunk = chunk_at(player.getPosition());
 
 	if (current_chunk)
 		current_chunk->update_items(player, itm);

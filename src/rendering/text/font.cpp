@@ -52,7 +52,7 @@ void render::Font::load_font(const types::path& path) noexcept
 
 	FT_Set_Pixel_Sizes(face, 0, m_btmp_size);
 
-	render::Image bitmap{ size_bitmap, 1, GL_RED };
+	render::Image bitmap{ size_bitmap, GL_RED };
 
 
 	vec2iu pos_btmp{};
@@ -66,7 +66,6 @@ void render::Font::load_font(const types::path& path) noexcept
 		render::Image glyph{
 			{ face->glyph->bitmap.width, face->glyph->bitmap.rows },
 			face->glyph->bitmap.buffer,
-			1,
 			GL_RED
 		};
 
