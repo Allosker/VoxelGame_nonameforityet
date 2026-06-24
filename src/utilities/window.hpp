@@ -10,8 +10,6 @@
 #include "inputs.hpp"
 #include "utilities/time/clock.hpp"
 
-#include "world/entities/player/camera.hpp"
-
 #include <string>
 #include <array>
 #include <functional>
@@ -50,11 +48,9 @@ public:
 
 	void onFramebufferResize(vec2i newSize) noexcept;
 
-	void onMouseMovement(vec2f pos) noexcept;
-
 	void onMouseWheelScroll(vec2f delta) noexcept;
 
-	void onMouseCursorPosChange(vec2f newCursorPos) noexcept;
+	void onMousePosChange(vec2f newPos) noexcept;
 
 
 	// = Getters
@@ -70,7 +66,6 @@ public:
 
 	vec2f getMouseWheelDelta() const noexcept {  return m_mouseWheel_delta; }
 	vec2f getMousePos() const noexcept { return m_mousePos; }
-	const vec3f& getNewFrontDir() const noexcept { return m_newDir; }
 
 
 	// = Predicates
@@ -93,7 +88,7 @@ public:
 	bool isMouseButtonPressed(int button) const noexcept { return glfwGetMouseButton(m_window, button) == Buttons::Pressed; }
 	bool isMouseButtonReleased(int button) const noexcept { return glfwGetMouseButton(m_window, button) == Buttons::Released; }
 
-	bool hasDirChanged() const noexcept { return m_dirChangedThisFrame; }
+	bool hasMousePosChanged() const noexcept { return m_mousePosChangedThisFrame; }
 
 	bool wasFrameBufferResized() const noexcept { return m_wasFrameBufferResized; }
 
@@ -123,8 +118,7 @@ private:
 	vec2f m_mouseWheel_delta{};
 	vec2f m_mousePos{};
 
-	vec3f m_newDir{};
-	bool m_dirChangedThisFrame{ false };
+	bool m_mousePosChangedThisFrame{ false };
 
 	bool m_wheelScrolledThisFrame{ false };
 	bool m_cursorHidden{ true };

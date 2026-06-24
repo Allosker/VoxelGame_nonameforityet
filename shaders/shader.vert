@@ -8,8 +8,7 @@ layout(location = 3) in uint16_t aLight;
 
 
 uniform mat4 model;
-uniform mat4 view;
-uniform mat4 proj;
+uniform mat4 vp;
 
 out vec2 textureCoords;
 out float shadowAO;
@@ -19,7 +18,7 @@ out vec4 blocklight;
 
 void main()
 {
-	gl_Position = proj * view * model * vec4(aPos, 1.0);
+	gl_Position = vp * model * vec4(aPos, 1.0);
 
 	textureCoords = aTextureCoords;
 	shadowAO = aShadowAO;

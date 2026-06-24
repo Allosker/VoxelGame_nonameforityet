@@ -45,7 +45,7 @@ void Window::clearStates() noexcept
 	updateMouseButtons();
 	m_mouseWheel_delta = vec2f{0};
 	m_wheelScrolledThisFrame = false;
-	m_dirChangedThisFrame = false;
+	m_mousePosChangedThisFrame = false;
 	m_wasFrameBufferResized = false;
 	glfwPollEvents();
 }
@@ -75,41 +75,15 @@ void Window::onFramebufferResize(vec2i newSize) noexcept
 	glViewport(0, 0, newSize.x, newSize.y);
 }
 
-void Window::onMouseMovement(vec2f offset) noexcept
-{
-	static float yaw{ -90 }, pitch{};
-
-	yaw += offset.x;
-	pitch += offset.y;
-
-
-	if (pitch > 89.f)
-		pitch = 89.f;
-	if (pitch < -89.f)
-		pitch = -89.f;
-
-	vec3f direction{};
-
-	float radPitch{ mpml::toRadians(pitch) };
-	float cosPitch{ std::cos(radPitch) };
-	float radYaw{ mpml::toRadians(yaw) };
-
-	direction.x = std::cos(radYaw) * cosPitch;
-	direction.y = -std::sin(radPitch);
-	direction.z = std::sin(radYaw) * cosPitch;
-
-	m_newDir = direction.normal();
-	m_dirChangedThisFrame = true;
-}
-
 void Window::onMouseWheelScroll(vec2f delta) noexcept
 {
 	m_mouseWheel_delta = delta;
 }
 
-void Window::onMouseCursorPosChange(vec2f newCursorPos) noexcept
+void Window::onMousePosChange(vec2f newPos) noexcept
 {
-	m_mousePos = newCursorPos;
+	m_mousePos = newPos;
+	m_mousePosChangedThisFrame = true;
 }
 
 

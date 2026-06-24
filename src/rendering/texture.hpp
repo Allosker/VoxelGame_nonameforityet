@@ -6,11 +6,8 @@
 // ---------------------------------------
 
 #include "utilities/opengl.hpp"
-#include "utilities/types.hpp"
 #include <filesystem>
 #include "STB/stb_image.h"
-
-#include "rendering/shader.hpp"
 #include "data/image.hpp"
 
 namespace render

@@ -60,13 +60,13 @@ file(GLOB IMPLOT_FILES CMAKE_CONFIGURE_DEPENDS
 	"${IMPLOT_DIR}/implot.cpp"
 	"${IMPLOT_DIR}/implot_items.cpp"
 )     
- 
+  
 # Create Project           
-
+ 
 add_executable( MYPROJECT     
 	${CPP_FILES}   
 	${HPP_FILES}
-	${LIB_FILES}
+	${LIB_FILES} 
 	${IMGUI_FILES}
 	${IMPLOT_FILES}  
 )  
@@ -83,7 +83,7 @@ set_property(TARGET MYPROJECT PROPERTY CXX_STANDARD 20)
  
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
  
-# Other Paths     
+# Other Paths      
 
 set(SHADER_DIR "${CMAKE_SOURCE_DIR}/shaders/")     
 target_compile_definitions(MYPROJECT PRIVATE SHADER_PATH="${SHADER_DIR}")

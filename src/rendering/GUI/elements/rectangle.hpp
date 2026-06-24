@@ -52,6 +52,12 @@ namespace render::gui::elems
 
 		void draw_transparent(const Shader& shader, GLenum mode = GL_TRIANGLES) noexcept;
 
+
+	/*private:
+
+		const Shader& m_shader;*/
+
+
 	};
 
 } // render::gui

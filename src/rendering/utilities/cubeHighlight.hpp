@@ -31,19 +31,18 @@ namespace render::utils
 			glEnableVertexAttribArray(1);
 
 			glBindBuffer(GL_ARRAY_BUFFER, 0);
-			glBindVertexArray(0);	
+			glBindVertexArray(0);
 		}
 
 
 		// = Actors
 
-		void update(const mat4f& model, const mat4f& view, const mat4f& proj, const vec3f& pos)
+		void update(const mat4f& model, const mat4f& vp, const vec3f& pos)
 		{
 			CHshader.use();
 
 			setPos(model, pos);
-			CHshader.setValue("view", view);
-			CHshader.setValue("proj", proj);
+			CHshader.setValue("vp", vp);
 		}
 
 		void draw()

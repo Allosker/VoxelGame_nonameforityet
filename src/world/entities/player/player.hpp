@@ -6,8 +6,6 @@
 // ---------------------------------------
 
 
-#include "camera.hpp"
-
 #include "rendering/shader.hpp"
 
 #include "rendering/gui/hotbar.hpp"
@@ -17,6 +15,8 @@
 
 #include "physics/collisions/basicHitbox.hpp"
 #include "world/entities/entity.hpp"
+
+#include "utilities/camera.hpp"
 
 
 class World;
@@ -44,7 +44,7 @@ namespace entities
 
 		// = Construction/Destruction
 
-		Player(const ItemTypeManager& itm);
+		Player(const ItemTypeManager& itm, const utils::Camera* cam);
 
 
 		// = Actors
@@ -71,7 +71,7 @@ namespace entities
 
 		// = Mutators
 
-		void move(const Direction& dir, const render::utils::Camera& cam, float deltaTime) noexcept;
+		void move(const Direction& dir, float deltaTime) noexcept;
 
 		void resetMovement() noexcept;
 
@@ -86,6 +86,11 @@ namespace entities
 
 		render::gui::Hotbar& getHotbar() noexcept { return m_hotbar; }
 		const render::gui::Hotbar& getHotbar() const noexcept { return m_hotbar; }
+
+
+		// = Setters
+
+		void setCamera(const utils::Camera* new_camera) noexcept { m_bound_camera = new_camera; }
 
 
 	public:
@@ -128,6 +133,9 @@ namespace entities
 
 
 		vec3f								m_velocity{};
+
+
+		const utils::Camera* m_bound_camera;
 
 	};
 }

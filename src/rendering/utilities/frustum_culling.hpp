@@ -5,7 +5,7 @@
 // Define frustum culling for CHUNKS only (as of now)
 // ---------------------------------------
 
-#include "world/entities/player/camera.hpp"
+#include "utilities/camera.hpp"
 #include "world/chunks/chunk.hpp"
 #include <map>
 #include <unordered_map>
@@ -64,14 +64,11 @@ namespace render::utils
 		};
 	};
 
-	inline std::vector<types::loc> createViewFrustum(
-		const Camera& cam,
+	inline std::vector<types::loc> getChunksVisibleInView(
+		const mat4f& vp,
 		const std::unordered_map<types::loc, chunks::Chunk>& chunks) noexcept
 	{
 		Frustum     frustum;
-
-		auto vp = cam.view * cam.proj;
-		//vp = vp.transpose();
 
 		for (int i = 3; i--;) { frustum.left.normal[i] = vp[i][3] + vp[i][0]; }
 		for (int i = 3; i--;) { frustum.right.normal[i] = vp[i][3] - vp[i][0]; }

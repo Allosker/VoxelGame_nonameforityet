@@ -13,6 +13,8 @@
 
 #include "rendering/mesh.hpp"
 
+#include "data/renderStates.hpp"
+
 #include <optional>
 #include <map>
 #include <unordered_map>
@@ -60,7 +62,7 @@ namespace chunks
 		std::vector<types::loc> allocate_chunks(const types::loc& playerLoc) noexcept;
 
 
-		void draw_all(const render::utils::Camera& cam, const entities::Player& player) const noexcept;
+		void draw_all(const RenderStates& render, const entities::Player& player) const noexcept;
 
 
 		// = Getters

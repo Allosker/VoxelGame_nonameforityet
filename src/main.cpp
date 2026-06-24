@@ -27,7 +27,6 @@
 #include "world/entities/entity.hpp"
 
 
-
 #include "utilities/debug.hpp"
 
 #include "physics/collisions/basicHitbox.hpp"
@@ -40,6 +39,8 @@
 
 #include "world/terrain/terrain.hpp"
 
+#include "utilities/camera.hpp"
+
 
 /* TOFIXLIST -- TODOLIST on Trello
 * 
@@ -49,7 +50,7 @@
 *	== When a block is place in another chunk than in the chunk containing light, it doesn't get updated properly
 * 
 * 
-*	== Get the camera out of the world and as a variable of its own -- do something about whatever is in the world
+*	== Fix it so that the window has a queue event
 */
 
 namespace
@@ -104,16 +105,12 @@ try
 	ImGui_ImplGlfw_InitForOpenGL(window.get(), true);          // Second param install_callback=true will install GLFW callbacks and chain to existing ones.
 	ImGui_ImplOpenGL3_Init();
 
+
 	// Shaders 
 	render::Shader shaderCubeDisplay{ SHADER_PATH"shader.vert", SHADER_PATH"shader.frag" };
 	
 
-	// Textures/Images
 	
-
-	
-	// World
-	World world{ window.getSize() };
 
 	// Test					 		
 
@@ -121,6 +118,16 @@ try
 
 	render::Image noise_img{ vec2i{}, GL_RED };
 	render::Texture noise_tex{ noise_img };
+
+
+	utils::Camera	camera{};
+	vec2f last_mouse_window_pos{};
+	float yaw{ -90 }, pitch{};
+
+	// World
+	render::Skybox skybox{};
+	World world{ &camera };
+
 
 	float deltaTime{};
 	float lastFrame{};
@@ -163,29 +170,29 @@ try
 
 
 			if (window.isKeyPressed(b::W))
-				world.player.move(entities::Player::Forward, world.camera, deltaTime);
+				world.player.move(entities::Player::Forward, deltaTime);
 
 			if (window.isKeyPressed(b::S))
-				world.player.move(entities::Player::Backward, world.camera, deltaTime);
+				world.player.move(entities::Player::Backward, deltaTime);
 
 			if (window.isKeyPressed(b::D))
-				world.player.move(entities::Player::Right, world.camera, deltaTime);
+				world.player.move(entities::Player::Right, deltaTime);
 
 			if (window.isKeyPressed(b::A))
-				world.player.move(entities::Player::Left, world.camera, deltaTime);
+				world.player.move(entities::Player::Left, deltaTime);
 
 
-			if (window.isKeyPressed(b::Left_shift))
-				world.player.move(entities::Player::Downward, world.camera, deltaTime);
+			if (window.isKeyPressed(b::Left_shift)) 
+				world.player.move(entities::Player::Downward, deltaTime);
 
 			if (!world.player.attributes.flags.flying)
 			{
 				if (window.isKeyPressedOnce(b::Space) && world.player.getVelocity().y == 0)
-					world.player.move(entities::Player::Upward, world.camera, deltaTime);
+					world.player.move(entities::Player::Upward, deltaTime);
 			}
 			else
 				if (window.isKeyPressed(b::Space))
-					world.player.move(entities::Player::Upward, world.camera, deltaTime);
+					world.player.move(entities::Player::Upward, deltaTime);
 
 			if (window.isKeyPressedOnce(b::Tab))
 				world.player.getInventory().process(window, world.player.getHotbar());
@@ -205,15 +212,51 @@ try
 				world.debug_flags.draw_chunk_borders = !world.debug_flags.draw_chunk_borders;
 
 			if (window.isKeyPressedOnce(Buttons::F))
+			{
 				window.alternateCursorVisibility();
+				camera.toggle_dir_updates();
+			}
 
 
 			if (window.wasFrameBufferResized())
-				world.camera.updateProjMatrix(window.getSize());
+				camera.setFramebufferSize(window.getSize());
 
-			if (window.hasDirChanged())
-				world.camera.front_dir = window.getNewFrontDir();
+			if (window.hasMousePosChanged())
+			{
+				vec2f offset{ window.getMousePos() - last_mouse_window_pos };
+				last_mouse_window_pos = window.getMousePos();
+
+				// Do after last_mouse_window_pos was updated to avoid jumps
+				if (camera.should_update_dirs())
+				{
+
+					offset *= world.player.attributes.playability.sensitivity;
+
+					yaw += offset.x;
+					pitch += offset.y;
+
+
+					if (pitch > 89.f)
+						pitch = 89.f;
+					if (pitch < -89.f)
+						pitch = -89.f;
+
+					vec3f direction{};
+
+					float radPitch{ mpml::toRadians(pitch) };
+					float cosPitch{ std::cos(radPitch) };
+					float radYaw{ mpml::toRadians(yaw) };
+
+					direction.x = std::cos(radYaw) * cosPitch;
+					direction.y = -std::sin(radPitch);
+					direction.z = std::sin(radYaw) * cosPitch;
+
+					camera.setDirections(direction.normal());
+				}
+			}
 		}
+
+		camera.setPosition(world.player.getPosition());
 
 
 		/*=============================*/
@@ -300,8 +343,9 @@ try
 				ImGui::SliderFloat("Noise scale: ", &scale, 0.0001f, 10.0f);
 				ImGui::Image(noise_tex.ID(), ImVec2(noise_tex.getSize().x * scale, noise_tex.getSize().y * scale));
 
-			ImGui::End(); 
+			
 			}
+			ImGui::End();
 
 			{
 				ImGui::Begin("Values"); // Window beginning
@@ -368,6 +412,56 @@ try
 		// World updating
 		/*=============================*/
 
+		const auto& ray_result{ utils::raycast(camera.getPosition(), camera.getFrontDir(), world.grid, world.debug.rayDist, world.m_vtm)};
+
+		world.flags.draw_cubehighlight = false;
+		if (!window.isCursorHidden())
+			if (ray_result)
+			{
+
+				world.ch.update(mpml::Identity4<float>, camera.getViewProj(), ray_result->pos);
+
+
+				if (window.isMouseButtonPressedOnce(Buttons::Mouse::Middle))
+				{
+					auto id{ world.block_at(ray_result->pos)->id };
+
+					world.player.getHotbar().setCurrentSlot({ id }, world.m_itm);
+				}
+
+				if (!world.debug.instant_voxel_breaking)
+				{
+					if (window.isMouseButtonPressedOnce(Buttons::Mouse::Left))
+					{
+						auto id{ world.block_at(ray_result->pos)->id };
+
+						world.entity_chunkGrid.addEntity(
+							{ Resources::get().atlas_im_guiblocks, toPixelUnits(id, world.m_itm), id },
+							ray_result->pos);
+
+						world.set_voxel_at(ray_result->pos, 0);
+					}
+				}
+				else
+				{
+					if (window.isMouseButtonPressed(Buttons::Mouse::Left))
+						world.set_voxel_at(ray_result->pos, 0);
+				}
+
+				if (!world.debug.instant_voxel_placing)
+				{
+					if (world.player.getHotbar().getSelectedItem().id != 0 && window.isMouseButtonPressedOnce(Buttons::Mouse::Right))
+						world.set_voxel_at(ray_result->pos + ray_result->normal, world.player.place_voxel().id);
+				}
+				else
+				{
+					if (window.isMouseButtonPressed(Buttons::Mouse::Right))
+						world.set_voxel_at(ray_result->pos + ray_result->normal, world.player.getHotbar().getSelectedItem().id);
+				}
+
+				world.flags.draw_cubehighlight = true;
+			}
+
 			world.update(window, deltaTime);
 
 
@@ -387,9 +481,10 @@ try
 
 			// Skybox
 			float daytime = glfwGetTime() / 60.f;
+			skybox.draw({ camera.getViewProj() }, camera.getPosition());
 
 			// World
-			world.draw();
+			world.draw({ camera.getViewProj() });
 
 			// Frustum
 			/*static auto i = (player.getCamera().view* player.getCamera().proj).inverse()->transpose();
@@ -402,7 +497,7 @@ try
 
 			// Debug
 
-			const auto vp = world.camera.view * world.camera.proj;
+			const auto& vp = camera.getViewProj();
 			render::debug::DebugRenderer::get().render(vp);
 
 			// UI
@@ -452,20 +547,7 @@ void ::framebuffersize_callback(GLFWwindow* window, int width, int height) noexc
 
 void ::mouse_callback(GLFWwindow* window, double xpos, double ypos) noexcept
 {
-	static vec2f last{ static_cast<vec2f>(vec2d{xpos, ypos}) };
-
-	vec2f offset{ static_cast<vec2f>(vec2d{xpos - last.x, ypos - last.y}) };
-
-	last = static_cast<vec2f>(vec2d{ xpos, ypos });
-
-	const auto sensitivity = 0.1f;
-
-	offset *= sensitivity;
-
-	if (!static_cast<Window*>(glfwGetWindowUserPointer(window))->isCursorHidden())
-		static_cast<Window*>(glfwGetWindowUserPointer(window))->onMouseMovement(offset);
-
-	static_cast<Window*>(glfwGetWindowUserPointer(window))->onMouseCursorPosChange({ static_cast<float>(xpos), static_cast<float>(ypos) });
+	static_cast<Window*>(glfwGetWindowUserPointer(window))->onMousePosChange({ static_cast<float>(xpos), static_cast<float>(ypos) });
 }
 
 void ::scroll_callback(GLFWwindow* window, double xoffset, double yoffset) noexcept

@@ -5,16 +5,20 @@
 // This class is responsible for everything that the game has to offer in term of chunks/entities/players
 // ---------------------------------------
 
+#include "utilities/resourceManager.hpp"
+
 #include "world/chunks/chunkGrid.hpp"
 #include "world/types/voxelTypeManager.hpp"
-#include "rendering/chunkMesh/chunkMesh.hpp"
 
 #include "world/entities/entityChunks/entityChunkGrid.hpp"
+#include "rendering/chunkMesh/chunkMesh.hpp"
 
 #include "world/chunks/utilities/ray.hpp"
 
 #include "rendering/utilities/cubeHighlight.hpp"
 #include "rendering/skybox.hpp"
+
+#include "data/renderStates.hpp"
 
 #include <queue>
 
@@ -41,7 +45,7 @@ public:
 
 	// = Construction/Initialization
 
-	World(const vec2i& framebuffer_size);
+	World(const utils::Camera* cam);
 
 
 	// = Major World Updates
@@ -69,7 +73,7 @@ public:
 
 	// = Actors
 
-	void draw() noexcept;
+	void draw(const RenderStates& render) noexcept;
 
 
 	// = Setters
@@ -108,7 +112,6 @@ public:
 		
 	
 	entities::Player player;
-	render::utils::Camera	camera{};
 
 
 	chunks::ChunkGrid			grid			{};
@@ -132,33 +135,11 @@ public:
 	// World/Utility models
 
 	render::utils::CubeHighlight ch;
-	render::Skybox skybox{};
 
 
 	// GUI
 
 	render::gui::elems::Rectangle crossair{ {50, 50}, {0, 0}, types::Rect<types::uvs>{{0, 17}, {17, 17}} };
-
-	
-
-
-	// Shaders
-
-	render::Shader	s_world				{ SHADER_PATH"shader.vert", SHADER_PATH"shader.frag" };
-	render::Shader	s_items_world		{ SHADER_PATH"shader3Ditem.vert", SHADER_PATH"shader3Ditem.frag" };
-
-	render::Shader	s_gui				{ SHADER_PATH"meshTexture2D.vert", SHADER_PATH"meshTexture2D.frag" };
-	render::Shader	s_gui_text			{ SHADER_PATH"text_render/text2D.vert", SHADER_PATH"text_render/text2D.frag" };
-
-
-	// Textures
-
-	render::Texture atlas_voxels		{ ASSET_PATH"blocks/world/atlas.png" };
-
-	render::Image	atlas_im_guiblocks	{ ASSET_PATH"blocks/gui/block_inventory_atlas.png" };
-	render::Texture atlas_guiblocks		{ atlas_im_guiblocks };
-
-	render::Texture t_crossair			{ ASSET_PATH"hud/crossair_atlas.png" };
 	
 
 	// Matrices

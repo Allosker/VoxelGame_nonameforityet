@@ -1,4 +1,4 @@
-#pragma once // item_utils_2D.hpp
+#pragma once // itemStack2D.hpp
 // MIT
 // Allosker ------------------------------
 // =========+

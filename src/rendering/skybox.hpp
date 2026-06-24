@@ -8,6 +8,7 @@
 #include "utilities/opengl.hpp"
 #include "data/image.hpp"
 #include "rendering/shader.hpp"
+#include "data/renderStates.hpp"
 
 
 namespace render
@@ -73,13 +74,13 @@ namespace render
 
 		}
 
-        Shader& getShader() noexcept { return shader; }
-
-        void draw() const noexcept
+        void draw(const RenderStates& render, const vec3f& cam_pos) const noexcept
         {
             glDepthMask(false);
 
             shader.use();
+            shader.setValue("vp", render.vp);
+            shader.setValue("cameraPos", cam_pos);
 
             glBindVertexArray(m_vao);
             glBindTexture(GL_TEXTURE_CUBE_MAP, m_cubemap_id);

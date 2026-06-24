@@ -52,11 +52,9 @@ static inline double pickSpline(const std::vector<std::pair<vec2d, std::vector<v
 // Construction/Initialization
 // =====================
 
-World::World(const vec2i& framebuffer_size)
-	: player{ m_itm }
+World::World(const utils::Camera* cam)
+	: player{ m_itm, cam }
 {
-	camera.updateProjMatrix(framebuffer_size); // First Cam update
-
 	crossair.setPosition({ -crossair.getSize().x / 2, -crossair.getSize().y / 2 });
 }
 
@@ -71,10 +69,6 @@ void World::update(const Window& window, float dt)
 
 	// Player
 	update_player(window, dt);
-
-	// Camera
-	camera.pos = player.getPosition();
-	camera.view = mpml::lookAt(camera.pos, camera.front_dir + camera.pos, camera.up_dir);
 
 	types::loc current_player_loc{ chunks::ChunkGrid::to_loc(player.getPosition()) };
 
@@ -142,55 +136,6 @@ void World::update_entities(const types::loc& current_player_loc)
 
 void World::update_player(const Window& window, float dt)
 {
-	const auto& ray_result{ utils::raycast(camera.pos, camera.front_dir, grid, debug.rayDist, m_vtm) };
-
-	flags.draw_cubehighlight = false;
-	if (!window.isCursorHidden())
-		if (ray_result)
-		{
-
-			ch.update(camera.model, camera.view, camera.proj, ray_result->pos);
-
-
-			if (window.isMouseButtonPressedOnce(Buttons::Mouse::Middle))
-			{
-				auto id{ block_at(ray_result->pos)->id };
-
-				player.getHotbar().setCurrentSlot({ id }, m_itm);
-			}
-
-			if (!debug.instant_voxel_breaking)
-			{
-				if (window.isMouseButtonPressedOnce(Buttons::Mouse::Left))
-				{
-					auto id{ block_at(ray_result->pos)->id };
-
-					entity_chunkGrid.addEntity(
-						{ atlas_im_guiblocks, toPixelUnits(id, m_itm), id },
-						ray_result->pos);
-
-					set_voxel_at(ray_result->pos, 0);
-				}
-			}
-			else
-			{
-				if (window.isMouseButtonPressed(Buttons::Mouse::Left))
-					set_voxel_at(ray_result->pos, 0);
-			}
-
-			if (!debug.instant_voxel_placing)
-			{
-				if (player.getHotbar().getSelectedItem().id != 0 && window.isMouseButtonPressedOnce(Buttons::Mouse::Right))
-					set_voxel_at(ray_result->pos + ray_result->normal, player.place_voxel().id);
-			}
-			else
-			{
-				if (window.isMouseButtonPressed(Buttons::Mouse::Right))
-					set_voxel_at(ray_result->pos + ray_result->normal, player.getHotbar().getSelectedItem().id);
-			}
-
-			flags.draw_cubehighlight = true;
-		}
 
 	player.update(window, *this, m_itm, dt);
 
@@ -685,38 +630,30 @@ void World::update_sunlight() noexcept
 // Drawing
 // =====================
 
-void World::draw() noexcept
+void World::draw(const RenderStates& render) noexcept
 {
 	glEnable(GL_CULL_FACE);
 
-	//model = mpml::rotate(m, mpml::Angle<>::fromDegrees((daytime * 360.f) ), { 0.5, 0, 0.5 }); example only
-	skybox.getShader().use();
-	skybox.getShader().setValue("model", mpml::Identity4<float>);
-	skybox.getShader().setValue("view", camera.view);
-	skybox.getShader().setValue("proj", camera.proj);
-
-	skybox.draw();
+	//model = mpml::rotate(m, mpml::Angle<>::fromDegrees((daytime * 360.f) ), { 0.5, 0, 0.5 }); example onl
 
 
 	glEnable(GL_DEPTH_TEST);
 
 
-	s_world.use();
-	s_world.setValue("model", camera.model);
-	s_world.setValue("view", camera.view);
-	s_world.setValue("proj", camera.proj);
+	Resources::get().s_world.use();
+	Resources::get().s_world.setValue("model", mpml::Identity4<float>);
+	Resources::get().s_world.setValue("vp", render.vp);
 
-	atlas_voxels.bind();
+	Resources::get().atlas_voxels.bind();
 
-	grid.draw_all(camera, player);
+	grid.draw_all(render, player);
 	
 
-	s_items_world.use();
-	s_items_world.setValue("model", camera.model);
-	s_items_world.setValue("view", camera.view);
-	s_items_world.setValue("proj", camera.proj);
+	Resources::get().s_items_world.use();
+	Resources::get().s_items_world.setValue("model", mpml::Identity4<float>);
+	Resources::get().s_items_world.setValue("vp", render.vp);
 
-	entity_chunkGrid.draw(s_items_world, atlas_guiblocks);
+	entity_chunkGrid.draw(Resources::get().s_items_world, Resources::get().atlas_guiblocks);
 
 	if (flags.draw_cubehighlight)
 	{
@@ -728,19 +665,19 @@ void World::draw() noexcept
 	glDisable(GL_DEPTH_TEST);
 
 
-	s_gui_text.use();
-	s_gui_text.setValue("proj", ma_gui_ortho);
-	s_gui_text.setValue("view", mpml::Identity4<float>);
+	Resources::get().s_gui_text.use();
+	Resources::get().s_gui_text.setValue("proj", ma_gui_ortho);
+	Resources::get().s_gui_text.setValue("view", mpml::Identity4<float>);
 
-	s_gui.use();
-	s_gui.setValue("proj", ma_gui_ortho);
-	s_gui.setValue("view", mpml::Identity4<float>);
+	Resources::get().s_gui.use();
+	Resources::get().s_gui.setValue("proj", ma_gui_ortho);
+	Resources::get().s_gui.setValue("view", mpml::Identity4<float>);
 
-	t_crossair.bind();
-	crossair.draw_transparent(s_gui);
+	Resources::get().t_crossair.bind();
+	crossair.draw_transparent(Resources::get().s_gui);
 
 
-	player.draw_attributes(s_gui, s_gui_text, atlas_guiblocks, m_itm);
+	player.draw_attributes(Resources::get().s_gui, Resources::get().s_gui_text, Resources::get().atlas_guiblocks, m_itm);
 }
 
 

@@ -7,9 +7,10 @@
 // =====================
 
 
-entities::Player::Player(const ItemTypeManager& itm)
+entities::Player::Player(const ItemTypeManager& itm, const utils::Camera* cam)
 	: m_texHotbarSlot{ ASSET_PATH"hud/slot.png" }, m_texInv{ ASSET_PATH"hud/inventory.png" }, m_texInvSlot{ ASSET_PATH"hud/slot_inventory.png" }, m_font{ FONT_PATH"pixelated.ttf" },
 	m_hotbar{ m_texHotbarSlot, itm, &m_font }, m_inventory{ m_texInv, m_texInvSlot, &m_font },
+	m_bound_camera{ cam },
 	Entity{ {}, {{ 0.25, 1.75, 0.25 }, { 0.25, 0.20, 0.25 }} }
 {
 }
@@ -131,26 +132,26 @@ void entities::Player::draw_attributes(const render::Shader& shader, const rende
 // Mutators
 // =====================
 
-void entities::Player::move(const Direction& dir, const render::utils::Camera& cam, float deltaTime) noexcept
+void entities::Player::move(const Direction& dir, float deltaTime) noexcept
 {
 	const auto speed{ attributes.physics.speed * deltaTime };
 
 	switch (dir)
 	{
 	case Forward:
-		m_velocity += vec3f{ cam.front_dir.x, 0.f, cam.front_dir.z }.normal() * speed;
+		m_velocity += vec3f{ m_bound_camera->getFrontDir().x, 0.f, m_bound_camera->getFrontDir().z}.normal() * speed;
 		break;
 
 	case Backward:
-		m_velocity -= vec3f{ cam.front_dir.x, 0.f, cam.front_dir.z }.normal() * speed;
+		m_velocity -= vec3f{ m_bound_camera->getFrontDir().x, 0.f, m_bound_camera->getFrontDir().z }.normal() * speed;
 		break;
 
 	case Right:
-		m_velocity += vec3f{ cam.right_dir().x, 0.f, cam.right_dir().z}.normal() * speed;
+		m_velocity += vec3f{ m_bound_camera->getRightDir().x, 0.f, m_bound_camera->getRightDir().z}.normal() * speed;
 		break;
 
 	case Left:
-		m_velocity -= vec3f{ cam.right_dir().x, 0.f, cam.right_dir().z }.normal() * speed;
+		m_velocity -= vec3f{ m_bound_camera->getRightDir().x, 0.f, m_bound_camera->getRightDir().z }.normal() * speed;
 		break;
 
 	case Downward:

@@ -128,12 +128,11 @@ std::vector<types::loc> chunks::ChunkGrid::allocate_chunks(const types::loc& pla
 	return locations;
 }
 
-void chunks::ChunkGrid::draw_all(const render::utils::Camera& cam, const entities::Player& player) const noexcept
+void chunks::ChunkGrid::draw_all(const RenderStates& render, const entities::Player& player) const noexcept
 {
 	std::vector<types::loc> visible_chunks{};
 
-	if (!cam.free)
-		visible_chunks = render::utils::createViewFrustum(cam, m_chunks);
+	visible_chunks = render::utils::getChunksVisibleInView(render.vp, m_chunks);
 
 	// Sort transparent chunks to draw them last 
 	std::vector<types::loc> chunk_transparents{};

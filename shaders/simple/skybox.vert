@@ -1,9 +1,8 @@
 #version 460 core
 layout (location = 0) in vec3 aPos;
 
-uniform mat4 model;
-uniform mat4 proj;
-uniform mat4 view;
+uniform mat4 vp;
+uniform vec3 cameraPos;
 
 out vec3 texDir;
 
@@ -11,7 +10,7 @@ void main()
 {
 	texDir = aPos;
 
-	mat4 v = mat4(mat3(view));
+	vec4 pos = vp * vec4(aPos + cameraPos, 1.0);
 
-	gl_Position = proj * v * model * vec4(aPos, 1.0);
+	gl_Position = pos.xyww;
 }
