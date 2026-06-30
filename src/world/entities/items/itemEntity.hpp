@@ -10,7 +10,7 @@
 #include "rendering/texture.hpp"
 #include "world/entities/entity.hpp"
 
-#include "world/types/itemTypeManager.hpp"
+#include "utilities/resourceManaging.hpp"
 #include "data/item.hpp"
 
 namespace render

@@ -58,8 +58,13 @@ render::gui::elems::Rectangle& render::gui::elems::Rectangle::operator=(Rectangl
 // Setters
 // =====================
 
-void render::gui::elems::Rectangle::updateSprite(const types::Rect<types::uvs>& attributes) noexcept
+void render::gui::elems::Rectangle::updateSprite(const types::Rect<types::uvs>& attributes, vec2f size) noexcept
 {
+	if (size == vec2f{})
+		size = getBaseSize();
+	else
+		setBaseSize(size);
+
 	Mesh::updateBuffer<Data::Vertex2D>
 		(
 			std::array<Data::Vertex2D, 6>
@@ -70,11 +75,11 @@ void render::gui::elems::Rectangle::updateSprite(const types::Rect<types::uvs>& 
 		attributes.pos
 	},
 	{
-		{getBaseSize().x, 0},
+		{size.x, 0},
 		{attributes.pos + types::uvs{ attributes.size.x, 0}}
 	},
 	{
-		{getBaseSize().x, getBaseSize().y},
+		{size.x, size.y},
 		{attributes.pos + types::uvs{ attributes.size.x, attributes.size.y}}
 	},
 	{
@@ -82,11 +87,11 @@ void render::gui::elems::Rectangle::updateSprite(const types::Rect<types::uvs>& 
 		attributes.pos
 	},
 	{
-		{0, getBaseSize().y},
+		{0, size.y},
 		{attributes.pos + types::uvs{ 0, attributes.size.y}}
 	},
 	{
-		{getBaseSize().x, getBaseSize().y},
+		{size.x, size.y},
 		{attributes.pos + types::uvs{ attributes.size.x, attributes.size.y}}
 	},
 	}, sizeof(Data::Vertex2D), GL_STREAM_DRAW);

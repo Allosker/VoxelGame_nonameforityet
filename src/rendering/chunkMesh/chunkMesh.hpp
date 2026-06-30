@@ -14,7 +14,7 @@
 #include "data/voxel.hpp"
 #include "data/vertex.hpp"
 
-#include "world/types/voxelTypeManager.hpp"
+#include "utilities/resourceManaging.hpp"
 
 #include "world/chunks/chunk.hpp"
 

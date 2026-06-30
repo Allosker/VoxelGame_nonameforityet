@@ -8,8 +8,7 @@
 
 
 entities::Player::Player(const ItemTypeManager& itm, const utils::Camera* cam)
-	: m_texHotbarSlot{ ASSET_PATH"hud/slot.png" }, m_texInv{ ASSET_PATH"hud/inventory.png" }, m_texInvSlot{ ASSET_PATH"hud/slot_inventory.png" }, m_font{ FONT_PATH"pixelated.ttf" },
-	m_hotbar{ m_texHotbarSlot, itm, &m_font }, m_inventory{ m_texInv, m_texInvSlot, &m_font },
+	: m_inventory{},
 	m_bound_camera{ cam },
 	Entity{ {}, {{ 0.25, 1.75, 0.25 }, { 0.25, 0.20, 0.25 }} }
 {
@@ -20,12 +19,12 @@ entities::Player::Player(const ItemTypeManager& itm, const utils::Camera* cam)
 // Actors
 // =====================
 
-void entities::Player::update(const Window& window, const World& world, const ItemTypeManager& itm, float deltaTime) noexcept
+void entities::Player::update(const World& world, const ItemTypeManager& itm, float deltaTime) noexcept
 {
 	updatePosition(world, deltaTime);
 	resolve_collisions(world);
 
-	m_inventory.update(window, itm, m_hotbar);
+
 }
 
 void entities::Player::updatePosition(const World& world, float deltaTime) noexcept
@@ -97,34 +96,8 @@ void entities::Player::resolve_collisions(const World& world) noexcept
 		}
 }
 
-bool entities::Player::addItem(const Data::Item& item, int64 count, const ItemTypeManager& itm) noexcept
+void entities::Player::draw(const ItemTypeManager& itm) noexcept
 {
-	if (!m_hotbar.addItem({ item.id }, count, itm))
-	{
-		if (m_inventory.addItem({ item.id }, count, itm))
-			return true;
-	}
-	else
-		return true;
-}
-
-bool entities::Player::removeItem(const Data::Item& item, int64 count, const ItemTypeManager& itm) noexcept
-{
-	return false;
-}
-
-
-const Data::Item& entities::Player::place_voxel() noexcept
-{
-	const auto& item = m_hotbar.getSelectedItem();
-	m_hotbar.removeItem(item, 1);
-	return item;
-}
-
-void entities::Player::draw_attributes(const render::Shader& shader, const render::Shader& text_shader, const render::Texture& gui_block_atlas, const ItemTypeManager& itm) noexcept
-{
-	m_hotbar.draw(shader, text_shader, m_texHotbarSlot, gui_block_atlas, itm);
-	m_inventory.draw(shader, text_shader, m_texInv, m_texInvSlot, gui_block_atlas, itm);
 }
 
 

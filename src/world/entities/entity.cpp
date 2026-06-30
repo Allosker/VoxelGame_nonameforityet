@@ -20,16 +20,6 @@ entities::Entity::Entity(const types::Rect<vec3f>& entity_rect, const physics::c
 
 
 // =====================
-// Predicates
-// =====================
-
-bool entities::Entity::is_within(const physics::collisions::BasicHitbox& container) const noexcept
-{
-	return m_hitbox.intersects(container);
-}
-
-
-// =====================
 // Actors
 // =====================
 
@@ -39,7 +29,7 @@ void entities::Entity::draw(const render::Shader& shader, GLenum mode) noexcept
 
 	shader.setValue("model", getTransformation());
 
-	Mesh::draw(mode);
+	m_mesh.draw(mode);
 }
 
 void entities::Entity::draw_transparent(const render::Shader& shader, GLenum mode) noexcept
@@ -48,5 +38,5 @@ void entities::Entity::draw_transparent(const render::Shader& shader, GLenum mod
 
 	shader.setValue("model", getTransformation());
 
-	Mesh::draw_transparent(mode);
+	m_mesh.draw_transparent(mode);
 }

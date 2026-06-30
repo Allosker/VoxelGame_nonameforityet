@@ -86,8 +86,6 @@ namespace render
             glBindTexture(GL_TEXTURE_CUBE_MAP, m_cubemap_id);
 
             glDrawArrays(GL_TRIANGLES, 0, 36);
-
-            glDepthMask(true);
         }
 
 

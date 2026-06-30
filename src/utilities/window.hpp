@@ -9,10 +9,12 @@
 #include "utilities/opengl.hpp"
 #include "inputs.hpp"
 #include "utilities/time/clock.hpp"
+#include "utilities/event.hpp"
 
 #include <string>
 #include <array>
 #include <functional>
+#include <queue>
 
 
 class Window
@@ -35,22 +37,29 @@ public:
 
 	void clearStates() noexcept;
 
-	void updateKeys() const noexcept { m_lastKeyDowns = m_keyDowns; }
-
-	void updateMouseButtons() const noexcept { m_lastMouseButtonsDown = m_mouseButtonsDown; }
-
 	void processInputs(const std::function<void()>& inputs);
 
 	bool alternateCursorVisibility() noexcept;
 
+	std::optional<Event> pollEvent() noexcept
+	{
+		if(!m_queue_events.empty())
+		{
+			Event temp{ m_queue_events.front() };
 
-	// = CallBacks
+			m_queue_events.pop();
 
-	void onFramebufferResize(vec2i newSize) noexcept;
+			return std::make_optional(temp);
+		}
 
-	void onMouseWheelScroll(vec2f delta) noexcept;
-
-	void onMousePosChange(vec2f newPos) noexcept;
+		return std::nullopt;
+	}
+	
+	template<typename EventSubType>
+	void addEvent(const EventSubType& type) noexcept
+	{
+		m_queue_events.push(type);
+	}
 
 
 	// = Getters
@@ -60,13 +69,6 @@ public:
 
 	const mpml::Vector2<int>& getSize() const noexcept { return m_size; }
 
-	std::uint8_t getKeyState(int key) const noexcept { return glfwGetKey(m_window, key); }
-	std::uint32_t getMods() const noexcept;
-
-
-	vec2f getMouseWheelDelta() const noexcept {  return m_mouseWheel_delta; }
-	vec2f getMousePos() const noexcept { return m_mousePos; }
-
 
 	// = Predicates
 
@@ -74,23 +76,11 @@ public:
 
 	bool isCursorHidden() const noexcept { return m_cursorHidden; }
 
-	bool are_mods_set(int mods) const noexcept { return getMods() & mods; }
+	bool isKeyPressed(Keys key) const noexcept { return glfwGetKey(m_window, static_cast<int>(key)) == GLFW_PRESS; }
+	bool isKeyReleased(Keys key) const noexcept { return glfwGetKey(m_window, static_cast<int>(key)) == GLFW_RELEASE; }
 
-
-	bool isKeyPressedOnce(int key) const noexcept;
-
-	bool isKeyPressed(int key) const noexcept { return glfwGetKey(m_window, key) == Buttons::Pressed; }
-	bool isKeyReleased(int key) const noexcept { return glfwGetKey(m_window, key) == Buttons::Released; }
-
-
-	bool isMouseButtonPressedOnce(int key) const noexcept;
-
-	bool isMouseButtonPressed(int button) const noexcept { return glfwGetMouseButton(m_window, button) == Buttons::Pressed; }
-	bool isMouseButtonReleased(int button) const noexcept { return glfwGetMouseButton(m_window, button) == Buttons::Released; }
-
-	bool hasMousePosChanged() const noexcept { return m_mousePosChangedThisFrame; }
-
-	bool wasFrameBufferResized() const noexcept { return m_wasFrameBufferResized; }
+	bool isMouseButtonPressed(MouseButtons button) const noexcept { return glfwGetMouseButton(m_window, static_cast<int>(button)) == GLFW_PRESS; }
+	bool isMouseButtonReleased(MouseButtons button) const noexcept { return glfwGetMouseButton(m_window, static_cast<int>(button)) == GLFW_RELEASE; }
 
 
 	// = Setters
@@ -104,27 +94,15 @@ public:
 
 	static constexpr vec2f g_guiViewSize{ 1920.f,1080.f };
 		 
+
 private:
 
-	// Make that better
-	mutable std::array<bool, 348> m_keyDowns{};
-	mutable std::array<bool, 348> m_lastKeyDowns{};
-
-	mutable std::array<bool, 8> m_mouseButtonsDown{};
-	mutable std::array<bool, 8> m_lastMouseButtonsDown{};
+	bool m_cursorHidden{ true };
 
 	vec2i m_size{};
 
-	vec2f m_mouseWheel_delta{};
-	vec2f m_mousePos{};
-
-	bool m_mousePosChangedThisFrame{ false };
-
-	bool m_wheelScrolledThisFrame{ false };
-	bool m_cursorHidden{ true };
-
-	bool m_wasFrameBufferResized{ false };
-
 	GLFWwindow* m_window{ nullptr };
+
+	std::queue<Event> m_queue_events{};
 
 };

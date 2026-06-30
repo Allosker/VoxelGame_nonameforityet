@@ -59,6 +59,8 @@ namespace physics
 
 		const vec3f& getPosition() const noexcept { return m_position; }
 
+		const vec3f& getBaseSize() const noexcept { return m_baseSize; }
+
 
 		// = Setters
 
@@ -76,7 +78,17 @@ namespace physics
 
 		virtual void setSize(const vec3f& size) noexcept
 		{
-			setScale({ size.x / m_baseSize.x, size.y / m_baseSize.y, size.z / m_baseSize.z });
+			if (m_baseSize != 0)
+				setScale({ size.x / m_baseSize.x, size.y / m_baseSize.y, size.z / m_baseSize.z });
+			else
+				m_baseSize = size;
+
+			m_transformNeedUpdate = true;
+		}
+
+		virtual void setBaseSize(const vec3f& size) noexcept
+		{
+			m_baseSize = size;
 			m_transformNeedUpdate = true;
 		}
 

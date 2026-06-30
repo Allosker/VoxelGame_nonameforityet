@@ -6,6 +6,7 @@
 // =====================
 
 Window::Window(const vec2i& size_, const std::string& name, GLFWmonitor* monitor, GLFWwindow* share)
+	: m_size{ size_ }
 {
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
@@ -41,12 +42,6 @@ Window::~Window() noexcept
 
 void Window::clearStates() noexcept
 {
-	updateKeys();
-	updateMouseButtons();
-	m_mouseWheel_delta = vec2f{0};
-	m_wheelScrolledThisFrame = false;
-	m_mousePosChangedThisFrame = false;
-	m_wasFrameBufferResized = false;
 	glfwPollEvents();
 }
 
@@ -68,69 +63,6 @@ bool Window::alternateCursorVisibility() noexcept
 	return m_cursorHidden;
 }
 
-void Window::onFramebufferResize(vec2i newSize) noexcept
-{
-	m_wasFrameBufferResized = true;
-	m_size = newSize;
-	glViewport(0, 0, newSize.x, newSize.y);
-}
-
-void Window::onMouseWheelScroll(vec2f delta) noexcept
-{
-	m_mouseWheel_delta = delta;
-}
-
-void Window::onMousePosChange(vec2f newPos) noexcept
-{
-	m_mousePos = newPos;
-	m_mousePosChangedThisFrame = true;
-}
-
-
-// =====================
-// Getters
-// =====================
-
-std::uint32_t Window::getMods() const noexcept
-{
-	using b = Buttons;
-
-	std::uint32_t mask{};
-
-	if (glfwGetKey(m_window, b::Left_shift) || glfwGetKey(m_window, b::Right_shift))
-		mask |= b::Shift;
-
-	if (glfwGetKey(m_window, b::Left_control) || glfwGetKey(m_window, b::Right_control))
-		mask |= b::Control;
-
-	if (glfwGetKey(m_window, b::Left_alt) || glfwGetKey(m_window, b::Right_alt))
-		mask |= b::Alt;
-
-	if (glfwGetKey(m_window, b::Left_super) || glfwGetKey(m_window, b::Right_super))
-		mask |= b::Super;
-
-	return mask;
-}
-
-
-// =====================
-// Predicates
-// =====================
-
-bool Window::isKeyPressedOnce(int key) const noexcept
-{
-	m_keyDowns[key] = glfwGetKey(m_window, key) == Buttons::Pressed;
-
-	return m_keyDowns[key] && !m_lastKeyDowns[key];
-}
-
-bool Window::isMouseButtonPressedOnce(int key) const noexcept
-{
-	m_mouseButtonsDown[key] = glfwGetMouseButton(m_window, key) == Buttons::Pressed;
-
-	return m_mouseButtonsDown[key] && !m_lastMouseButtonsDown[key];
-}
-
 
 // =====================
 // Setters
@@ -139,6 +71,7 @@ bool Window::isMouseButtonPressedOnce(int key) const noexcept
 void Window::resize(const mpml::Vector2<int>& new_size) noexcept
 {
 	glfwSetWindowSize(m_window, new_size.x, new_size.y);
+	glViewport(0, 0, new_size.x, new_size.y);
 	m_size = new_size;
 }
 

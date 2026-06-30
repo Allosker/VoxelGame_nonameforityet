@@ -22,7 +22,7 @@ namespace entities
 {
 	
 	class Entity
-		: public render::Mesh, public physics::Transformable3D
+		: public physics::Transformable3D
 	{
 	public:
 
@@ -56,11 +56,6 @@ namespace entities
 
 		const physics::collisions::BasicHitbox& getHitbox() const noexcept { return m_hitbox; }
 
-
-		// = Predicates
-		
-		bool is_within(const physics::collisions::BasicHitbox& container) const noexcept;
-
 		
 		// = Actors
 
@@ -70,6 +65,8 @@ namespace entities
 
 
 	protected:
+
+		render::Mesh m_mesh{};
 
 		physics::collisions::BasicHitbox	m_hitbox{};
 

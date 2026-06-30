@@ -38,7 +38,7 @@ namespace render::gui::elems
 
 		// = Setters
 
-		void updateSprite(const types::Rect<types::uvs>& attributes) noexcept;
+		void updateSprite(const types::Rect<types::uvs>& attributes, vec2f size = {}) noexcept;
 
 
 		// = Predicates

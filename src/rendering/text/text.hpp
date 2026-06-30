@@ -28,17 +28,17 @@ public:
 
 	// = Construction/Destruction
 
-	Text(const Font& font, std::string_view str = {}, const vec3f& pos = {}, const vec3f& ori = {});
+	Text(const Font* font, std::string_view str = {}, const vec3f& pos = {}, const vec3f& ori = {});
 
-	Text(Text&& other) noexcept;
-	Text& operator=(Text&& other) noexcept;
+	Text(Text&&) noexcept;
+	Text& operator=(Text&&) noexcept;
 
 	virtual ~Text() noexcept;
 
 
 	// = Setters
 
-	void setStr(const std::string& str)
+	void setString(const std::string& str)
 	{
 		m_text = str;
 		update_buffer();

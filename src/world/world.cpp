@@ -53,7 +53,7 @@ static inline double pickSpline(const std::vector<std::pair<vec2d, std::vector<v
 // =====================
 
 World::World(const utils::Camera* cam)
-	: player{ m_itm, cam }
+	: player{ ItemTypeManager::get(), cam }
 {
 	crossair.setPosition({ -crossair.getSize().x / 2, -crossair.getSize().y / 2 });
 }
@@ -65,8 +65,6 @@ World::World(const utils::Camera* cam)
 
 void World::update(const Window& window, float dt)
 {
-	
-
 	// Player
 	update_player(window, dt);
 
@@ -120,7 +118,7 @@ void World::update_chunks(const types::loc& current_player_loc)
 		update_sunlight();
 
 		if (sunlightBfsQueue.empty())
-			grid.update(*this, m_vtm, player);
+			grid.update(*this, VoxelTypeManager::get(), player);
 	}
 
 
@@ -131,13 +129,12 @@ void World::update_chunks(const types::loc& current_player_loc)
 
 void World::update_entities(const types::loc& current_player_loc)
 {
-	entity_chunkGrid.update(player, m_itm);
+	entity_chunkGrid.update(player, ItemTypeManager::get());
 }
 
 void World::update_player(const Window& window, float dt)
 {
-
-	player.update(window, *this, m_itm, dt);
+	player.update(*this, ItemTypeManager::get(), dt);
 
 	player.resetMovement();
 }
@@ -226,7 +223,7 @@ void World::update_rLighting() noexcept
 		for (const auto& d : dirs)
 			if (auto* v = try_get_block(d))
 			{
-				if (m_vtm.isTypeTransparent(v) &&
+				if (VoxelTypeManager::get().isTypeTransparent(v) &&
 					v->getR() < lightlevel - 1)
 				{
 					v->setR(lightlevel - 1);
@@ -312,7 +309,7 @@ void World::update_gLighting() noexcept
 		for (const auto& d : dirs)
 			if (auto* v = try_get_block(d))
 			{
-				if (m_vtm.isTypeTransparent(v) &&
+				if (VoxelTypeManager::get().isTypeTransparent(v) &&
 					v->getG() < lightlevel - 1)
 				{
 					v->setG(lightlevel - 1);
@@ -398,7 +395,7 @@ void World::update_bLighting() noexcept
 		for (const auto& d : dirs)
 			if (auto* v = try_get_block(d))
 			{
-				if (m_vtm.isTypeTransparent(v) &&
+				if (VoxelTypeManager::get().isTypeTransparent(v) &&
 					v->getB() < lightlevel - 1)
 				{
 					v->setB(lightlevel - 1);
@@ -488,13 +485,13 @@ void World::update_sunlight() noexcept
 		for (size_t j{}; j < dirs.size(); j++)
 			if (auto* v = try_get_block(dirs[j]))
 			{
-				if (j == 3 && m_vtm.isTypeTransparent(v) && try_get_block(pos)->getSunlight() == g_maxsunlight)
+				if (j == 3 && VoxelTypeManager::get().isTypeTransparent(v) && try_get_block(pos)->getSunlight() == g_maxsunlight)
 				{
 					v->setSunlight(g_maxsunlight);
 					sunlightBfsQueue.emplace(dirs[j]);
 				}
 
-				if (m_vtm.isTypeTransparent(v) &&
+				if (VoxelTypeManager::get().isTypeTransparent(v) &&
 					v->getSunlight() < lightlevel - 1)
 				{
 					v->setSunlight(lightlevel - 1);
@@ -526,7 +523,7 @@ void World::update_sunlight() noexcept
 				for (int32 x{}; x < chunks::Chunk::g_size; x++)
 					for (int32 z{}; z < chunks::Chunk::g_size; z++)
 					{
-						if (m_vtm.isTypeTransparent(c->block_at_ptr({ x, chunks::Chunk::g_size - 1, z })))
+						if (VoxelTypeManager::get().isTypeTransparent(c->block_at_ptr({ x, chunks::Chunk::g_size - 1, z })))
 						{
 							c->block_at_ptr({ x, chunks::Chunk::g_size - 1, z })->setSunlight(g_maxsunlight);
 							sunlightBfsQueue.emplace(static_cast<types::pos>(types::loc{ x, chunks::Chunk::g_size - 1, z }) + c->getPos());
@@ -634,7 +631,7 @@ void World::draw(const RenderStates& render) noexcept
 {
 	glEnable(GL_CULL_FACE);
 
-	//model = mpml::rotate(m, mpml::Angle<>::fromDegrees((daytime * 360.f) ), { 0.5, 0, 0.5 }); example onl
+	//model = mpml::rotate(m, mpml::Angle<>::fromDegrees((daytime * 360.f) ), { 0.5, 0, 0.5 }); example only
 
 
 	glEnable(GL_DEPTH_TEST);
@@ -677,7 +674,7 @@ void World::draw(const RenderStates& render) noexcept
 	crossair.draw_transparent(Resources::get().s_gui);
 
 
-	player.draw_attributes(Resources::get().s_gui, Resources::get().s_gui_text, Resources::get().atlas_guiblocks, m_itm);
+	player.draw(ItemTypeManager::get());
 }
 
 
@@ -707,9 +704,9 @@ bool World::set_voxel_at(const types::pos& block_pos, types::type_id id) noexcep
 	
 	
 	// Update source lights
-	if (id != 0 && m_vtm.getType(id).is_light_source)
+	if (id != 0 && VoxelTypeManager::get().getType(id).is_light_source)
 	{
-		const auto& new_block_type = m_vtm.getType(id);
+		const auto& new_block_type = VoxelTypeManager::get().getType(id);
 
 		rBfsQueue.emplace(block_pos);
 		gBfsQueue.emplace(block_pos);
@@ -719,7 +716,7 @@ bool World::set_voxel_at(const types::pos& block_pos, types::type_id id) noexcep
 		current_block.setG(new_block_type.light.y);
 		current_block.setB(new_block_type.light.z);
 	}
-	else if (current_block.id != 0 && m_vtm.getType(current_block.id).is_light_source)
+	else if (current_block.id != 0 && VoxelTypeManager::get().getType(current_block.id).is_light_source)
 	{
 		rRemovalBfsQueue.emplace(block_pos, current_block.getR());
 		gRemovalBfsQueue.emplace(block_pos, current_block.getG());
@@ -736,7 +733,7 @@ bool World::set_voxel_at(const types::pos& block_pos, types::type_id id) noexcep
 			{
 				const auto& block = chunk->block_at({ x,y,z });
 
-				if (block.id != 0 && m_vtm.getType(block.id).is_light_source)
+				if (block.id != 0 && VoxelTypeManager::get().getType(block.id).is_light_source)
 				{
 					const auto pos = static_cast<types::pos>(types::loc{ x,y,z }) + chunk->getPos();
 
@@ -777,25 +774,25 @@ bool World::set_voxel_at(const types::pos& block_pos, types::type_id id) noexcep
 				if (const auto* b = try_get_block(p))
 					highest = std::max(highest, b->getSunlight());
 
-			try_get_block(block_pos)->setSunlight(highest == 0 ? 0 : highest - 1);
+			current_block.setSunlight(highest == 0 ? 0 : highest - 1);
 		}
 		else
-			try_get_block(block_pos)->setSunlight(g_maxsunlight);
+			current_block.setSunlight(g_maxsunlight);
 
 		sunlightBfsQueue.emplace(block_pos);
 	}
 	else
 	{
-		sunlightRemovalBfsQueue.emplace(block_pos, try_get_block(block_pos)->getSunlight());
-		try_get_block(block_pos)->setSunlight(0);
+		sunlightRemovalBfsQueue.emplace(block_pos, current_block.getSunlight());
+		current_block.setSunlight(0);
 	}
 
 	
 		
 
 	// - Update dirtiness of chunk meshes to update them
-
-	grid.chunkmesh_at(block_pos)->flags.dirty = true;
+	if (auto* c = grid.chunkmesh_at(block_pos))
+		c->flags.dirty = true;
 
 	// Dirten up all needed chunks
 	auto b{ static_cast<types::pos>(grid.to_loc(block_pos)) };

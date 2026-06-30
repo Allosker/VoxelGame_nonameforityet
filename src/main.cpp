@@ -33,13 +33,17 @@
 #include "world/entities/player/player.hpp"
 
 #include "world/entities/items/itemEntity.hpp"
-#include "world/types/itemTypeManager.hpp"
+#include "utilities/resourceManaging.hpp"
 
 #include "rendering/text/text.hpp"
 
 #include "world/terrain/terrain.hpp"
 
 #include "utilities/camera.hpp"
+
+
+#include "world/entities/player/inventory.hpp"
+#include "rendering/GUI/guiInventory.hpp"
 
 
 /* TOFIXLIST -- TODOLIST on Trello
@@ -60,6 +64,10 @@ namespace
 	void mouse_callback(GLFWwindow* window, double xpos, double ypos) noexcept;
 
 	void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) noexcept;
+
+	void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) noexcept;
+
+	void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) noexcept;
 }
 
 
@@ -99,6 +107,8 @@ try
 	glfwSetFramebufferSizeCallback(window.get(), ::framebuffersize_callback);
 	glfwSetCursorPosCallback(window.get(), ::mouse_callback);
 	glfwSetScrollCallback(window.get(), ::scroll_callback);
+	glfwSetKeyCallback(window.get(), ::key_callback);
+	glfwSetMouseButtonCallback(window.get(), ::mouse_button_callback);
 
 
 	// Setup Platform/Renderer backends
@@ -121,12 +131,18 @@ try
 
 
 	utils::Camera	camera{};
+	camera.setFramebufferSize(window.getSize());
+
 	vec2f last_mouse_window_pos{};
 	float yaw{ -90 }, pitch{};
 
 	// World
 	render::Skybox skybox{};
 	World world{ &camera };
+
+
+	Inventory inv{};
+	render::gui::GuiInventory guiInv{ inv };
 
 
 	float deltaTime{};
@@ -157,74 +173,86 @@ try
 		// Event processing
 		/*=============================*/
 
+		bool imgui_compute_noisemap{ false };
+
+		bool raycast_select_block{ false };
+		bool raycast_place_block{ false };
+		bool raycast_destroy_block{ false };
+
+
 		window.clearStates();
+		while(auto event = window.pollEvent())
 		{
 
-			using b = Buttons;
-
-			if (window.isKeyPressed(b::Escape))
-				window.close();
-
-			if (vec2f delta = window.getMouseWheelDelta(); delta.y != 0)
-				world.player.getHotbar().nextSlot(delta.y).id;
-
-
-			if (window.isKeyPressed(b::W))
-				world.player.move(entities::Player::Forward, deltaTime);
-
-			if (window.isKeyPressed(b::S))
-				world.player.move(entities::Player::Backward, deltaTime);
-
-			if (window.isKeyPressed(b::D))
-				world.player.move(entities::Player::Right, deltaTime);
-
-			if (window.isKeyPressed(b::A))
-				world.player.move(entities::Player::Left, deltaTime);
-
-
-			if (window.isKeyPressed(b::Left_shift)) 
-				world.player.move(entities::Player::Downward, deltaTime);
-
-			if (!world.player.attributes.flags.flying)
+			if (auto button = event->get_if<Event::MouseButtonPressed>())
 			{
-				if (window.isKeyPressedOnce(b::Space) && world.player.getVelocity().y == 0)
-					world.player.move(entities::Player::Upward, deltaTime);
-			}
-			else
-				if (window.isKeyPressed(b::Space))
-					world.player.move(entities::Player::Upward, deltaTime);
+				if (button->scancode == MouseButtons::Middle)
+					raycast_select_block = true;
 
-			if (window.isKeyPressedOnce(b::Tab))
-				world.player.getInventory().process(window, world.player.getHotbar());
+				if (button->scancode == MouseButtons::Right)
+					raycast_place_block = true;
 
-			if (window.isKeyPressedOnce(b::E))
-				world.debug_flags.force_reload = true;
+				if (button->scancode == MouseButtons::Left)
+					raycast_destroy_block = true;
 
-			if (window.isKeyPressedOnce(b::R))
-				if (world.player.getHotbar().getSelectedItem().id)
-					world.set_voxel_at(world.player.getPosition(), world.player.getHotbar().getSelectedItem().id);
-			/*{
-				player.getCamera().free = !player.getCamera().free;
-				world.debug_flags.update_world = !world.debug_flags.update_world;
-			}*/
-
-			if (window.isKeyPressedOnce(b::T))
-				world.debug_flags.draw_chunk_borders = !world.debug_flags.draw_chunk_borders;
-
-			if (window.isKeyPressedOnce(Buttons::F))
-			{
-				window.alternateCursorVisibility();
-				camera.toggle_dir_updates();
 			}
 
-
-			if (window.wasFrameBufferResized())
-				camera.setFramebufferSize(window.getSize());
-
-			if (window.hasMousePosChanged())
+			if (auto key = event->get_if<Event::KeyPressed>())
 			{
-				vec2f offset{ window.getMousePos() - last_mouse_window_pos };
-				last_mouse_window_pos = window.getMousePos();
+
+				if (key->scancode == Keys::Escape)
+					window.close();
+
+
+				/*if (key->scancode == Keys::Tab)
+					world.player.getInventory().process(window, world.player.getHotbar());*/
+
+				if (key->scancode == Keys::E)
+					world.debug_flags.force_reload = true;
+
+				if (key->scancode == Keys::R)
+				{
+					/*if (world.player.getHotbar().getSelectedItem().id)
+						world.set_voxel_at(world.player.getPosition(), world.player.getHotbar().getSelectedItem().id);*/
+
+					imgui_compute_noisemap = true;
+				}
+				/*{
+					player.getCamera().free = !player.getCamera().free;
+					world.debug_flags.update_world = !world.debug_flags.update_world;
+				}*/
+
+				if (key->scancode == Keys::T)
+					world.debug_flags.draw_chunk_borders = !world.debug_flags.draw_chunk_borders;
+
+				if (key->scancode == Keys::F)
+				{
+					window.alternateCursorVisibility();
+					camera.toggle_dir_updates();
+				}
+
+				if (key->scancode == Keys::Tab)
+				{
+					guiInv.toggle();
+					window.alternateCursorVisibility();
+					camera.toggle_dir_updates();
+				}
+
+				if (key->scancode == Keys::Q)
+					inv.setBoardSize(Inventory::BoardSize::Big);
+			}
+			
+
+			/*if (auto d = event->get_if<Event::MouseWheelScrolled>())
+				world.player.getHotbar().nextSlot(d->delta.y);*/
+
+			if (auto f = event->get_if<Event::Resized>())
+				camera.setFramebufferSize(f->size);
+
+			if (auto p = event->get_if<Event::MouseMoved>())
+			{
+				vec2f offset{ p->pos - last_mouse_window_pos };
+				last_mouse_window_pos = p->pos;
 
 				// Do after last_mouse_window_pos was updated to avoid jumps
 				if (camera.should_update_dirs())
@@ -256,11 +284,38 @@ try
 			}
 		}
 
+		if (window.isKeyPressed(Keys::W))
+			world.player.move(entities::Player::Forward, deltaTime);
+
+		if (window.isKeyPressed(Keys::S))
+			world.player.move(entities::Player::Backward, deltaTime);
+
+		if (window.isKeyPressed(Keys::D))
+			world.player.move(entities::Player::Right, deltaTime);
+
+		if (window.isKeyPressed(Keys::A))
+			world.player.move(entities::Player::Left, deltaTime);
+
+
+
+		if (window.isKeyPressed(Keys::Left_shift))
+			world.player.move(entities::Player::Downward, deltaTime);
+
+		if (!world.player.attributes.flags.flying)
+		{
+			if (window.isKeyPressed(Keys::Space) && world.player.getVelocity().y == 0)
+				world.player.move(entities::Player::Upward, deltaTime);
+		}
+		else
+			if (window.isKeyPressed(Keys::Space))
+				world.player.move(entities::Player::Upward, deltaTime);
+
+
 		camera.setPosition(world.player.getPosition());
 
 
 		/*=============================*/
-		// ImGUI Debug
+		// ImGUI Debug					
 		/*=============================*/
 
 		{
@@ -308,7 +363,7 @@ try
 				vec3i min{ player_loc * (int64)chunks::Chunk::g_size - (int64)renderdistance * chunks::Chunk::g_size };
 				vec3i max{ player_loc * (int64)chunks::Chunk::g_size + (int64)renderdistance * chunks::Chunk::g_size };
 					
-				if (window.isKeyPressedOnce(Buttons::R))
+				if (imgui_compute_noisemap)
 				{
 					vec3i gap{ max - min };
 
@@ -364,14 +419,14 @@ try
 				}
 
 				size_t selectedIndex = 0;
-				if (ImGui::BeginCombo("spawn item", world.m_itm.getTypeList()[selectedIndex].name.c_str())) {
-					for (size_t i{}; i < world.m_itm.getTypeList().size(); ++i) {
+				if (ImGui::BeginCombo("spawn item", ItemTypeManager::get().getTypeList()[selectedIndex].name.c_str())) {
+					for (size_t i{}; i < ItemTypeManager::get().getTypeList().size(); ++i) {
 						const bool isSelected = (selectedIndex == i);
 
-						if (ImGui::Selectable(world.m_itm.getTypeList()[i].name.c_str(), isSelected))
+						if (ImGui::Selectable(ItemTypeManager::get().getTypeList()[i].name.c_str(), isSelected))
 						{
 							selectedIndex = i;
-							world.player.getHotbar().setCurrentSlot({ (uint16)(i + 1) }, world.m_itm);
+							/*world.player.getHotbar().setCurrentSlot({ (uint16)(i + 1) }, ItemTypeManager::get().;*/
 						}
 
 						// Set the initial focus when opening the combo
@@ -407,36 +462,38 @@ try
 			}
 		}
 
-			
+		
 		/*=============================*/
 		// World updating
 		/*=============================*/
 
-		const auto& ray_result{ utils::raycast(camera.getPosition(), camera.getFrontDir(), world.grid, world.debug.rayDist, world.m_vtm)};
+		const auto& ray_result{ utils::raycast(camera.getPosition(), camera.getFrontDir(), world.grid, world.debug.rayDist, VoxelTypeManager::get())};
 
 		world.flags.draw_cubehighlight = false;
+		// Change that so that you only have a currently selected world block which avoids this ugly code part altogether and can thus enables the player to manage the world
+		// Make it so that the player holds the raycastresult, the world takes in a player object, and sets the current voxel based on that
 		if (!window.isCursorHidden())
 			if (ray_result)
 			{
-
+				 
 				world.ch.update(mpml::Identity4<float>, camera.getViewProj(), ray_result->pos);
 
 
-				if (window.isMouseButtonPressedOnce(Buttons::Mouse::Middle))
+				if (raycast_select_block)
 				{
-					auto id{ world.block_at(ray_result->pos)->id };
+					//auto id{ world.block_at(ray_result->pos)->id };
 
-					world.player.getHotbar().setCurrentSlot({ id }, world.m_itm);
+					/*world.player.getHotbar().setCurrentSlot({ id }, ItemTypeManager::get().;*/
 				}
 
 				if (!world.debug.instant_voxel_breaking)
 				{
-					if (window.isMouseButtonPressedOnce(Buttons::Mouse::Left))
+					if (raycast_destroy_block)
 					{
 						auto id{ world.block_at(ray_result->pos)->id };
 
 						world.entity_chunkGrid.addEntity(
-							{ Resources::get().atlas_im_guiblocks, toPixelUnits(id, world.m_itm), id },
+							{ Resources::get().atlas_im_guiblocks, toPixelUnits(id, ItemTypeManager::get()), id },
 							ray_result->pos);
 
 						world.set_voxel_at(ray_result->pos, 0);
@@ -444,19 +501,19 @@ try
 				}
 				else
 				{
-					if (window.isMouseButtonPressed(Buttons::Mouse::Left))
+					if (raycast_destroy_block)
 						world.set_voxel_at(ray_result->pos, 0);
 				}
 
 				if (!world.debug.instant_voxel_placing)
 				{
-					if (world.player.getHotbar().getSelectedItem().id != 0 && window.isMouseButtonPressedOnce(Buttons::Mouse::Right))
-						world.set_voxel_at(ray_result->pos + ray_result->normal, world.player.place_voxel().id);
+					/*if (world.player.getHotbar().getSelectedItem().id != 0 && raycast_place_block)
+						world.set_voxel_at(ray_result->pos + ray_result->normal, world.player.place_voxel().id);*/
 				}
 				else
 				{
-					if (window.isMouseButtonPressed(Buttons::Mouse::Right))
-						world.set_voxel_at(ray_result->pos + ray_result->normal, world.player.getHotbar().getSelectedItem().id);
+					/*if (raycast_place_block)
+						world.set_voxel_at(ray_result->pos + ray_result->normal, world.player.getHotbar().getSelectedItem().id);*/
 				}
 
 				world.flags.draw_cubehighlight = true;
@@ -467,6 +524,11 @@ try
 
 			// Debug
 			render::debug::DebugRenderer::get().update(glfwGetTime());
+
+			vec2d cursor_pos{};
+			glfwGetCursorPos(window.get(), &cursor_pos.x, &cursor_pos.y);
+
+			guiInv.update(inv, Window::toGUICoordinates(window, static_cast<vec2f>(cursor_pos)));
 
 
 		/*=============================*/
@@ -504,6 +566,7 @@ try
 			glDisable(GL_CULL_FACE);
 			glDisable(GL_DEPTH_TEST);
 
+			guiInv.draw();
 
 		
 			// Debug ImGUI
@@ -542,15 +605,39 @@ catch (const std::runtime_error& e)
 
 void ::framebuffersize_callback(GLFWwindow* window, int width, int height) noexcept
 {
-	static_cast<Window*>(glfwGetWindowUserPointer(window))->onFramebufferResize({ width, height });
+	auto* current_window = static_cast<Window*>(glfwGetWindowUserPointer(window));
+	vec2i newsize = { width, height };
+
+	current_window->addEvent(Event::Resized{ newsize });
+	current_window->resize(newsize);
 }
 
 void ::mouse_callback(GLFWwindow* window, double xpos, double ypos) noexcept
 {
-	static_cast<Window*>(glfwGetWindowUserPointer(window))->onMousePosChange({ static_cast<float>(xpos), static_cast<float>(ypos) });
+	static_cast<Window*>(glfwGetWindowUserPointer(window))->addEvent(Event::MouseMoved{ { static_cast<float>(xpos), static_cast<float>(ypos) } });
 }
 
 void ::scroll_callback(GLFWwindow* window, double xoffset, double yoffset) noexcept
 {
-	static_cast<Window*>(glfwGetWindowUserPointer(window))->onMouseWheelScroll({ static_cast<float>(xoffset), static_cast<float>(yoffset) });
+	static_cast<Window*>(glfwGetWindowUserPointer(window))->addEvent(Event::MouseWheelScrolled{ { static_cast<float>(xoffset), static_cast<float>(yoffset) } });
+}
+
+void ::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) noexcept
+{
+	auto* current_window = static_cast<Window*>(glfwGetWindowUserPointer(window));
+
+	if (action == GLFW_PRESS)
+		current_window->addEvent(Event::KeyPressed{ static_cast<Keys>(key), static_cast<KeyboardModes>(mods) });
+	else if (action == GLFW_RELEASE)
+		current_window->addEvent(Event::KeyReleased{ static_cast<Keys>(key), static_cast<KeyboardModes>(mods) });
+}
+
+void ::mouse_button_callback(GLFWwindow* window, int button, int action, int mods) noexcept
+{
+	auto* current_window = static_cast<Window*>(glfwGetWindowUserPointer(window));
+
+	if (action == GLFW_PRESS)
+		current_window->addEvent(Event::MouseButtonPressed{ static_cast<MouseButtons>(button), static_cast<KeyboardModes>(mods) });
+	else if (action == GLFW_RELEASE)
+		current_window->addEvent(Event::MouseButtonReleased{ static_cast<MouseButtons>(button), static_cast<KeyboardModes>(mods) });
 }

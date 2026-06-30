@@ -25,11 +25,16 @@ using vec4f = mpml::Vector4<float>;
 using vec2d = mpml::Vector2<double>;
 using vec3d = mpml::Vector3<double>;
 
+using vec2u8 = mpml::Vector2<uint8>;
+using vec2u16 = mpml::Vector2<uint16>;
+
 using vec2i = mpml::Vector2<int32>;
 using vec2iu = mpml::Vector2<uint32>;
 using vec3i = mpml::Vector3<int32>;
+
 using vec2l = mpml::Vector2<int64>;
 using vec2ul = mpml::Vector2<uint64>;
+
 using vec3l = mpml::Vector3<int64>;
 using vec3ul = mpml::Vector3<uint64>;
 

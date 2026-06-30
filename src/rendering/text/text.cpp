@@ -6,8 +6,8 @@
 // Construction/Destruction
 // =====================
 
-render::Text::Text(const Font& font, std::string_view str, const vec3f& pos, const vec3f& ori)
-	: physics::Transformable3D(pos, ori), p_font{ &font }, m_text{ str }
+render::Text::Text(const Font* font, std::string_view str, const vec3f& pos, const vec3f& ori)
+	: physics::Transformable3D(pos, ori), p_font{ font }, m_text{ str }
 {
 	// create GPU data
 
@@ -31,39 +31,37 @@ render::Text::Text(const Font& font, std::string_view str, const vec3f& pos, con
 }
 
 render::Text::Text(Text&& other) noexcept
-	: physics::Transformable3D{ other },
-	m_text{ other.m_text }, p_font{ other.p_font }, m_color{ other.m_color },
-	m_scale_text{ other.m_scale_text }, m_size_data{ other.m_size_data }, m_vao{ other.m_vao }, m_vbo{ other.m_vbo }
+	: physics::Transformable3D{ std::move(other) }
+	, p_font{ other.p_font}
+	, m_text{ std::move(other.m_text)}
+	, m_color{ other.m_color}
+	, m_scale_text{ other.m_scale_text}
+	, m_size_data{ other.m_size_data}
+	, m_vao{other.m_vao}
+	, m_vbo{ other.m_vbo}
 {
-	other.m_text		= {};
-	other.p_font		= 0;
-	other.m_color		= 0;
-	other.m_scale_text	= 0;
-	other.m_size_data	= 0;
-	other.m_vao			= 0;
-	other.m_vbo			= 0;
+	other.m_vao = 0;
+	other.m_vbo = 0;
 }
 
 render::Text& render::Text::operator=(Text&& other) noexcept
 {
-	if (this == &other)
-		return *this;
+	glDeleteVertexArrays(1, &m_vao);
+	glDeleteBuffers(1, &m_vbo);
 
-	m_text			= other.m_text;
-	p_font			= other.p_font;
-	m_color			= other.m_color;
-	m_scale_text	= other.m_scale_text;
-	m_size_data		= other.m_size_data;
-	m_vao			= other.m_vao;
-	m_vbo			= other.m_vbo;
+	physics::Transformable3D::operator=(std::move(other));
+	p_font = other.p_font;
+	m_text = std::move(other.m_text);
+	m_color = other.m_color;
+	m_scale_text = other.m_scale_text;
+	m_size_data = other.m_size_data;
+	m_vao = other.m_vao;
+	m_vbo = other.m_vbo;
 
-	other.m_text = {};
-	other.p_font = 0;
-	other.m_color = 0;
-	other.m_scale_text = 0;
-	other.m_size_data = 0;
 	other.m_vao = 0;
 	other.m_vbo = 0;
+
+	return *this;
 }
 
 render::Text::~Text() noexcept
@@ -93,6 +91,7 @@ void render::Text::draw(const render::Shader& shader)
 
 	glBindVertexArray(m_vao);
 	glDrawArrays(GL_TRIANGLES, 0, m_size_data);
+	glBindVertexArray(0);
 }
 
 /*private*/ void render::Text::update_buffer()
@@ -106,6 +105,7 @@ void render::Text::draw(const render::Shader& shader)
 	std::vector<Data::Vertex2D> data{};
 
 	vec2f tPos{};
+	float height{};
 
 	std::string::const_iterator c{};
 	for (c = m_text.begin(); c != m_text.end(); c++)
@@ -128,7 +128,10 @@ void render::Text::draw(const render::Shader& shader)
 			});
 
 		tPos.x += (ch.advance >> 6) * m_scale_text;
+		height = std::max(height, ch.size.y * m_scale_text);
 	}
+
+	setBaseSize(vec3f{ tPos.x, height, 0.f });
 
 	m_size_data = data.size();
 

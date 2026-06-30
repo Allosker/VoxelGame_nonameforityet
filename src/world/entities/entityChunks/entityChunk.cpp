@@ -5,10 +5,10 @@
 
 void entities::EntityChunk::update_items(entities::Player& player, const ItemTypeManager& itm) noexcept
 {
-	for (size_t i{}; i < m_items.size(); i++)
+	/*for (size_t i{}; i < m_items.size(); i++)
 		if (m_items.at(i).getHitbox().intersects(player.getHitbox()))
 			if (player.addItem({ m_items.at(i).getId() }, 1, itm))
-				m_items.erase(m_items.begin() + i);
+				m_items.erase(m_items.begin() + i);*/
 
 	// Update the physics for them
 }

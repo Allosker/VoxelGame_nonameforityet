@@ -90,7 +90,23 @@ namespace physics
 
 		virtual void setSize(vec2f size) noexcept
 		{
-			setScale({ size.x / m_baseSize.x, size.y / m_baseSize.y });
+			if (m_baseSize != 0)
+				setScale({ size.x / m_baseSize.x, size.y / m_baseSize.y });
+			else
+				m_baseSize = size;
+			m_transformNeedUpdate = true;
+		}
+
+		virtual void setBaseSize(vec2f size) noexcept
+		{
+			m_baseSize = size;
+			m_transformNeedUpdate = true;
+		}
+
+		virtual void setOrigin(vec2f ori) noexcept
+		{
+			m_origin = ori;
+			m_transformNeedUpdate = true;
 		}
 
 		virtual void setRotation(mpml::Angle<> rotation) noexcept

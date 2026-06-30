@@ -5,10 +5,10 @@
 // This class is responsible for everything that the game has to offer in term of chunks/entities/players
 // ---------------------------------------
 
-#include "utilities/resourceManager.hpp"
+#include "utilities/resourceManaging.hpp"
 
 #include "world/chunks/chunkGrid.hpp"
-#include "world/types/voxelTypeManager.hpp"
+#include "utilities/resourceManaging.hpp"
 
 #include "world/entities/entityChunks/entityChunkGrid.hpp"
 #include "rendering/chunkMesh/chunkMesh.hpp"
@@ -19,6 +19,10 @@
 #include "rendering/skybox.hpp"
 
 #include "data/renderStates.hpp"
+
+#include "utilities/window.hpp"
+
+#include "rendering/GUI/elements/rectangle.hpp"
 
 #include <queue>
 
@@ -73,6 +77,8 @@ public:
 
 	// = Actors
 
+	//void resolve_collisions() noexcept;
+
 	void draw(const RenderStates& render) noexcept;
 
 
@@ -96,8 +102,6 @@ public:
 
 	const chunks::Chunk* chunk_at(const types::pos& pos) const noexcept;
 
-	const VoxelTypeManager& getTypeManager() const noexcept { return m_vtm; }
-
 	const chunks::ChunkGrid& getGrid() const noexcept { return grid; }
 
 
@@ -116,9 +120,6 @@ public:
 
 	chunks::ChunkGrid			grid			{};
 	entities::EntityChunkGrid	entity_chunkGrid{};
-
-	VoxelTypeManager	m_vtm{};
-	ItemTypeManager		m_itm{};
 
 	std::vector<std::pair<types::pos, types::type_id>> structure_blocks{};
 

@@ -11,7 +11,7 @@
 #include "rendering/shader.hpp"
 
 #include "world/entities/player/player.hpp"
-#include "world/types/itemTypeManager.hpp"
+#include "utilities/resourceManaging.hpp"
 
 namespace entities
 {

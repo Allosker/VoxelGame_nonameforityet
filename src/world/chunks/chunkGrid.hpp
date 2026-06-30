@@ -6,7 +6,7 @@
 // ---------------------------------------
 
 #include "utilities/types.hpp"
-#include "world/types/voxelTypeManager.hpp"
+#include "utilities/resourceManaging.hpp"
 #include "rendering/utilities/frustum_culling.hpp"
 
 #include "world/chunks/chunk.hpp"

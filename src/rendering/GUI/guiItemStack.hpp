@@ -8,6 +8,7 @@
 #include "rendering/gui/elements/rectangle.hpp"
 #include "data/item.hpp"
 #include "rendering/text/text.hpp"
+#include "utilities/resourceManaging.hpp"
 
 namespace render::gui
 {
@@ -16,9 +17,9 @@ namespace render::gui
 		: public elems::Rectangle 
 	{
 
-		ItemStackGUI(vec2f size, vec2f ori, const types::Rect<types::uvs>& attributes, Data::Item item, const Font& font)
+		ItemStackGUI(vec2f size, vec2f ori, const types::Rect<types::uvs>& attributes, Data::Item item)
 			: elems::Rectangle{ size, ori, attributes },
-			stack_item{ item }, text{ font }
+			stack_item{ item }, text{ Resources::get().f_pixelated }
 		{
 			text.setScale(g_scale_text_rest);
 			text.setStr("10");
@@ -76,7 +77,7 @@ namespace render::gui
 
 		void update_text() noexcept
 		{
-			text.setStr(std::to_string(count));
+			text.setString(std::to_string(count));
 			text.setPosition(vec3f{ getPosition() - getSize() / 2.f, 0 });
 		}
 
